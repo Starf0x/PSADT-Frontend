@@ -42,3 +42,23 @@ def test_retention_setting_and_purge(authed, tmp_path):
     r = authed.put("/api/system/settings", json={"upload_retention": "7"}).json()
     assert r["removed"] == 1
     assert [f["name"] for f in authed.get(f"/api/packages/{pid}/files").json()] == ["new.msi"]
+
+
+def test_release_notes(authed, monkeypatch):
+    text = "# x\n\n## 0.9.0\n- Not released yet\n\n## 0.5.0\n- Big thing\n- Small thing\n\n## 0.1.0\n- Old\n"
+    monkeypatch.setattr(system, "_notes_text", lambda lang: text)
+    monkeypatch.setattr(system, "current_version", lambda: "0.1.0")
+    monkeypatch.setattr(system, "newest_release", lambda: ("v0.5.0", None))
+    r = authed.get("/api/system/release-notes?lang=nl").json()
+    assert r["newer"] is True and r["notes"] == [{"version": "0.5.0", "items": ["Big thing", "Small thing"]}]
+    monkeypatch.setattr(system, "newest_release", lambda: ("v0.1.0", None))
+    r = authed.get("/api/system/release-notes").json()
+    assert r["newer"] is False and r["notes"][0]["items"] == ["Old"]
+
+
+def test_shipped_release_notes_cover_current_version():
+    from app.main import APP_VERSION
+
+    for lang in ("en", "nl", "de"):
+        versions = [n["version"] for n in system.parse_notes((system.NOTES_DIR / f"{lang}.md").read_text())]
+        assert APP_VERSION in versions, f"release-notes/{lang}.md has no section for {APP_VERSION}"

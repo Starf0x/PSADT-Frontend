@@ -115,3 +115,5 @@ progress { accent-color: var(--accent); height: 10px; }
   .nav-item { width: auto; }
   main { padding: 1.25rem 16px; }
 }
+.notes { margin: .75rem 0 0; }
+.notes ul { margin: .4rem 0 0; padding-left: 1.2rem; display: grid; gap: .25rem; }

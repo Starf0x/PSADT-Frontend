@@ -1,7 +1,7 @@
 {
   "name": "psadt-frontend-ui",
   "private": true,
-  "version": "0.1.44",
+  "version": "0.1.55",
   "type": "module",
   "scripts": {
     "dev": "vite",

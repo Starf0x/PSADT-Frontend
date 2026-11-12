@@ -29,6 +29,11 @@ PSADT_LOG_PATH = r"$envWinDir\Logs\Software"  # PSADT 4 default (Toolkit.LogPath
 SRC_DIR = Path("/opt/psadt-frontend-src")
 PATH_UNIT = Path("/etc/systemd/system/psadt-frontend-update.path")
 _cache: dict = {"at": 0.0, "ttl": 0, "tag": None, "error": None}
+_notes_cache: dict = {}
+# Next to backend/ in the repo and LXC install, in /app in the Docker image.
+NOTES_DIR = next((d / "release-notes" for d in Path(__file__).resolve().parents[2:4] if (d / "release-notes").is_dir()),
+                 Path(__file__).resolve().parents[3] / "release-notes")
+NOTES_URL = f"https://raw.githubusercontent.com/{REPO}/main/release-notes/{{lang}}.md"
 
 
 def _version_tuple(v: str | None) -> tuple:
@@ -125,3 +130,47 @@ def put_settings(body: SettingsIn, db: Session = Depends(get_db)):
     if body.log_path is not None:
         set_setting(db, "log_path", body.log_path.strip())
     return {**_settings(db), "removed": removed}
+
+
+def parse_notes(text: str) -> list[dict]:
+    """'## 1.2.3' headings with '- ' lines under them -> [{version, items}], in file order."""
+    out: list[dict] = []
+    for line in text.splitlines():
+        line = line.strip()
+        if re.fullmatch(r"## v?\d+\.\d+\.\d+", line):
+            out.append({"version": line[3:].lstrip("v"), "items": []})
+        elif out and line.startswith("- "):
+            out[-1]["items"].append(line[2:])
+    return out
+
+
+def _notes_text(lang: str) -> str:
+    """Notes from GitHub (they know about versions newer than this one), cached for an hour;
+    the copy shipped with this version when GitHub cannot be reached."""
+    hit = _notes_cache.get(lang)
+    if hit and time.time() - hit[0] < 3600:
+        return hit[1]
+    try:
+        req = urllib.request.Request(NOTES_URL.format(lang=lang), headers={"User-Agent": "psadt-frontend"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            text = r.read(256_000).decode("utf-8")
+    except Exception:  # noqa: BLE001
+        local = NOTES_DIR / f"{lang}.md"
+        text = local.read_text(encoding="utf-8") if local.exists() else ""
+    _notes_cache[lang] = (time.time(), text)
+    return text
+
+
+@router.get("/release-notes")
+def release_notes(lang: str = "en"):
+    """What changed between the installed version and the newest release, in plain language.
+    When nothing is newer, the notes of the installed version."""
+    lang = lang if lang in ("en", "nl", "de") else "en"
+    notes = parse_notes(_notes_text(lang)) or (parse_notes(_notes_text("en")) if lang != "en" else [])
+    newest, _ = newest_release()
+    cur = _version_tuple(current_version())
+    top = _version_tuple(newest) if newest else cur
+    newer = [n for n in notes if cur < _version_tuple(n["version"]) <= top]
+    if newer:
+        return {"newer": True, "notes": newer}
+    return {"newer": False, "notes": [n for n in notes if _version_tuple(n["version"]) == cur]}

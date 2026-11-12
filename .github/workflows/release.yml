@@ -18,7 +18,10 @@ jobs:
         run: |
           v="v$(tr -d '[:space:]' < VERSION)"
           if gh release view "$v" >/dev/null 2>&1; then echo "$v bestaat al"; exit 0; fi
-          gh release create "$v" --target "$GITHUB_SHA" --title "$v" --generate-notes
+          # Plain-language notes from release-notes/en.md (the "## x.y.z" section), then the technical list.
+          awk -v v="## ${v#v}" '$0==v{f=1;next} /^## /{f=0} f' release-notes/en.md > notes.md
+          [ -s notes.md ] && sed -i '1i ## What'"'"'s new\n' notes.md
+          gh release create "$v" --target "$GITHUB_SHA" --title "$v" --notes-file notes.md --generate-notes
 
   docker:
     needs: release

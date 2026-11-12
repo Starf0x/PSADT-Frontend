@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from './api.js'
-import { t } from './i18n.js'
+import { getLang, t } from './i18n.js'
 
 const RETENTION = [['forever', 'Keep forever'], ['export', 'Remove right after a download'], ['1', '1 day'], ['7', '7 days'], ['30', '30 days'], ['90', '90 days']]
 
@@ -24,6 +24,23 @@ function Retention() {
         <select value={value} onChange={e => change(e.target.value)}>{RETENTION.map(([k, l]) => <option key={k} value={k}>{t(l)}</option>)}</select>
         {msg && <span className={msg.ok ? 'ok' : 'error'}>{msg.text}</span>}
       </div>
+    </div>
+  )
+}
+
+function ReleaseNotes() {
+  const [res, setRes] = useState(null)
+  const lang = getLang()
+  useEffect(() => { api(`/api/system/release-notes?lang=${lang}`).then(setRes).catch(() => setRes(null)) }, [lang])
+  if (!res || res.notes.length === 0) return null
+  return (
+    <div className="panel">
+      <h3 style={{ marginTop: 0 }}>{res.newer ? t('What the update brings') : t('What is new in this version')}</h3>
+      {res.notes.map(n => (
+        <div key={n.version} className="notes">
+          <span className="badge">v{n.version}</span>
+          <ul>{n.items.map((x, i) => <li key={i}>{x}</li>)}</ul>
+        </div>))}
     </div>
   )
 }
@@ -103,6 +120,7 @@ export default function System() {
             : <p>{t('A newer version is available.')} {t('Update this install by hand (git pull, then reinstall).')}</p>
       ) : info.newest && <p className="ok">{t('You are on the newest version.')}</p>}
       {p?.done && !running && !p.ok && <p className="error">{t('Last update failed')}: {p.said}</p>}
+      <ReleaseNotes />
       {error && <p className="error">{error}</p>}
       <LogPath />
       <Retention />
