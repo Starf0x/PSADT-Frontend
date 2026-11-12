@@ -5,6 +5,7 @@
 - [Getting started](Getting-started)
 
 **Building a package**
+- 👣 [Step by step: your first package](Step-by-step-first-package)
 - [Packages](Packages)
 - [App info](App-info)
 - [Install and uninstall steps](Install-and-uninstall-steps)

@@ -6,6 +6,8 @@ PSADT Frontend is a web app for building [PSAppDeployToolkit](https://psappdeplo
 
 ![Package editor](https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/docs/screenshots/04-install-steps.webp)
 
+> 👣 **First time?** Follow [Step by step: your first package](Step-by-step-first-package), a complete walkthrough from an empty screen to an app in Intune.
+
 ## How a package is made
 
 1. **[Create a package](Packages)** and fill in the [App info](App-info): vendor, name, version, processes to close.
@@ -21,6 +23,7 @@ PSADT Frontend is a web app for building [PSAppDeployToolkit](https://psappdeplo
 |------|----------------|
 | [Installation](Installation) | Proxmox one-liner, Docker, existing LXC, settings |
 | [Getting started](Getting-started) | First sign-in, the menu, autosave |
+| [Step by step: your first package](Step-by-step-first-package) | 50 steps from start to Intune, with 7-Zip as example |
 | [Packages](Packages) | The package list, export counters, copy and delete |
 | [App info](App-info) | Name, version, exit codes, processes to close, log folder |
 | [Install and uninstall steps](Install-and-uninstall-steps) | Every step type, `{Files}`, Browse, winget, snippets |
