@@ -18,13 +18,24 @@ export async function api(path, { method = 'GET', body } = {}) {
   return data
 }
 
-export async function upload(path, file) {
-  const form = new FormData()
-  form.append('file', file)
-  const res = await fetch(path, { method: 'POST', body: form, credentials: 'same-origin', headers: { 'X-CSRF-Token': csrf } })
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(formatError(data.detail) || `${t('Error')} ${res.status}`)
-  return data
+// XMLHttpRequest instead of fetch: only XHR reports upload progress. onProgress gets 0..1.
+export function upload(path, file, onProgress = () => {}) {
+  return new Promise((resolve, reject) => {
+    const form = new FormData()
+    form.append('file', file)
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', path)
+    xhr.withCredentials = true
+    if (csrf) xhr.setRequestHeader('X-CSRF-Token', csrf)
+    xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(e.loaded / e.total) }
+    xhr.onload = () => {
+      let data = {}
+      try { data = JSON.parse(xhr.responseText) } catch { /* not JSON */ }
+      if (xhr.status >= 200 && xhr.status < 300) { onProgress(1); resolve(data) } else reject(new Error(formatError(data.detail) || `${t('Error')} ${xhr.status}`))
+    }
+    xhr.onerror = () => reject(new Error(t('Upload failed: connection lost')))
+    xhr.send(form)
+  })
 }
 
 export async function text(path) {

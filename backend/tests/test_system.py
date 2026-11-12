@@ -15,7 +15,7 @@ def test_update_status_and_request(authed, monkeypatch, tmp_path):
 
 
 def test_update_admin_only(authed):
-    authed.post("/api/users", json={"username": "viewer1", "password": "a-long-password-1", "role": "viewer"})
+    authed.post("/api/users", json={"username": "viewer1", "display_name": "Viewer1 Test", "password": "a-long-password-1", "role": "viewer"})
     authed.post("/api/auth/logout")
     csrf = authed.post("/api/auth/login", json={"username": "viewer1", "password": "a-long-password-1"}).json()["csrf_token"]
     authed.headers["X-CSRF-Token"] = csrf

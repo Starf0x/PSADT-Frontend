@@ -18,11 +18,11 @@ def other(client):
 
 
 def test_admin_manages_users(authed, other):
-    r = authed.post("/api/users", json={"username": "piet", "password": "lang-genoeg-123", "role": "viewer"})
+    r = authed.post("/api/users", json={"username": "piet", "display_name": "Piet Test", "password": "lang-genoeg-123", "role": "viewer"})
     assert r.status_code == 201
     uid = r.json()["id"]
-    assert authed.post("/api/users", json={"username": "piet", "password": "lang-genoeg-123"}).status_code == 409
-    assert authed.post("/api/users", json={"username": "kort", "password": "kort"}).status_code == 422
+    assert authed.post("/api/users", json={"username": "piet", "display_name": "Piet Test", "password": "lang-genoeg-123"}).status_code == 409
+    assert authed.post("/api/users", json={"username": "kort", "display_name": "Kort Test", "password": "kort"}).status_code == 422
 
     _login(other, "piet", "lang-genoeg-123")
     assert other.get("/api/packages").status_code == 200
@@ -47,9 +47,20 @@ def test_last_admin_protected(authed):
 
 def test_viewer_can_check_and_export_but_not_write(authed, other):
     pid = authed.post("/api/packages", json={"name": "P"}).json()["id"]
-    authed.post("/api/users", json={"username": "kijker", "password": "lang-genoeg-123", "role": "viewer"})
+    authed.post("/api/users", json={"username": "kijker", "display_name": "Kijker Test", "password": "lang-genoeg-123", "role": "viewer"})
     _login(other, "kijker", "lang-genoeg-123")
     assert other.get(f"/api/packages/{pid}/script").status_code == 200
     assert other.post(f"/api/packages/{pid}/check").status_code == 200
     assert other.delete(f"/api/packages/{pid}").status_code == 403
     assert other.post("/api/snippets", json={"name": "s", "step": {"type": "progress"}}).status_code == 403
+
+
+def test_display_name_and_author(authed):
+    assert authed.post("/api/users", json={"username": "jdoe", "password": "a-long-password-1"}).status_code == 422  # name required
+    u = authed.post("/api/users", json={"username": "jdoe", "display_name": "Jane Doe", "password": "a-long-password-1"}).json()
+    assert u["display_name"] == "Jane Doe"
+    assert authed.put(f"/api/users/{u['id']}", json={"display_name": "Jane D."}).json()["display_name"] == "Jane D."
+    assert authed.get("/api/auth/me").json()["display_name"] == "Administrator"
+    assert authed.put("/api/auth/profile", json={"display_name": "Franky B"}).status_code == 204
+    pkg = authed.post("/api/packages", json={"name": "App"}).json()
+    assert pkg["data"]["app"]["author"] == "Franky B"

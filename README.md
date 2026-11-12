@@ -11,7 +11,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-**Version:** 0.1.55 (see `VERSION`)
+**Version:** 0.1.66 (see `VERSION`)
 
 ## Status and roadmap
 
@@ -26,6 +26,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 7 | Check before download, upload retention, default log folder, new icon and design | ✅ v0.1.33 |
 | 8 | Language per user (stored on the account, follows the user to every device) | ✅ v0.1.44 |
 | 9 | Plain-language release notes on the System page (EN/NL/DE) | ✅ v0.1.55 |
+| 10 | Full name per user (used as script author), upload progress bars | ✅ v0.1.66 |
 
 ## Architecture
 
@@ -92,6 +93,8 @@ PSADT writes its log on the client to `$envWinDir\Logs\Software` by default. On 
 | Administrator | everything, plus managing users (create, role, password, unlock, delete) and updates |
 | Editor | create, change and delete packages and snippets |
 | Read only | view everything, check scripts and export |
+
+Every user has a **login name** (to sign in) and a **full name** (shown in the app and filled in as script author for new packages). Users change their own full name under their account; admins can change anyone's.
 
 When a user's role or password changes, that user's sessions are revoked. The last administrator cannot be demoted or deleted.
 

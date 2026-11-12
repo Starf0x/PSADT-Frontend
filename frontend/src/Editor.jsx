@@ -116,13 +116,23 @@ function AppInfo({ app, onChange }) {
 function Files({ id, files, reload }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [queue, setQueue] = useState([])  // [{ name, size, progress 0..1, state: 'wait' | 'up' | 'done' | 'error' }]
+  const mb = n => (n / 1048576).toFixed(1)
   async function onPick(e) {
-    setBusy(true); setError('')
-    for (const f of e.target.files) {
-      try { await upload(`/api/packages/${id}/files`, f) } catch (err) { setError(`${f.name}: ${err.message}`) }
-    }
+    const picked = [...e.target.files]
     e.target.value = ''
+    setBusy(true); setError('')
+    setQueue(picked.map(f => ({ name: f.name, size: f.size, progress: 0, state: 'wait' })))
+    const set = (i, patch) => setQueue(q => q.map((x, j) => j === i ? { ...x, ...patch } : x))
+    for (const [i, f] of picked.entries()) {
+      set(i, { state: 'up' })
+      try {
+        await upload(`/api/packages/${id}/files`, f, p => set(i, { progress: p }))
+        set(i, { state: 'done', progress: 1 })
+      } catch (err) { set(i, { state: 'error' }); setError(`${f.name}: ${err.message}`) }
+    }
     setBusy(false); reload()
+    setTimeout(() => setQueue(q => q.filter(x => x.state === 'error')), 2500)
   }
   async function remove(name) {
     await api(`/api/packages/${id}/files/${encodeURIComponent(name)}`, { method: 'DELETE' }).catch(e => setError(e.message))
@@ -132,7 +142,15 @@ function Files({ id, files, reload }) {
     <section>
       <p className="muted">{t('Files go into the package folder')} <code>Files</code>.</p>
       <input type="file" multiple onChange={onPick} disabled={busy} />
-      {busy && <p>{t('Uploading…')}</p>}
+      {queue.length > 0 && <div className="panel uploads">
+        {busy && <strong>{t('Uploading…')}</strong>}
+        {queue.map((u, i) => (
+          <div key={i} className={`upload ${u.state}`}>
+            <div className="row between"><span>{u.name}</span>
+              <span className="muted small">{u.state === 'done' ? '✓' : u.state === 'error' ? '✕' : `${mb(u.size * u.progress)} / ${mb(u.size)} MB · ${Math.round(u.progress * 100)}%`}</span></div>
+            <div className="bar"><div style={{ width: `${Math.round(u.progress * 100)}%` }} /></div>
+          </div>))}
+      </div>}
       {error && <p className="error">{error}</p>}
       <table><tbody>{files.map(f => (
         <tr key={f.name}><td>{f.name}</td><td>{(f.size / 1048576).toFixed(1)} MB</td>
@@ -232,9 +250,17 @@ function Preview({ id }) {
         <a className="button" href={`/api/packages/${id}/script?download=1`}>{t('Download')} Invoke-AppDeployToolkit.ps1</a>
         <button className="secondary" onClick={runCheck}>{t('Check syntax')}</button>
         {check && !check.busy && (!check.available ? <span className="muted">{t('PowerShell not available on the server')}</span>
+          : check.failed ? <span className="warn">{t('Check could not run')}</span>
           : check.errors.length ? <span className="error">{check.errors.length} {t('error(s)')}</span> : <span className="ok">{t('No syntax errors')}</span>)}
       </div>
-      {check?.errors?.length > 0 && <pre className="error">{check.errors.join('\n')}</pre>}
+      {check?.failed && <div className="panel">
+        <p style={{ marginTop: 0 }}><strong>{t('The script could not be checked.')}</strong> {t('PowerShell did not start on the server, so nothing was checked. This is a problem with the server, not a mistake in your package. Ask your administrator to look at it; downloading still works.')}</p>
+        <details><summary className="muted small">{t('Technical details for the administrator')}</summary><pre className="code">{check.failed}</pre></details>
+      </div>}
+      {check?.errors?.length > 0 && <div className="panel">
+        <p style={{ marginTop: 0 }}><strong>{t('PowerShell found {n} problem(s) in the script.', { n: check.errors.length })}</strong> {t('Usually this comes from a Custom PowerShell step. Fix the step and check again.')}</p>
+        <ul className="checks">{check.errors.map((e, i) => { const m = e.match(/^(\d+):(\d+) (.*)$/); return <li key={i} className="error">{m ? t('Line {l}, column {c}: {msg}', { l: m[1], c: m[2], msg: m[3] }) : e}</li> })}</ul>
+      </div>}
       {error ? <pre className="error">{error}</pre> : <pre className="code">{script}</pre>}
     </section>
   )
