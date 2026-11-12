@@ -252,6 +252,9 @@ const ROWS = [
   ['Shown in the app and filled in as script author for new packages. You sign in with {login}.', 'Zichtbaar in de app en ingevuld als scriptauteur bij nieuwe pakketten. Je logt in met {login}.', 'Wird in der App angezeigt und bei neuen Paketen als Skriptautor eingetragen. Sie melden sich mit {login} an.'],
   ['Full name', 'Volledige naam', 'Vollständiger Name'],
   ['Upload failed: connection lost', 'Upload mislukt: verbinding verbroken', 'Hochladen fehlgeschlagen: Verbindung unterbrochen'],
+  ['Upload stopped: the server received nothing for a minute. A reverse proxy or tunnel may limit the size, or the server disk may be full.', 'Upload gestopt: de server ontving een minuut lang niets. Mogelijk beperkt een reverse proxy of tunnel de grootte, of is de schijf van de server vol.', 'Hochladen abgebrochen: Der Server hat eine Minute lang nichts empfangen. Möglicherweise begrenzt ein Reverse Proxy oder Tunnel die Größe, oder die Festplatte des Servers ist voll.'],
+  ['Upload cancelled', 'Upload geannuleerd', 'Hochladen abgebrochen'],
+  ['Upload refused: the file is too large for the server or a proxy in between.', 'Upload geweigerd: het bestand is te groot voor de server of voor een proxy ertussen.', 'Hochladen abgelehnt: Die Datei ist zu groß für den Server oder einen Proxy dazwischen.'],
   // syntax check
   ['Check could not run', 'Controle kon niet draaien', 'Prüfung konnte nicht laufen'],
   ['The script could not be checked.', 'Het script kon niet worden gecontroleerd.', 'Das Skript konnte nicht geprüft werden.'],

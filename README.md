@@ -19,7 +19,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 📖 **New here? Read the [user guide in the wiki](https://github.com/Starf0x/PSADT-Frontend/wiki).**
 
-**Version:** 0.3.0 (see `VERSION`)
+**Version:** 0.3.11 (see `VERSION`)
 
 ## Features
 
@@ -92,6 +92,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). The wiki 
 | 22 | Export counter counts each package once per version (no double counts) | ✅ v0.2.88 |
 | 23 | README with screenshots and a full user guide in the wiki | ✅ v0.2.99 |
 | 24 | Only administrators can delete packages | ✅ v0.3.0 |
+| 25 | A stuck upload stops after a minute with a clear message | ✅ v0.3.11 |
 
 </details>
 

@@ -27,8 +27,16 @@ export function upload(path, file, onProgress = () => {}) {
     xhr.open('POST', path)
     xhr.withCredentials = true
     if (csrf) xhr.setRequestHeader('X-CSRF-Token', csrf)
-    xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(e.loaded / e.total) }
+    // A proxy or full disk can stop an upload without closing the connection; give up after a minute without progress.
+    let last = Date.now()
+    let stalled = false
+    const watch = setInterval(() => { if (Date.now() - last > 60000) { stalled = true; xhr.abort() } }, 5000)
+    xhr.upload.onprogress = e => { last = Date.now(); if (e.lengthComputable) onProgress(e.loaded / e.total) }
+    xhr.upload.onload = () => clearInterval(watch) // all sent; the server may still need time to store it
+    xhr.onloadend = () => clearInterval(watch)
+    xhr.onabort = () => reject(new Error(stalled ? t('Upload stopped: the server received nothing for a minute. A reverse proxy or tunnel may limit the size, or the server disk may be full.') : t('Upload cancelled')))
     xhr.onload = () => {
+      if (xhr.status === 413) { reject(new Error(t('Upload refused: the file is too large for the server or a proxy in between.'))); return }
       let data = {}
       try { data = JSON.parse(xhr.responseText) } catch { /* not JSON */ }
       if (xhr.status >= 200 && xhr.status < 300) { onProgress(1); resolve(data) } else reject(new Error(formatError(data.detail) || `${t('Error')} ${xhr.status}`))
