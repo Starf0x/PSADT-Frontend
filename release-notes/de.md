@@ -1,5 +1,9 @@
 # Was ist neu
 
+## 0.2.55
+- Beim Herunterladen eines Pakets siehst du jetzt, was passiert: zuerst "Paket wird erstellt…", dann einen Fortschrittsbalken und am Ende den Dateinamen.
+- Sind die Download-Schaltflächen gesperrt, steht darunter, dass zuerst die Probleme aus der Prüfung zu beheben sind.
+
 ## 0.2.44
 - Die Download-Schaltflächen prüfen das Paket direkt vor dem Download noch einmal. Stimmt etwas nicht, bleibst du auf der Seite und siehst, was zu beheben ist, statt einer Seite mit technischer Fehlermeldung.
 

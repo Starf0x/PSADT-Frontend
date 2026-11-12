@@ -1,5 +1,9 @@
 # Wat is er nieuw
 
+## 0.2.55
+- Bij het downloaden van een pakket zie je nu wat er gebeurt: eerst "Pakket wordt gebouwd…", dan een voortgangsbalk en tot slot de bestandsnaam als het klaar is.
+- Zijn de downloadknoppen vergrendeld, dan staat eronder dat je eerst de problemen uit de controle moet oplossen.
+
 ## 0.2.44
 - De downloadknoppen controleren het pakket vlak voor het downloaden nog een keer. Klopt er iets niet, dan blijf je op de pagina en zie je wat je moet oplossen, in plaats van een pagina met een technische foutmelding.
 
