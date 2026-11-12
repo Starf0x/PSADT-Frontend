@@ -253,6 +253,9 @@ const ROWS = [
   ['Update available', 'Update beschikbaar', 'Update verfügbar'],
   ['Version {v} is available.', 'Versie {v} is beschikbaar.', 'Version {v} ist verfügbar.'],
   ['See what is new', 'Bekijk wat er nieuw is', 'Neuerungen ansehen'],
+  ['Saving…', 'Opslaan…', 'Speichern…'],
+  ['All changes saved', 'Alle wijzigingen opgeslagen', 'Alle Änderungen gespeichert'],
+  ['Save now', 'Nu opslaan', 'Jetzt speichern'],
 ]
 
 const DICT = { nl: {}, de: {} }

@@ -1,5 +1,9 @@
 # Wat is er nieuw
 
+## 0.2.0
+- Wijzigingen in een pakket worden nu automatisch opgeslagen, een moment nadat je ze maakt. Er gaat niets meer verloren als de pagina herlaadt of de app herstart voor een update.
+- Wil je de pagina verlaten terwijl er nog iets wordt opgeslagen, dan waarschuwt je browser eerst.
+
 ## 0.1.99
 - Als er een nieuwere versie is, zien beheerders een oranje stip bij Systeem en een melding bovenaan elke pagina.
 - Op de Systeem-pagina staat een knop "Nu controleren", en de app zoekt elke 15 minuten naar nieuwe versies in plaats van elk uur.
