@@ -13,6 +13,19 @@ REG_RE = re.compile(r"^(HKLM|HKCU|HKCR|HKU|HKEY_LOCAL_MACHINE|HKEY_CURRENT_USER|
 Text = Annotated[str, Field(max_length=2000)]
 
 
+# Programs that are already on every Windows PC; an EXE step may use them as "windows:<name>".
+WINDOWS_PREFIX = "windows:"
+WINDOWS_EXES = ("winget.exe", "msiexec.exe", "powershell.exe", "cmd.exe", "dism.exe", "reg.exe", "regsvr32.exe", "wusa.exe")
+
+
+def _exe(v: str) -> str:
+    if v.startswith(WINDOWS_PREFIX):
+        if v[len(WINDOWS_PREFIX):] not in WINDOWS_EXES:
+            raise ValueError("Unknown Windows program")
+        return v
+    return _file(v)
+
+
 def _file(v: str | None) -> str | None:
     if v and (not FILE_RE.match(v) or v in (".", "..")):
         raise ValueError("Invalid file name")
@@ -67,7 +80,7 @@ class ExeStep(_Step):
     args: Text = ""
     ignore_exit_codes: Annotated[str, Field(pattern=r"^[0-9, *]*$", max_length=100)] = ""
 
-    _vf = field_validator("file")(classmethod(lambda cls, v: _file(v)))
+    _vf = field_validator("file")(classmethod(lambda cls, v: _exe(v)))
 
 
 class UninstallAppStep(_Step):

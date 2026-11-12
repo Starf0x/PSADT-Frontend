@@ -6,6 +6,8 @@ import { t } from './i18n.js'
 const TABS = [['app', 'App info'], ['install', 'Install'], ['uninstall', 'Uninstall'], ['repair', 'Repair'], ['files', 'Files'], ['detection', 'Detection'], ['preview', 'Script'], ['export', 'Export']]
 
 // Fields that hold long text get the full width of the step, so arguments and code stay readable.
+// Programs already on every Windows PC (see WINDOWS_EXES in the backend).
+const WINDOWS_EXES = ['winget.exe', 'msiexec.exe', 'powershell.exe', 'cmd.exe', 'dism.exe', 'reg.exe', 'regsvr32.exe', 'wusa.exe']
 const WIDE = new Set(['args', 'code', 'message', 'key', 'path', 'destination'])
 
 // Arguments field with one-click inserts: {Files} and the full path of every uploaded file.
@@ -34,24 +36,50 @@ function ArgsInput({ value, onChange, files }) {
   )
 }
 
-function Field({ name, label, type, value, onChange, files, wide }) {
+// Choose an uploaded file, or browse the PC: the chosen file is uploaded and selected right away.
+function FilePicker({ value, onChange, files, accept, onUpload }) {
+  const pick = useRef(null)
+  const [progress, setProgress] = useState(null)
+  const [error, setError] = useState('')
+  async function onPick(e) {
+    const f = e.target.files[0]
+    e.target.value = ''
+    if (!f) return
+    setError(''); setProgress(0)
+    try { await onUpload(f, setProgress); onChange(f.name) } catch (err) { setError(`${f.name}: ${err.message}`) }
+    setProgress(null)
+  }
+  return (
+    <>
+      <span className="row picker">
+        <select value={value || ''} onChange={e => onChange(e.target.value || null)} disabled={progress !== null}>
+          <option value="">{t('(none)')}</option>
+          <optgroup label={t('Uploaded files')}>{files.map(f => <option key={f.name}>{f.name}</option>)}</optgroup>
+          {accept === '.exe' && <optgroup label={t('Programs on the Windows PC')}>{WINDOWS_EXES.map(x => <option key={x} value={`windows:${x}`}>{x}</option>)}</optgroup>}
+          {value && !value.startsWith('windows:') && !files.some(f => f.name === value) && <option>{value}</option>}
+        </select>
+        <input ref={pick} type="file" accept={accept} hidden onChange={onPick} />
+        <button type="button" className="secondary" disabled={!onUpload || progress !== null} onClick={() => pick.current?.click()}>{t('Browse…')}</button>
+      </span>
+      {progress !== null && <div className="bar"><div style={{ width: `${Math.round(progress * 100)}%` }} /></div>}
+      {error && <span className="error small">{error}</span>}
+    </>
+  )
+}
+
+function Field({ name, label, type, value, onChange, files, wide, accept, onUpload }) {
   if (type === 'bool') return <label className="check"><input type="checkbox" checked={!!value} onChange={e => onChange(e.target.checked)} />{t(label)}</label>
   let input
   if (Array.isArray(type)) input = <select value={value} onChange={e => onChange(e.target.value)}>{type.map(o => <option key={o}>{o}</option>)}</select>
   else if (type === 'int') input = <input type="number" value={value} onChange={e => onChange(parseInt(e.target.value || '0', 10))} />
   else if (type === 'code') input = <textarea rows={6} className="mono" value={value} onChange={e => onChange(e.target.value)} />
-  else if (type === 'file') input = (
-    <select value={value || ''} onChange={e => onChange(e.target.value || null)}>
-      <option value="">{t('(none)')}</option>
-      {files.map(f => <option key={f.name}>{f.name}</option>)}
-      {value && !files.some(f => f.name === value) && <option>{value}</option>}
-    </select>)
+  else if (type === 'file') input = <FilePicker value={value} onChange={onChange} files={files} accept={accept} onUpload={onUpload} />
   else if (name === 'args') input = <ArgsInput value={value} onChange={onChange} files={files} />
   else input = <input value={value ?? ''} onChange={e => onChange(e.target.value)} />
   return <label className={wide ? 'wide' : undefined}>{t(label)}{input}</label>
 }
 
-function StepCard({ step, index, count, files, onChange, onMove, onRemove, onSnippet }) {
+function StepCard({ step, index, count, files, onUpload, onChange, onMove, onRemove, onSnippet }) {
   const def = STEP_TYPES[step.type]
   return (
     <div className="step">
@@ -65,8 +93,8 @@ function StepCard({ step, index, count, files, onChange, onMove, onRemove, onSni
         </span>
       </div>
       <div className="grid">
-        {def.fields.map(([key, label, type]) => (
-          <Field key={key} name={key} label={label} type={type} value={step[key]} files={files} wide={WIDE.has(key)} onChange={v => onChange({ ...step, [key]: v })} />
+        {def.fields.map(([key, label, type, accept]) => (
+          <Field key={key} name={key} label={label} type={type} value={step[key]} files={files} accept={accept} onUpload={onUpload} wide={WIDE.has(key)} onChange={v => onChange({ ...step, [key]: v })} />
         ))}
         <Field label="Comment" type="text" value={step.comment || ''} onChange={v => onChange({ ...step, comment: v })} />
       </div>
@@ -74,7 +102,7 @@ function StepCard({ step, index, count, files, onChange, onMove, onRemove, onSni
   )
 }
 
-function PhaseEditor({ phases, files, onChange }) {
+function PhaseEditor({ phases, files, onUpload, onChange }) {
   const [adding, setAdding] = useState({})
   const [snippets, setSnippets] = useState([])
   const loadSnippets = () => api('/api/snippets').then(setSnippets).catch(() => {})
@@ -103,7 +131,7 @@ function PhaseEditor({ phases, files, onChange }) {
         <h3>{t(label)}</h3>
         {steps.length === 0 && <p className="muted">{t('No steps.')}</p>}
         {steps.map((s, i) => (
-          <StepCard key={i} step={s} index={i} count={steps.length} files={files}
+          <StepCard key={i} step={s} index={i} count={steps.length} files={files} onUpload={onUpload}
             onChange={ns => set(key, steps.map((x, j) => j === i ? ns : x))}
             onRemove={() => set(key, steps.filter((_, j) => j !== i))}
             onMove={d => { const a = [...steps]; [a[i], a[i + d]] = [a[i + d], a[i]]; set(key, a) }}
@@ -304,6 +332,7 @@ export default function Editor({ id, readOnly, onClose }) {
   const [msg, setMsg] = useState(null)
 
   const loadFiles = () => api(`/api/packages/${id}/files`).then(setFiles).catch(() => {})
+  const uploadFile = async (f, onProgress) => { await upload(`/api/packages/${id}/files`, f, onProgress); await loadFiles() }
   useEffect(() => { api(`/api/packages/${id}`).then(setPkg); loadFiles() }, [id])
 
   // Every change is saved automatically a moment after the last edit, so nothing is lost when the
@@ -355,7 +384,7 @@ export default function Editor({ id, readOnly, onClose }) {
       <nav className="tabs">{TABS.map(([k, l]) => <button key={k} className={tab === k ? 'active' : ''} onClick={() => switchTab(k)}>{t(l)}</button>)}</nav>
       <fieldset disabled={readOnly} className="plain">
       {tab === 'app' && <AppInfo app={d.app} onChange={app => update({ ...d, app })} />}
-      {['install', 'uninstall', 'repair'].includes(tab) && <PhaseEditor key={tab} phases={d[tab]} files={files} onChange={p => update({ ...d, [tab]: p })} />}
+      {['install', 'uninstall', 'repair'].includes(tab) && <PhaseEditor key={tab} phases={d[tab]} files={files} onUpload={readOnly ? null : uploadFile} onChange={p => update({ ...d, [tab]: p })} />}
       {tab === 'files' && <Files id={id} files={files} reload={loadFiles} />}
       {tab === 'detection' && <DetectionEditor rules={d.detection || []} onChange={detection => update({ ...d, detection })} />}
       </fieldset>

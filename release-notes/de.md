@@ -1,5 +1,10 @@
 # Was ist neu
 
+## 0.2.11
+- Jedes Dateifeld in einem Schritt hat jetzt eine Schaltfläche Durchsuchen: Datei auf dem PC wählen, sie wird in einem Schritt hochgeladen und ausgewählt.
+- Run EXE kann jetzt auch Programme starten, die auf jedem Windows-PC vorhanden sind, etwa winget, msiexec, PowerShell und cmd. Kein Hochladen nötig. winget wird automatisch gefunden, auch wenn Intune als SYSTEM installiert.
+- Die App verwendet jetzt immer ein dunkles Design mit mehr Farbe und Tiefe.
+
 ## 0.2.0
 - Änderungen an einem Paket werden jetzt kurz nach der Eingabe automatisch gespeichert. Beim Neuladen der Seite oder einem Neustart für ein Update geht nichts mehr verloren.
 - Wenn Sie die Seite verlassen, während noch gespeichert wird, warnt Ihr Browser zuerst.

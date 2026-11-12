@@ -1,5 +1,10 @@
 # Wat is er nieuw
 
+## 0.2.11
+- Elk bestandsveld in een stap heeft nu een knop Bladeren: kies een bestand op je pc en het wordt in één keer geüpload en geselecteerd.
+- Run EXE kan nu ook programma's starten die al op elke Windows-pc staan, zoals winget, msiexec, PowerShell en cmd. Uploaden is dan niet nodig. winget wordt automatisch gevonden, ook als Intune als SYSTEM installeert.
+- De app heeft nu altijd een donker ontwerp, met meer kleur en diepte.
+
 ## 0.2.0
 - Wijzigingen in een pakket worden nu automatisch opgeslagen, een moment nadat je ze maakt. Er gaat niets meer verloren als de pagina herlaadt of de app herstart voor een update.
 - Wil je de pagina verlaten terwijl er nog iets wordt opgeslagen, dan waarschuwt je browser eerst.

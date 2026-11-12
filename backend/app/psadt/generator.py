@@ -7,7 +7,7 @@ Het script wordt op de server nooit uitgevoerd.
 from datetime import date
 from pathlib import Path
 
-from .schema import PSADT_VERSION, PackageData
+from .schema import PSADT_VERSION, WINDOWS_PREFIX, PackageData
 
 _DIR = Path(__file__).parent
 HEADER = (_DIR / "template_header.ps1").read_text()
@@ -39,6 +39,21 @@ def args(value: str) -> str:
 
 def _files(name: str) -> str:
     return f'"$($adtSession.DirFiles)\\{name}"'
+
+
+# Full paths of the built-in Windows programs. winget is not on the PATH of the SYSTEM account
+# that Intune uses, so its newest App Installer folder is looked up.
+WINDOWS_PATHS = {
+    "winget.exe": '(Resolve-Path -Path "$env:ProgramFiles\\WindowsApps\\Microsoft.DesktopAppInstaller_*__8wekyb3d8bbwe\\winget.exe" | Sort-Object -Property Path | Select-Object -Last 1).Path',
+    "powershell.exe": '"$env:SystemRoot\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"',
+}
+
+
+def _exe(name: str) -> str:
+    if not name.startswith(WINDOWS_PREFIX):
+        return _files(name)
+    exe = name[len(WINDOWS_PREFIX):]
+    return WINDOWS_PATHS.get(exe, f'"$env:SystemRoot\\System32\\{exe}"')
 
 
 def _codes(codes: list[int]) -> str:
@@ -85,7 +100,7 @@ def _step(s) -> list[str]:
             cmd += f" -AdditionalArgumentList {args(s.args)}"
         out.append(cmd)
     elif t == "exe":
-        cmd = f"Start-ADTProcess -FilePath {_files(s.file)}"
+        cmd = f"Start-ADTProcess -FilePath {_exe(s.file)}"
         if s.args:
             cmd += f" -ArgumentList {args(s.args)}"
         if s.ignore_exit_codes.strip():
