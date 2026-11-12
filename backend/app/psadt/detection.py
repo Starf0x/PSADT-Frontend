@@ -45,6 +45,18 @@ def generate_detection(data: PackageData) -> str:
                     out.append(f"if ([string]$val -ne {q(r.value)}) {{ exit 0 }}")
             else:
                 out.append(f"if (-not (Test-Path -LiteralPath {path})) {{ exit 0 }}")
+        elif r.type == "msix" and r.method == "DISM":
+            # dism /online /get-provisionedappxpackages | findstr /i "<name>"
+            out.append("$hit = & \"$env:SystemRoot\\System32\\dism.exe\" /online /get-provisionedappxpackages | "
+                       f"Select-String -SimpleMatch -Pattern {q(r.name)}")
+            out.append("if (-not $hit) { exit 0 }")
+        elif r.type == "msix":
+            # Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like "*<name>*"
+            out.append(f"$pkg = Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like {q('*' + r.name + '*')} | "
+                       "Sort-Object -Property { [version]$_.Version } -Descending | Select-Object -First 1")
+            out.append("if (-not $pkg) { exit 0 }")
+            if r.min_version:
+                out.append(f"if ([version]$pkg.Version -lt [version]{q(r.min_version)}) {{ exit 0 }}")
         out.append("")
     out += ["Write-Output 'Installed'", "exit 0", ""]
     return "\n".join(out)

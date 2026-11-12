@@ -57,6 +57,17 @@ class Snippet(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class Export(Base):
+    """One row per successful download of a package (.zip or .intunewin), for the counters."""
+    __tablename__ = "exports"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    package_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    package_name: Mapped[str] = mapped_column(String(100))
+    fmt: Mapped[str] = mapped_column(String(16))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class Setting(Base):
     """Simple key/value settings that admins change in the app (e.g. upload retention)."""
     __tablename__ = "settings"

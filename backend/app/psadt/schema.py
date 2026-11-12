@@ -193,7 +193,15 @@ class RegistryDetection(BaseModel):
         return v
 
 
-Detection = Annotated[MsiDetection | FileDetection | RegistryDetection, Field(discriminator="type")]
+class MsixDetection(BaseModel):
+    """An MSIX/APPX package provisioned for all users (how Intune installs it as SYSTEM)."""
+    type: Literal["msix"]
+    name: Annotated[str, Field(min_length=2, max_length=200, pattern=r"^[^'\"`$\r\n]+$")]
+    method: Literal["Get-AppxProvisionedPackage", "DISM"] = "Get-AppxProvisionedPackage"
+    min_version: Annotated[str, Field(pattern=r"^$|^\d+(\.\d+){0,3}$")] = ""
+
+
+Detection = Annotated[MsiDetection | FileDetection | RegistryDetection | MsixDetection, Field(discriminator="type")]
 
 
 class PackageData(BaseModel):

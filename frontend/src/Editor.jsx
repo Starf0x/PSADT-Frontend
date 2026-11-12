@@ -67,6 +67,21 @@ function FilePicker({ value, onChange, files, accept, onUpload }) {
   )
 }
 
+// Registry key with one-click hives; a click swaps the hive and keeps the rest of the path.
+const HIVES = ['HKLM\\', 'HKCU\\', 'HKEY_CLASSES_ROOT\\', 'HKU\\']
+const HIVE_RE = /^(HKLM|HKCU|HKCR|HKU|HKEY_LOCAL_MACHINE|HKEY_CURRENT_USER|HKEY_CLASSES_ROOT|HKEY_USERS):?\\?/i
+function KeyInput({ value, onChange }) {
+  return (
+    <>
+      <input value={value ?? ''} onChange={e => onChange(e.target.value)} />
+      <span className="chips">
+        <span className="muted small">{t('Hive:')}</span>
+        {HIVES.map(h => <button type="button" key={h} className="chip" onClick={() => onChange(h + (value ?? '').replace(HIVE_RE, ''))}>{h}</button>)}
+      </span>
+    </>
+  )
+}
+
 function Field({ name, label, type, value, onChange, files, wide, accept, onUpload }) {
   if (type === 'bool') return <label className="check"><input type="checkbox" checked={!!value} onChange={e => onChange(e.target.checked)} />{t(label)}</label>
   let input
@@ -75,6 +90,7 @@ function Field({ name, label, type, value, onChange, files, wide, accept, onUplo
   else if (type === 'code') input = <textarea rows={6} className="mono" value={value} onChange={e => onChange(e.target.value)} />
   else if (type === 'file') input = <FilePicker value={value} onChange={onChange} files={files} accept={accept} onUpload={onUpload} />
   else if (name === 'args') input = <ArgsInput value={value} onChange={onChange} files={files} />
+  else if (name === 'key') input = <KeyInput value={value} onChange={onChange} />
   else input = <input value={value ?? ''} onChange={e => onChange(e.target.value)} />
   return <label className={wide ? 'wide' : undefined}>{t(label)}{input}</label>
 }
@@ -249,8 +265,12 @@ function DetectionEditor({ id, rules, files, onUpload, onChange }) {
             <button className="icon danger" onClick={() => onChange(rules.filter((_, j) => j !== i))} title={t('Delete')}>✕</button></div>
           <div className="grid">
             {r.type === 'msi' && <MsiReader id={id} files={files} onUpload={onUpload} onRead={p => onChange(rules.map((x, j) => j === i ? { ...x, product_code: p.ProductCode || x.product_code } : x))} />}
-            {DETECTION_TYPES[r.type].fields.map(([k, label]) => (
-            <label key={k}>{t(label)}<input value={r[k] ?? ''} onChange={e => onChange(rules.map((x, j) => j === i ? { ...x, [k]: e.target.value } : x))} /></label>))}
+            {DETECTION_TYPES[r.type].fields.map(([k, label, type]) => {
+              const set = v => onChange(rules.map((x, j) => j === i ? { ...x, [k]: v } : x))
+              return <label key={k} className={k === 'key' ? 'wide' : undefined}>{t(label)}
+                {Array.isArray(type) ? <select value={r[k]} onChange={e => set(e.target.value)}>{type.map(o => <option key={o}>{o}</option>)}</select>
+                  : k === 'key' ? <KeyInput value={r[k]} onChange={set} /> : <input value={r[k] ?? ''} onChange={e => set(e.target.value)} />}</label>
+            })}
           </div>
         </div>))}
       <div className="row">

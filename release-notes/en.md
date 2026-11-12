@@ -3,6 +3,13 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.2.33
+- The Packages page counts every successful download: in total, by you, and per user.
+- New detection rule "MSIX package": finds an app installed for all users, with Get-AppxProvisionedPackage or with DISM. Part of the name is enough.
+- Registry keys get one-click buttons for HKLM, HKCU, HKEY_CLASSES_ROOT and HKU.
+- Updating from the System page now shows a moving progress bar with a percentage, and the page reloads by itself when it is done.
+- Fixed: after an update the old version kept running in the background, so some pages stayed empty and new options (such as winget) were refused. The app is now always restarted.
+
 ## 0.2.22
 - Detection rule "MSI ProductCode": choose an MSI (already uploaded, or browse your PC) and its ProductCode is filled in for you. The product name and version are shown as a check.
 - After an update the browser now always loads the new version straight away, instead of showing the old page from its cache.
