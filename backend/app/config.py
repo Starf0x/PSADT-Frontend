@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     session_hours: int = 12
     max_failed_logins: int = 5
     lockout_minutes: int = 15
+    max_upload_mb: int = 4096
+    pwsh_path: str = "pwsh"
 
     @property
     def db_url(self) -> str:

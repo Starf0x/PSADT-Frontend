@@ -1,0 +1,21 @@
+name: Release
+# Maakt automatisch tag + GitHub-release vX.Y.Z aan zodra VERSION op main verandert.
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release aanmaken als die nog niet bestaat
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="v$(tr -d '[:space:]' < VERSION)"
+          if gh release view "$v" >/dev/null 2>&1; then echo "$v bestaat al"; exit 0; fi
+          gh release create "$v" --target "$GITHUB_SHA" --title "$v" --generate-notes

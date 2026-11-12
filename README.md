@@ -2,14 +2,14 @@
 
 Een webinterface voor de [PowerShell App Deployment Toolkit](https://psappdeploytoolkit.com/) (PSADT v4). Draait als Docker-container of als losse LXC-installatie; beide werken identiek.
 
-**Versie:** 0.0.50 (zie `VERSION`)
+**Versie:** 0.0.61 (zie `VERSION`)
 
 ## Status en roadmap
 
 | Stap | Inhoud | Status |
 |------|--------|--------|
 | 1 | Fundament: FastAPI + React, cookie-login, Docker, LXC | ✅ v0.0.50 |
-| 2 | Package-editor op basis van het PSADT v4-template, uploads, live scriptpreview | gepland |
+| 2 | Package-editor op basis van het PSADT v4-template, uploads, live scriptpreview | ✅ v0.0.61 |
 | 3 | Bouwen/exporteren: ZIP, `.intunewin`, detectieregels, snippetbibliotheek | gepland |
 | 4 | Open source klaarmaken: rollen, CI, docs | gepland |
 
@@ -21,9 +21,15 @@ backend/   FastAPI (Python 3.12+), SQLAlchemy + SQLite, argon2
   app/db.py          modellen: users, sessions
   app/security.py    wachtwoorden, sessies, CSRF, eerste admin
   app/routers/auth.py  /api/auth/login | logout | me | password
+  app/routers/packages.py  /api/packages CRUD, /script, /check, /files
+  app/psadt/schema.py      toegestane stap-types + validatie (whitelist)
+  app/psadt/generator.py   bouwt Invoke-AppDeployToolkit.ps1
+  app/psadt/template_*.ps1 kop/staart van het officiële PSADT 4.1.8-template
+  app/psadt/check.ps1      syntaxcontrole met de PowerShell-parser (voert niets uit)
   app/main.py        app, security headers, serveert frontend/dist
   tests/             pytest
-frontend/  React 18 + Vite (build -> frontend/dist)
+frontend/  React 18 + Vite (build -> frontend/dist); src/Packages.jsx, Editor.jsx, steps.js
+.github/workflows/  ci.yml (tests + build), release.yml (tag + release uit VERSION)
 lxc/install.sh       installer voor Debian LXC (systemd-service)
 Dockerfile, docker-compose.yml
 ```
@@ -59,6 +65,15 @@ journalctl -u psadt-frontend | grep admin-wachtwoord
 
 Configuratie staat in `/etc/psadt-frontend.env`, data in `/var/lib/psadt-frontend`. Updaten: `git pull && bash lxc/install.sh`.
 
+## Package-editor (stap 2)
+
+- Pakket aanmaken: start met dezelfde stappen als het officiële v4-template (welkomstvenster + voortgang).
+- Per fase (Voor / Hoofdactie / Na) van Installatie, Deïnstallatie en Reparatie stappen toevoegen, ordenen en verwijderen.
+- Stap-types: MSI, EXE, applicatie verwijderen op naam, register zetten/verwijderen, bestand kopiëren, bestand/map verwijderen, welkomstvenster, voortgang, eigen PowerShell.
+- Bestanden uploaden naar de map `Files` van het pakket (`/data/packages/<id>/Files`), met een whitelist van extensies.
+- Tab *Script*: live preview, download (UTF-8 met BOM, CRLF) en syntaxcontrole via PowerShell 7 in de container.
+- Veiligheid: alle invoer komt als letterlijke string (enkele quotes) in het script; bestandsnamen zijn gevalideerd; het script wordt op de server nooit uitgevoerd.
+
 ## Configuratie
 
 | Variabele | Standaard | Uitleg |
@@ -67,7 +82,9 @@ Configuratie staat in `/etc/psadt-frontend.env`, data in `/var/lib/psadt-fronten
 | `PSADT_ADMIN_PASSWORD` | leeg | Leeg = gegenereerd en eenmalig gelogd |
 | `PSADT_COOKIE_SECURE` | `true` | Alleen `false` voor lokaal http |
 | `PSADT_SESSION_HOURS` | `12` | Geldigheid van een sessie |
-| `PSADT_DATA_DIR` | `./data` (`/data` in Docker) | Database-locatie |
+| `PSADT_DATA_DIR` | `./data` (`/data` in Docker) | Database en uploads |
+| `PSADT_MAX_UPLOAD_MB` | `4096` | Maximale uploadgrootte |
+| `PSADT_PWSH_PATH` | `pwsh` (`/opt/pwsh/pwsh` in Docker/LXC) | PowerShell 7 voor syntaxcontrole |
 
 ## Ontwikkelen
 
@@ -84,7 +101,10 @@ Start op 0.0.50 en verhoogt per release met 11 (0.0.61, 0.0.72, ...). Bij 100 of
 
 ## Notities voor verder werken
 
-- Stap 2 voegt PowerShell 7 toe aan de Docker-image en aan `lxc/install.sh`, zodat beide gelijk blijven.
+- PowerShell 7.4.6 staat in de Docker-image én via `lxc/install.sh` in `/opt/pwsh`; versie op beide plekken gelijk houden.
+- Nieuw PSADT-template: kop/staart opnieuw uit `src/PSAppDeployToolkit/Frontend/v4/Invoke-AppDeployToolkit.ps1` halen (pad `..\..\..\PSAppDeployToolkit` vervangen door `PSAppDeployToolkit`) en `PSADT_VERSION` in `schema.py` aanpassen.
+- Releases: verhoog `VERSION` (+11) en `frontend/package.json`; na merge maakt `release.yml` de tag en release.
+- Stap 3: ZIP-export met PSADT-module, `.intunewin`, detectieregels, snippetbibliotheek.
 - Nieuwe tabellen worden nu via `create_all` gemaakt; bij de eerste schemawijziging Alembic toevoegen.
 
 ## Licentie
