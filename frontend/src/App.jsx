@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, clearCsrf } from './api.js'
+import Packages from './Packages.jsx'
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('')
@@ -39,10 +40,7 @@ function Dashboard({ user, version, onLogout }) {
         <strong>PSADT Frontend</strong>
         <span>{user.username} · <button className="link" onClick={logout}>Uitloggen</button></span>
       </header>
-      <main>
-        <h2>Welkom, {user.username}</h2>
-        <p>De package-editor volgt in stap 2.</p>
-      </main>
+      <main><Packages /></main>
       <footer>v{version}</footer>
     </div>
   )

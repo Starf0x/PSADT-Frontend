@@ -1,26 +1,4 @@
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy.pool import StaticPool
-
-from app import db as dbmod
 from app.config import settings
-
-
-@pytest.fixture()
-def client(monkeypatch):
-    monkeypatch.setattr(settings, "admin_password", "correct-horse-battery")
-    monkeypatch.setattr(settings, "cookie_secure", False)
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-
-    dbmod.engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
-    dbmod.SessionLocal = sessionmaker(dbmod.engine, expire_on_commit=False)
-    dbmod.Base.metadata.create_all(dbmod.engine)
-    from app.main import app
-
-    with TestClient(app) as c:
-        yield c
-    dbmod.SessionLocal = None
 
 
 def login(c, pw="correct-horse-battery"):
