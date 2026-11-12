@@ -137,8 +137,10 @@ def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE,
                             f"PSADT toolkit not found at {settings.toolkit_zip}; see README")
     items, _ = validate_package(pkg.data, _uploaded(pid), True)
-    if any(i["level"] == "error" for i in items):
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Fix the problems shown in the check first")
+    errors = [i["text"].format(**i["vars"]) for i in items if i["level"] == "error"]
+    if errors:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            "Fix the problems shown in the check first: " + "; ".join(errors))
     after_export = retention(db) == "export"
     tmp = settings.data_dir / "tmp"
     tmp.mkdir(parents=True, exist_ok=True)

@@ -287,10 +287,10 @@ const RETENTION_NOTE = {
   30: 'Uploaded files are removed from the server after {n} day(s).', 90: 'Uploaded files are removed from the server after {n} day(s).',
 }
 
-function Checks({ id, onResult }) {
+function Checks({ id, onResult, again }) {
   const [res, setRes] = useState(null)
   const run = () => { setRes(null); api(`/api/packages/${id}/validate`).then(r => { setRes(r); onResult(r) }).catch(e => setRes({ ok: false, items: [{ level: 'error', text: e.message, vars: {} }] })) }
-  useEffect(run, [id])
+  useEffect(run, [id, again])
   if (!res) return <p className="muted">{t('Checking the package…')}</p>
   const icon = { error: '✕', warning: '!', ok: '✓' }
   const items = res.items.length ? res.items : [{ level: 'ok', text: 'Everything is set up correctly', vars: {} }]
@@ -313,12 +313,23 @@ function Export({ id }) {
   useEffect(() => { text(`/api/packages/${id}/detection`).then(setDetect).catch(e => setDetect(e.message)) }, [id])
   const cmd = x => `Invoke-AppDeployToolkit.exe -DeploymentType ${x} -DeployMode Silent`
   const dis = ok ? '' : ' disabled'
+  const [again, setAgain] = useState(0)
+  // Check once more right before downloading, so the button never leads to an error page.
+  async function download(e) {
+    e.preventDefault()
+    const url = e.currentTarget.getAttribute('href')
+    try {
+      const r = await api(`/api/packages/${id}/validate`)
+      if (r.ok) window.location.href = url
+      else { setOk(false); setAgain(n => n + 1) }
+    } catch { setAgain(n => n + 1) }
+  }
   return (
     <section>
-      <Checks id={id} onResult={r => setOk(r.ok)} />
+      <Checks id={id} again={again} onResult={r => setOk(r.ok)} />
       <div className="row">
-        <a className={'button' + dis} href={`/api/packages/${id}/export/zip`}>{t('Download')} ZIP</a>
-        <a className={'button' + dis} href={`/api/packages/${id}/export/intunewin`}>{t('Download')} .intunewin</a>
+        <a className={'button' + dis} href={`/api/packages/${id}/export/zip`} onClick={download}>{t('Download')} ZIP</a>
+        <a className={'button' + dis} href={`/api/packages/${id}/export/intunewin`} onClick={download}>{t('Download')} .intunewin</a>
         <a className="button secondary" href={`/api/packages/${id}/detection?download=1`}>{t('Download detection script')}</a>
       </div>
       <p className="muted small">{t('Building can take a while with large installer files.')}</p>
