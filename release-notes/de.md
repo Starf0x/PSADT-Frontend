@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.2.44
+- Die Download-Schaltflächen prüfen das Paket direkt vor dem Download noch einmal. Stimmt etwas nicht, bleibst du auf der Seite und siehst, was zu beheben ist, statt einer Seite mit technischer Fehlermeldung.
+
 ## 0.2.33
 - Die Seite Pakete zählt jeden erfolgreichen Download: insgesamt, von dir und pro Benutzer.
 - Neue Erkennungsregel "MSIX-Paket": findet eine für alle Benutzer installierte App, mit Get-AppxProvisionedPackage oder mit DISM. Ein Teil des Namens genügt.
