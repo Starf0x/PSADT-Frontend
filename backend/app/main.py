@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import db as dbmod
 from .config import settings
-from .routers import auth, packages
+from .routers import auth, packages, snippets
 
 VERSION = (Path(__file__).resolve().parents[2] / "VERSION")
 APP_VERSION = VERSION.read_text().strip() if VERSION.exists() else "0.0.50"
@@ -46,6 +46,7 @@ async def security_headers(request: Request, call_next):
 
 app.include_router(auth.router)
 app.include_router(packages.router)
+app.include_router(snippets.router)
 
 
 @app.get("/api/health")

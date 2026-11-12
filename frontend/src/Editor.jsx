@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api, text, upload } from './api.js'
-import { PHASES, STEP_TYPES } from './steps.js'
+import { DETECTION_TYPES, PHASES, STEP_TYPES } from './steps.js'
 
-const TABS = [['app', 'App-info'], ['install', 'Installatie'], ['uninstall', 'Deïnstallatie'], ['repair', 'Reparatie'], ['files', 'Bestanden'], ['preview', 'Script']]
+const TABS = [['app', 'App-info'], ['install', 'Installatie'], ['uninstall', 'Deïnstallatie'], ['repair', 'Reparatie'], ['files', 'Bestanden'], ['detection', 'Detectie'], ['preview', 'Script'], ['export', 'Export']]
 
 function Field({ label, type, value, onChange, files }) {
   if (type === 'bool') return <label className="check"><input type="checkbox" checked={!!value} onChange={e => onChange(e.target.checked)} />{label}</label>
@@ -20,13 +20,14 @@ function Field({ label, type, value, onChange, files }) {
   return <label>{label}{input}</label>
 }
 
-function StepCard({ step, index, count, files, onChange, onMove, onRemove }) {
+function StepCard({ step, index, count, files, onChange, onMove, onRemove, onSnippet }) {
   const def = STEP_TYPES[step.type]
   return (
     <div className="step">
       <div className="step-head">
         <strong>{index + 1}. {def.label}</strong>
         <span>
+          <button className="icon" onClick={onSnippet} title="Opslaan als snippet">☆</button>
           <button className="icon" disabled={index === 0} onClick={() => onMove(-1)} title="Omhoog">↑</button>
           <button className="icon" disabled={index === count - 1} onClick={() => onMove(1)} title="Omlaag">↓</button>
           <button className="icon danger" onClick={onRemove} title="Verwijderen">✕</button>
@@ -44,7 +45,26 @@ function StepCard({ step, index, count, files, onChange, onMove, onRemove }) {
 
 function PhaseEditor({ phases, files, onChange }) {
   const [adding, setAdding] = useState({})
+  const [snippets, setSnippets] = useState([])
+  const loadSnippets = () => api('/api/snippets').then(setSnippets).catch(() => {})
+  useEffect(() => { loadSnippets() }, [])
   const set = (key, steps) => onChange({ ...phases, [key]: steps })
+  async function saveSnippet(step) {
+    const name = window.prompt('Naam voor deze snippet:', STEP_TYPES[step.type].label)
+    if (!name) return
+    try { await api('/api/snippets', { method: 'POST', body: { name, step } }); loadSnippets() } catch (e) { window.alert(e.message) }
+  }
+  async function deleteSnippet(id) {
+    const s = snippets.find(x => x.id === id)
+    if (s && window.confirm(`Snippet "${s.name}" verwijderen?`)) { await api(`/api/snippets/${id}`, { method: 'DELETE' }); loadSnippets() }
+  }
+  function add(key) {
+    const v = adding[key] || 'msi'
+    const step = v.startsWith('snippet:')
+      ? structuredClone(snippets.find(x => x.id === Number(v.slice(8))).step)
+      : { type: v, comment: '', ...STEP_TYPES[v].defaults }
+    set(key, [...phases[key], step])
+  }
   return PHASES.map(([key, label]) => {
     const steps = phases[key]
     return (
@@ -55,16 +75,16 @@ function PhaseEditor({ phases, files, onChange }) {
           <StepCard key={i} step={s} index={i} count={steps.length} files={files}
             onChange={ns => set(key, steps.map((x, j) => j === i ? ns : x))}
             onRemove={() => set(key, steps.filter((_, j) => j !== i))}
-            onMove={d => { const a = [...steps]; [a[i], a[i + d]] = [a[i + d], a[i]]; set(key, a) }} />
+            onMove={d => { const a = [...steps]; [a[i], a[i + d]] = [a[i + d], a[i]]; set(key, a) }}
+            onSnippet={() => saveSnippet(s)} />
         ))}
         <div className="row">
           <select value={adding[key] || 'msi'} onChange={e => setAdding({ ...adding, [key]: e.target.value })}>
-            {Object.entries(STEP_TYPES).map(([t, d]) => <option key={t} value={t}>{d.label}</option>)}
+            <optgroup label="Stappen">{Object.entries(STEP_TYPES).map(([t, d]) => <option key={t} value={t}>{d.label}</option>)}</optgroup>
+            {snippets.length > 0 && <optgroup label="Snippets">{snippets.map(x => <option key={x.id} value={`snippet:${x.id}`}>★ {x.name}</option>)}</optgroup>}
           </select>
-          <button className="secondary" onClick={() => {
-            const t = adding[key] || 'msi'
-            set(key, [...steps, { type: t, comment: '', ...STEP_TYPES[t].defaults }])
-          }}>Stap toevoegen</button>
+          <button className="secondary" onClick={() => add(key)}>Stap toevoegen</button>
+          {(adding[key] || '').startsWith('snippet:') && <button className="link danger" onClick={() => { deleteSnippet(Number(adding[key].slice(8))); setAdding({ ...adding, [key]: 'msi' }) }}>Snippet verwijderen</button>}
         </div>
       </section>
     )
@@ -120,6 +140,52 @@ function Files({ id, files, reload }) {
   )
 }
 
+function DetectionEditor({ rules, onChange }) {
+  const [type, setType] = useState('msi')
+  return (
+    <section>
+      <p className="muted">Intune gebruikt dit script om te zien of de app geïnstalleerd is. Alle regels moeten kloppen.</p>
+      {rules.length === 0 && <p className="muted">Nog geen regels.</p>}
+      {rules.map((r, i) => (
+        <div className="step" key={i}>
+          <div className="step-head"><strong>{i + 1}. {DETECTION_TYPES[r.type].label}</strong>
+            <button className="icon danger" onClick={() => onChange(rules.filter((_, j) => j !== i))} title="Verwijderen">✕</button></div>
+          <div className="grid">{DETECTION_TYPES[r.type].fields.map(([k, label]) => (
+            <label key={k}>{label}<input value={r[k] ?? ''} onChange={e => onChange(rules.map((x, j) => j === i ? { ...x, [k]: e.target.value } : x))} /></label>))}
+          </div>
+        </div>))}
+      <div className="row">
+        <select value={type} onChange={e => setType(e.target.value)}>{Object.entries(DETECTION_TYPES).map(([t, d]) => <option key={t} value={t}>{d.label}</option>)}</select>
+        <button className="secondary" onClick={() => onChange([...rules, { type, ...DETECTION_TYPES[type].defaults }])}>Regel toevoegen</button>
+      </div>
+    </section>
+  )
+}
+
+function Export({ id }) {
+  const [detect, setDetect] = useState('')
+  useEffect(() => { text(`/api/packages/${id}/detection`).then(setDetect).catch(e => setDetect(e.message)) }, [id])
+  const cmd = t => `Invoke-AppDeployToolkit.exe -DeploymentType ${t} -DeployMode Silent`
+  return (
+    <section>
+      <div className="row">
+        <a className="button" href={`/api/packages/${id}/export/zip`}>Download ZIP</a>
+        <a className="button" href={`/api/packages/${id}/export/intunewin`}>Download .intunewin</a>
+        <a className="button" href={`/api/packages/${id}/detection?download=1`}>Download detectiescript</a>
+      </div>
+      <p className="muted">Het bouwen kan bij grote installatiebestanden even duren.</p>
+      <h3>Intune-instellingen</h3>
+      <table><tbody>
+        <tr><td>Installatieopdracht</td><td><code>{cmd('Install')}</code></td></tr>
+        <tr><td>Verwijderopdracht</td><td><code>{cmd('Uninstall')}</code></td></tr>
+        <tr><td>Installatiegedrag</td><td>Systeem</td></tr>
+        <tr><td>Detectie</td><td>Aangepast detectiescript (hieronder)</td></tr>
+      </tbody></table>
+      <pre className="code">{detect}</pre>
+    </section>
+  )
+}
+
 function Preview({ id }) {
   const [script, setScript] = useState('')
   const [check, setCheck] = useState(null)
@@ -162,7 +228,7 @@ export default function Editor({ id, onClose }) {
     } catch (e) { setMsg({ ok: false, text: e.message }); return false }
   }
   async function switchTab(t) {
-    if (t === 'preview' && dirty && !(await save())) return
+    if (['preview', 'export'].includes(t) && dirty && !(await save())) return
     setTab(t)
   }
   function close() {
@@ -185,7 +251,9 @@ export default function Editor({ id, onClose }) {
       {tab === 'app' && <AppInfo app={d.app} onChange={app => update({ ...d, app })} />}
       {['install', 'uninstall', 'repair'].includes(tab) && <PhaseEditor key={tab} phases={d[tab]} files={files} onChange={p => update({ ...d, [tab]: p })} />}
       {tab === 'files' && <Files id={id} files={files} reload={loadFiles} />}
+      {tab === 'detection' && <DetectionEditor rules={d.detection || []} onChange={detection => update({ ...d, detection })} />}
       {tab === 'preview' && <Preview id={id} />}
+      {tab === 'export' && <Export id={id} />}
     </section>
   )
 }

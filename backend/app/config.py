@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     lockout_minutes: int = 15
     max_upload_mb: int = 4096
     pwsh_path: str = "pwsh"
+    # Officiële PSAppDeployToolkit_Template_v4.zip (wordt in Docker/LXC automatisch gedownload)
+    toolkit_zip: Path = Path("/opt/psadt/PSAppDeployToolkit_Template_v4.zip")
 
     @property
     def db_url(self) -> str:
