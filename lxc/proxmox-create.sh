@@ -3,9 +3,9 @@
 #
 #   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/proxmox-create.sh)"
 #
-# Zolang de repo privé is (token met leesrechten op de repo):
+# Zolang de repo privé is (fine-grained token met Contents: Read-only op de repo):
 #   export GITHUB_TOKEN=<token>
-#   bash -c "$(curl -fsSL -H "Authorization: token $GITHUB_TOKEN" https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/proxmox-create.sh)"
+#   bash -c "$(curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github.raw" https://api.github.com/repos/Starf0x/PSADT-Frontend/contents/lxc/proxmox-create.sh)"
 #
 # Alles is aan te passen via omgevingsvariabelen, bijv. CTID=120 IP=192.168.1.50/24 GW=192.168.1.1 bash ...
 set -euo pipefail
@@ -14,7 +14,7 @@ REPO="${PSADT_REPO:-Starf0x/PSADT-Frontend}"
 BRANCH="${PSADT_BRANCH:-main}"
 CTID="${CTID:-$(pvesh get /cluster/nextid)}"
 CT_HOSTNAME="${CT_HOSTNAME:-psadt-frontend}"
-STORAGE="${STORAGE:-local-lvm}"
+STORAGE="${STORAGE:-}"
 TEMPLATE_STORAGE="${TEMPLATE_STORAGE:-local}"
 CORES="${CORES:-2}"
 MEMORY="${MEMORY:-2048}"
@@ -28,6 +28,19 @@ COOKIE_SECURE="${COOKIE_SECURE:-false}"
 command -v pct >/dev/null || { echo "Dit script moet op een Proxmox VE-host draaien."; exit 1; }
 [ "$(id -u)" -eq 0 ] || { echo "Draai dit script als root."; exit 1; }
 if pct status "$CTID" >/dev/null 2>&1; then echo "CT $CTID bestaat al; kies een andere CTID."; exit 1; fi
+
+# Opslag voor de container: opgegeven, anders local-lvm/local-zfs, anders de eerste die containers toestaat
+ROOTDIR_STORES=$(pvesm status -content rootdir 2>/dev/null | awk 'NR>1 && $3=="active" {print $1}')
+if [ -z "$STORAGE" ]; then
+  for s in local-lvm local-zfs; do echo "$ROOTDIR_STORES" | grep -qx "$s" && STORAGE=$s && break; done
+  [ -z "$STORAGE" ] && STORAGE=$(echo "$ROOTDIR_STORES" | head -1)
+fi
+if [ -z "$STORAGE" ] || ! echo "$ROOTDIR_STORES" | grep -qx "$STORAGE"; then
+  echo "Opslag '${STORAGE:-?}' niet bruikbaar voor containers. Beschikbaar: $(echo $ROOTDIR_STORES)"
+  echo "Kies er een met STORAGE=<naam> bash ..."
+  exit 1
+fi
+echo "==> Opslag: $STORAGE"
 
 echo "==> Debian 12-template zoeken"
 pveam update >/dev/null

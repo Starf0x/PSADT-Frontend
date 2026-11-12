@@ -3,7 +3,7 @@
 # Gebruik (als root, ín de LXC, niet op de Proxmox-host):
 #   vanuit een clone:   bash lxc/install.sh
 #   los (one-liner):    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/install.sh)"
-#   privé-repo:         GITHUB_TOKEN=<token> bash -c "$(curl -fsSL -H "Authorization: token <token>" https://raw.githubusercontent.com/...)"
+#   privé-repo:         GITHUB_TOKEN=<token> bash -c "$(curl -fsSL -H "Authorization: Bearer <token>" -H "Accept: application/vnd.github.raw" https://api.github.com/repos/Starf0x/PSADT-Frontend/contents/lxc/install.sh)"
 # Wil je vanaf de Proxmox-host meteen een LXC laten aanmaken? Gebruik lxc/proxmox-create.sh.
 # Draait dezelfde app als de Docker-image: zelfde code, zelfde env-variabelen, poort 8000.
 # Optioneel: PSADT_COOKIE_SECURE=false (alleen bij eerste installatie) als je zonder HTTPS test.
