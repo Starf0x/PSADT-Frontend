@@ -1,5 +1,9 @@
 # Wat is er nieuw
 
+## 0.2.22
+- Detectieregel "MSI ProductCode": kies een MSI (al geüpload, of blader op je pc) en de ProductCode wordt voor je ingevuld. Ter controle zie je de productnaam en versie.
+- Na een update laadt de browser nu altijd meteen de nieuwe versie, in plaats van de oude pagina uit zijn cache te tonen.
+
 ## 0.2.11
 - Elk bestandsveld in een stap heeft nu een knop Bladeren: kies een bestand op je pc en het wordt in één keer geüpload en geselecteerd.
 - Run EXE kan nu ook programma's starten die al op elke Windows-pc staan, zoals winget, msiexec, PowerShell en cmd. Uploaden is dan niet nodig. winget wordt automatisch gevonden, ook als Intune als SYSTEM installeert.

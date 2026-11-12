@@ -5,6 +5,8 @@ export const LANGS = [['en', 'English'], ['nl', 'Nederlands'], ['de', 'Deutsch']
 const ROWS = [
   ['(none)', '(geen)', '(keine)'],
   ['Browse…', 'Bladeren…', 'Durchsuchen…'],
+  ['Read from MSI file', 'Uitlezen uit MSI-bestand', 'Aus MSI-Datei auslesen'],
+  ['This is not a valid MSI file', 'Dit is geen geldig MSI-bestand', 'Dies ist keine gültige MSI-Datei'],
   ['Programs on the Windows PC', "Programma's op de Windows-pc", 'Programme auf dem Windows-PC'],
   ['Unknown Windows program', 'Onbekend Windows-programma', 'Unbekanntes Windows-Programm'],
   ['(not specified)', '(niet opgegeven)', '(nicht angegeben)'],
