@@ -248,6 +248,11 @@ const ROWS = [
   ['Insert:', 'Invoegen:', 'Einfügen:'],
   ["The package's Files folder on the PC", 'De map Files van het pakket op de pc', 'Der Ordner Files des Pakets auf dem PC'],
   ['Full path to this file on the PC, in quotes', 'Volledig pad naar dit bestand op de pc, tussen aanhalingstekens', 'Vollständiger Pfad zu dieser Datei auf dem PC, in Anführungszeichen'],
+  ['Check now', 'Nu controleren', 'Jetzt prüfen'],
+  ['Checking…', 'Controleren…', 'Wird geprüft…'],
+  ['Update available', 'Update beschikbaar', 'Update verfügbar'],
+  ['Version {v} is available.', 'Versie {v} is beschikbaar.', 'Version {v} ist verfügbar.'],
+  ['See what is new', 'Bekijk wat er nieuw is', 'Neuerungen ansehen'],
 ]
 
 const DICT = { nl: {}, de: {} }
