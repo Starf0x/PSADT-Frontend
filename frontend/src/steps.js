@@ -6,10 +6,10 @@ export const STEP_TYPES = {
     ['countdown', 'Close countdown (sec, 0 = off)', 'int']], defaults: { allow_defer: true, defer_times: 3, check_disk_space: true, persist_prompt: true, countdown: 0 } },
   progress: { label: 'Progress message', fields: [['message', 'Text (empty = default)', 'text']], defaults: { message: '' } },
   msi: { label: 'Run MSI', fields: [
-    ['action', 'Action', ['Install', 'Uninstall', 'Repair', 'Patch']], ['file', 'MSI/MSP file', 'file'],
-    ['product_code', 'Or ProductCode {GUID}', 'text'], ['transforms', 'Transform (.mst)', 'file'], ['args', 'Additional arguments ({Files} = Files folder)', 'text']],
+    ['action', 'Action', ['Install', 'Uninstall', 'Repair', 'Patch']], ['file', 'MSI/MSP file', 'file', '.msi,.msp'],
+    ['product_code', 'Or ProductCode {GUID}', 'text'], ['transforms', 'Transform (.mst)', 'file', '.mst'], ['args', 'Additional arguments ({Files} = Files folder)', 'text']],
     defaults: { action: 'Install', file: null, product_code: null, transforms: null, args: '' } },
-  exe: { label: 'Run EXE', fields: [['file', 'File', 'file'], ['args', 'Arguments ({Files} = Files folder)', 'text'], ['ignore_exit_codes', 'Ignore exit codes (e.g. 1,2 or *)', 'text']],
+  exe: { label: 'Run EXE', fields: [['file', 'File', 'file', '.exe'], ['args', 'Arguments ({Files} = Files folder)', 'text'], ['ignore_exit_codes', 'Ignore exit codes (e.g. 1,2 or *)', 'text']],
     defaults: { file: '', args: '', ignore_exit_codes: '' } },
   uninstall_app: { label: 'Uninstall application by name', fields: [['name', 'Name', 'text'], ['name_match', 'Match', ['Contains', 'Exact', 'Wildcard', 'Regex']], ['args', 'Additional arguments ({Files} = Files folder)', 'text']],
     defaults: { name: '', name_match: 'Contains', args: '' } },
