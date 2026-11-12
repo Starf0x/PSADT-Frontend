@@ -3,6 +3,10 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.2.55
+- Downloading a package now shows what is happening: first "Building the package…", then a progress bar, and finally the file name when it is done.
+- When the download buttons are locked, a line below them tells you to fix the problems in the check first.
+
 ## 0.2.44
 - The download buttons check the package once more just before downloading. If something is wrong, you stay on the page and see what to fix, instead of a page with a technical error.
 

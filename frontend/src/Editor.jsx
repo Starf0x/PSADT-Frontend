@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { api, text, upload } from './api.js'
+import { api, download as fetchFile, text, upload } from './api.js'
 import { DETECTION_TYPES, PHASES, STEP_TYPES } from './steps.js'
 import { t } from './i18n.js'
 
@@ -314,15 +314,16 @@ function Export({ id }) {
   const cmd = x => `Invoke-AppDeployToolkit.exe -DeploymentType ${x} -DeployMode Silent`
   const dis = ok ? '' : ' disabled'
   const [again, setAgain] = useState(0)
-  // Check once more right before downloading, so the button never leads to an error page.
+  const [busy, setBusy] = useState(null)  // { phase: 'build' | 'get' | 'done' | 'error', progress, text }
+  // Download with visible progress; on a refusal the check panel shows what is wrong.
   async function download(e) {
     e.preventDefault()
+    if (busy && (busy.phase === 'build' || busy.phase === 'get')) return
     const url = e.currentTarget.getAttribute('href')
     try {
-      const r = await api(`/api/packages/${id}/validate`)
-      if (r.ok) window.location.href = url
-      else { setOk(false); setAgain(n => n + 1) }
-    } catch { setAgain(n => n + 1) }
+      const name = await fetchFile(url, (phase, progress) => setBusy({ phase, progress }))
+      setBusy({ phase: 'done', text: name })
+    } catch (err) { setBusy({ phase: 'error', text: err.message }); setOk(false); setAgain(n => n + 1) }
   }
   return (
     <section>
@@ -332,6 +333,14 @@ function Export({ id }) {
         <a className={'button' + dis} href={`/api/packages/${id}/export/intunewin`} onClick={download}>{t('Download')} .intunewin</a>
         <a className="button secondary" href={`/api/packages/${id}/detection?download=1`}>{t('Download detection script')}</a>
       </div>
+      {!ok && <p className="warn small">{t('The download buttons work once the problems in the check above are fixed.')}</p>}
+      {busy && (busy.phase === 'build' || busy.phase === 'get') && <div className="panel uploads">
+        <strong>{busy.phase === 'build' ? t('Building the package…') : t('Downloading…')}</strong>
+        <div className={`bar big${busy.progress == null ? ' busy' : ''}`}><div style={{ width: `${busy.progress == null ? 100 : Math.round(busy.progress * 100)}%` }} /></div>
+        {busy.progress != null && <span className="muted small">{Math.round(busy.progress * 100)}%</span>}
+      </div>}
+      {busy?.phase === 'done' && <p className="ok">✓ {t('Downloaded: {name}', { name: busy.text })}</p>}
+      {busy?.phase === 'error' && <p className="error">{busy.text}</p>}
       <p className="muted small">{t('Building can take a while with large installer files.')}</p>
       <h3>{t('Intune settings')}</h3>
       <table><tbody>

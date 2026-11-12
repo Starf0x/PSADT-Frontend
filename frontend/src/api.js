@@ -51,3 +51,31 @@ function formatError(detail) {
   if (!Array.isArray(detail)) return typeof detail === 'string' ? t(detail) : detail
   return detail.map(e => `${e.loc.slice(1).join(' › ')}: ${e.msg}`).join('\n')
 }
+
+// Downloads a built file with feedback: onState('build') while the server builds it, then
+// onState('get', 0..1) while it arrives. Saves it under the name the server gives.
+export function download(path, onState = () => {}) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('GET', path)
+    xhr.withCredentials = true
+    xhr.responseType = 'blob'
+    onState('build')
+    xhr.onprogress = e => onState('get', e.lengthComputable ? e.loaded / e.total : null)
+    xhr.onload = async () => {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        let detail = null
+        try { detail = JSON.parse(await xhr.response.text()).detail } catch { /* not JSON */ }
+        return reject(new Error(formatError(detail) || `${t('Error')} ${xhr.status}`))
+      }
+      const name = /filename="?([^";]+)"?/.exec(xhr.getResponseHeader('Content-Disposition') || '')?.[1] || 'download'
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(xhr.response); a.download = name
+      document.body.appendChild(a); a.click(); a.remove()
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000)
+      resolve(name)
+    }
+    xhr.onerror = () => reject(new Error(t('Download failed: connection lost')))
+    xhr.send()
+  })
+}
