@@ -1,3 +1,5 @@
+from typing import Literal
+
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
@@ -31,7 +33,7 @@ class PasswordIn(BaseModel):
 
 
 def _me(user: User, sess: UserSession) -> dict:
-    return {"username": user.username, "role": user.role, "csrf_token": sess.csrf_token}
+    return {"username": user.username, "role": user.role, "language": user.language or "en", "csrf_token": sess.csrf_token}
 
 
 @router.post("/login")
@@ -86,4 +88,15 @@ def change_password(
     user.password_hash = hash_password(data.new_password)
     # Alle andere sessies van deze gebruiker intrekken
     db.execute(delete(UserSession).where(UserSession.user_id == user.id, UserSession.id != sess.id))
+    db.commit()
+
+
+class LanguageIn(BaseModel):
+    language: Literal["en", "nl", "de"]
+
+
+@router.put("/language", status_code=204)
+def set_language(data: LanguageIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Each user picks their own UI language; it follows them to every device."""
+    user.language = data.language
     db.commit()
