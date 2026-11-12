@@ -8,6 +8,12 @@ RUN npm run build
 
 # --- Runtime ---
 FROM python:3.13-slim
+LABEL org.opencontainers.image.title="PSADT Frontend" \
+      org.opencontainers.image.description="Web UI for building PSAppDeployToolkit v4 packages" \
+      org.opencontainers.image.source="https://github.com/Starf0x/PSADT-Frontend" \
+      org.opencontainers.image.licenses="MIT" \
+      net.unraid.docker.icon="https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/assets/icon.png" \
+      net.unraid.docker.webui="http://[IP]:[PORT:8000]/"
 ARG PWSH_VERSION=7.4.6
 ARG PSADT_VERSION=4.1.8
 ARG PSADT_SHA256=50cb8d32973fc7648060a48cad63912ecb5caca5a70754f37e83aa06bd380283

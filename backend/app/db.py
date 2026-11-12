@@ -54,6 +54,27 @@ class Snippet(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class Setting(Base):
+    """Simple key/value settings that admins change in the app (e.g. upload retention)."""
+    __tablename__ = "settings"
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[str] = mapped_column(String(255))
+
+
+def get_setting(db: Session, key: str, default: str) -> str:
+    row = db.get(Setting, key)
+    return row.value if row else default
+
+
+def set_setting(db: Session, key: str, value: str) -> None:
+    row = db.get(Setting, key)
+    if row:
+        row.value = value
+    else:
+        db.add(Setting(key=key, value=value))
+    db.commit()
+
+
 engine = None
 SessionLocal: sessionmaker | None = None
 

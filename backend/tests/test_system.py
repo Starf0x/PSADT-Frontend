@@ -25,3 +25,20 @@ def test_update_admin_only(authed):
 def test_version_compare():
     assert system._version_tuple("v0.1.22") > system._version_tuple("0.1.11")
     assert system._version_tuple("v0.1.0") > system._version_tuple("0.0.94")
+
+
+def test_retention_setting_and_purge(authed, tmp_path):
+    import os
+    import time
+
+    assert authed.get("/api/system/settings").json()["upload_retention"] == "forever"
+    pid = authed.post("/api/packages", json={"name": "R"}).json()["id"]
+    authed.post(f"/api/packages/{pid}/files", files={"file": ("old.msi", b"x")})
+    authed.post(f"/api/packages/{pid}/files", files={"file": ("new.msi", b"x")})
+    old = tmp_path / "packages" / str(pid) / "Files" / "old.msi"
+    past = time.time() - 8 * 86400
+    os.utime(old, (past, past))
+    assert authed.put("/api/system/settings", json={"upload_retention": "bogus"}).status_code == 422
+    r = authed.put("/api/system/settings", json={"upload_retention": "7"}).json()
+    assert r["removed"] == 1
+    assert [f["name"] for f in authed.get(f"/api/packages/{pid}/files").json()] == ["new.msi"]

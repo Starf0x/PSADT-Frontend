@@ -13,11 +13,13 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..config import settings
-from ..db import Package, User, get_db
+from ..db import Package, User, get_db, get_setting
 from ..psadt.detection import generate_detection
 from ..psadt.export import build_intunewin, build_zip, to_windows
 from ..psadt.generator import generate
 from ..psadt.schema import FILE_RE, PackageData, default_package
+from ..psadt.validate import validate_package
+from ..retention import purge_package, retention
 from ..security import current_user, editor_for_writes
 
 router = APIRouter(prefix="/api/packages", tags=["packages"], dependencies=[Depends(editor_for_writes)])
@@ -129,12 +131,19 @@ def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get
     if not settings.toolkit_zip.is_file():
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE,
                             f"PSADT toolkit not found at {settings.toolkit_zip}; see README")
+    items, _ = validate_package(pkg.data, _uploaded(pid), True)
+    if any(i["level"] == "error" for i in items):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Fix the problems shown in the check first")
+    after_export = retention(db) == "export"
     tmp = settings.data_dir / "tmp"
     tmp.mkdir(parents=True, exist_ok=True)
     fd, name = tempfile.mkstemp(dir=tmp, suffix=".zip")
     os.close(fd)
     zip_path = Path(name)
-    build_zip(settings.toolkit_zip, script, files_dir(pid), zip_path)
+    log_path = pkg.data.get("app", {}).get("log_path") or get_setting(db, "log_path", "")
+    build_zip(settings.toolkit_zip, script, files_dir(pid), zip_path, log_path)
+    if after_export:
+        tasks.add_task(purge_package, files_dir(pid))
     if fmt == "zip":
         tasks.add_task(_cleanup, zip_path)
         return FileResponse(zip_path, filename=f"{_slug(pkg)}.zip", media_type="application/zip")
@@ -154,9 +163,29 @@ def get_script(pid: int, download: bool = False, db: Session = Depends(get_db)):
                     headers={"Content-Disposition": 'attachment; filename="Invoke-AppDeployToolkit.ps1"'})
 
 
+def _uploaded(pid: int) -> set[str]:
+    d = files_dir(pid)
+    return {f.name for f in d.iterdir() if f.is_file()} if d.exists() else set()
+
+
+@router.get("/{pid}/validate")
+def validate(pid: int, db: Session = Depends(get_db)):
+    """Everything that is checked before a download: settings, files, toolkit and syntax."""
+    pkg = _get(db, pid)
+    items, script = validate_package(pkg.data, _uploaded(pid), settings.toolkit_zip.is_file())
+    syntax = _syntax(script) if script else {"available": False, "errors": []}
+    for err in syntax["errors"]:
+        items.append({"level": "error", "text": "PowerShell syntax error: {msg}", "vars": {"msg": err}})
+    return {"ok": not any(i["level"] == "error" for i in items), "items": items,
+            "syntax_checked": syntax["available"], "retention": retention(db)}
+
+
 @router.post("/{pid}/check")
 def check_script(pid: int, db: Session = Depends(get_db)):
-    text = _script(_get(db, pid))
+    return _syntax(_script(_get(db, pid)))
+
+
+def _syntax(text: str) -> dict:
     if shutil.which(settings.pwsh_path) is None:
         return {"available": False, "errors": []}
     with tempfile.TemporaryDirectory() as tmp:
