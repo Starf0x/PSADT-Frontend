@@ -5,6 +5,11 @@ export const LANGS = [['en', 'English'], ['nl', 'Nederlands'], ['de', 'Deutsch']
 const ROWS = [
   ['(none)', '(geen)', '(keine)'],
   ['Browse…', 'Bladeren…', 'Durchsuchen…'],
+  ['The download buttons work once the problems in the check above are fixed.', 'De downloadknoppen werken zodra de problemen in de controle hierboven zijn opgelost.', 'Die Download-Schaltflächen funktionieren, sobald die Probleme in der Prüfung oben behoben sind.'],
+  ['Building the package…', 'Pakket wordt gebouwd…', 'Paket wird erstellt…'],
+  ['Downloading…', 'Downloaden…', 'Wird heruntergeladen…'],
+  ['Downloaded: {name}', 'Gedownload: {name}', 'Heruntergeladen: {name}'],
+  ['Download failed: connection lost', 'Download mislukt: verbinding verbroken', 'Download fehlgeschlagen: Verbindung unterbrochen'],
   ['Hive:', 'Hoofdsleutel:', 'Stamm:'],
   ['MSIX package', 'MSIX-pakket', 'MSIX-Paket'],
   ['Package name (part of it is enough)', 'Pakketnaam (een deel is genoeg)', 'Paketname (ein Teil genügt)'],
