@@ -20,7 +20,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 3 | Build/export: ZIP, `.intunewin`, detection rules, snippet library | ✅ v0.0.72 |
 | 4 | Open source: roles, user management, docs, GHCR image | ✅ v0.0.83 |
 | 5 | Proxmox helper script (community-scripts style) | ✅ v0.1.0 |
-| 6 | English UI, in-app updates for LXC (System page) | ✅ v0.1.22 |
+| 6 | UI in English, Dutch and German (language picker), in-app updates for LXC (System page) | ✅ v0.1.22 |
 
 ## Architecture
 
@@ -43,6 +43,7 @@ backend/   FastAPI (Python 3.12+), SQLAlchemy + SQLite, argon2
   app/main.py              app, security headers, serves frontend/dist
   tests/                   pytest
 frontend/  React 18 + Vite (build -> frontend/dist): Packages, Editor, Users, System
+           src/i18n.js: UI languages (en, nl, de); the English text is the key, a missing translation shows English
 .github/workflows/  ci.yml (tests + build), release.yml (tag + release + GHCR image from VERSION)
 ct/psadt-frontend.sh            Proxmox helper (runs on the host)
 install/psadtfrontend-install.sh  runs inside the new container, calls lxc/install.sh
@@ -170,6 +171,7 @@ Versions start at 0.0.50 and go up by 11 per release (0.0.61, 0.0.72, ...). When
 - In-app update (`install/update.sh`) has not yet run on a real Proxmox container. Check that the first time.
 - To develop locally without `/opt/psadt`, download the template zip and set `PSADT_TOOLKIT_ZIP`.
 - Tables are created with `create_all`. Add Alembic at the first schema change.
+- New UI text: wrap it in `t('English text')` and add a row with the Dutch and German to `frontend/src/i18n.js`. Server error messages are translated the same way in the browser.
 - Possible next steps: 2FA (TOTP), an audit log, Alembic migrations.
 
 ## License

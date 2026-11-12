@@ -58,11 +58,11 @@ fi
 say "Updating $was to $newest"
 step 2 "Stopping the app"
 systemctl stop "$UNIT"
-step 3 "Fetching $newest"
+step 3 "Fetching the new version"
 git -C "$SRC_DIR" checkout --quiet "$newest"
 # Same install path as a fresh install and the Proxmox helper's update; it also puts
 # the new version of this script and its units in place for the next run.
-step 4 "Installing $newest (dependencies and build, this takes a few minutes)"
+step 4 "Installing the new version (dependencies and build, this takes a few minutes)"
 PSADT_SKIP_FETCH=1 bash "$SRC_DIR/lxc/install.sh"
 step 5 "Starting the app"
 systemctl start "$UNIT"

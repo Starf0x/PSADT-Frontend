@@ -2,7 +2,7 @@
 @media (prefers-color-scheme: dark) { :root { --bg: #111318; --fg: #e5e7eb; --card: #1c1f26; --muted: #9ca3af; --err: #f87171; } }
 * { box-sizing: border-box; }
 body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--fg); }
-.center { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+.center { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
 .card { background: var(--card); padding: 2rem; border-radius: 8px; width: 100%; max-width: 360px; display: grid; gap: 1rem; box-shadow: 0 2px 12px #0002; }
 .card h1 { margin: 0; font-size: 1.4rem; }
 label { display: grid; gap: .3rem; font-size: .9rem; }
@@ -43,3 +43,5 @@ fieldset.plain { border: 0; padding: 0; margin: 0; min-width: 0; }
 header nav.row, header .row { margin: 0; }
 button.link.current { font-weight: 700; text-decoration: underline; }
 header { flex-wrap: wrap; gap: .5rem; }
+.lang { padding: .15rem .3rem; font-size: .85rem; }
+.center .lang { margin-top: 1rem; }
