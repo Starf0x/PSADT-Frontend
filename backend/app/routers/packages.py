@@ -23,7 +23,8 @@ from ..security import current_user, editor_for_writes
 router = APIRouter(prefix="/api/packages", tags=["packages"], dependencies=[Depends(editor_for_writes)])
 
 ALLOWED_EXT = {".msi", ".msp", ".mst", ".exe", ".zip", ".cab", ".ps1", ".psm1", ".reg", ".xml", ".ini", ".cfg",
-               ".json", ".txt", ".bat", ".cmd", ".vbs", ".ico", ".png", ".lnk", ".config"}
+               ".json", ".txt", ".bat", ".cmd", ".vbs", ".ico", ".png", ".lnk", ".config",
+               ".msix", ".msixbundle", ".appx", ".appxbundle", ".cer"}
 CHECK_PS1 = Path(__file__).resolve().parents[1] / "psadt" / "check.ps1"
 
 
@@ -34,7 +35,7 @@ class NewPackage(BaseModel):
 def _get(db: Session, pid: int) -> Package:
     pkg = db.get(Package, pid)
     if pkg is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Pakket niet gevonden")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Package not found")
     return pkg
 
 
@@ -122,12 +123,12 @@ def get_detection(pid: int, download: bool = False, db: Session = Depends(get_db
 @router.get("/{pid}/export/{fmt}")
 def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get_db)):
     if fmt not in ("zip", "intunewin"):
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Onbekend formaat")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Unknown format")
     pkg = _get(db, pid)
     script = _script(pkg)
     if not settings.toolkit_zip.is_file():
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE,
-                            f"PSADT-toolkit niet gevonden op {settings.toolkit_zip}; zie README")
+                            f"PSADT toolkit not found at {settings.toolkit_zip}; see README")
     tmp = settings.data_dir / "tmp"
     tmp.mkdir(parents=True, exist_ok=True)
     fd, name = tempfile.mkstemp(dir=tmp, suffix=".zip")
@@ -167,7 +168,7 @@ def check_script(pid: int, db: Session = Depends(get_db)):
         )
     errors = [line for line in res.stdout.splitlines() if line.strip()]
     if res.returncode != 0 and not errors:
-        errors = [res.stderr.strip()[:500] or "Onbekende fout bij controle"]
+        errors = [res.stderr.strip()[:500] or "Unknown error during check"]
     return {"available": True, "errors": errors}
 
 
@@ -185,7 +186,7 @@ async def upload_file(pid: int, file: UploadFile, db: Session = Depends(get_db))
     _get(db, pid)
     name = Path(file.filename or "").name
     if not FILE_RE.match(name) or name in (".", "..") or Path(name).suffix.lower() not in ALLOWED_EXT:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Bestandsnaam of -type niet toegestaan")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "File name or type not allowed")
     d = files_dir(pid)
     d.mkdir(parents=True, exist_ok=True)
     limit = settings.max_upload_mb * 1024 * 1024
@@ -196,7 +197,7 @@ async def upload_file(pid: int, file: UploadFile, db: Session = Depends(get_db))
             while chunk := await file.read(1024 * 1024):
                 size += len(chunk)
                 if size > limit:
-                    raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Bestand is te groot")
+                    raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File is too large")
                 out.write(chunk)
         tmp.replace(d / name)
     finally:
@@ -208,8 +209,8 @@ async def upload_file(pid: int, file: UploadFile, db: Session = Depends(get_db))
 def delete_file(pid: int, name: str, db: Session = Depends(get_db)):
     _get(db, pid)
     if not FILE_RE.match(name) or name in (".", ".."):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ongeldige bestandsnaam")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid file name")
     path = files_dir(pid) / name
     if not path.is_file():
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Bestand niet gevonden")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "File not found")
     path.unlink()

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, clearCsrf } from './api.js'
 import Packages from './Packages.jsx'
+import System from './System.jsx'
 import { Account, Users } from './Users.jsx'
 
 function Login({ onLogin }) {
@@ -21,10 +22,10 @@ function Login({ onLogin }) {
   return (
     <form className="card" onSubmit={submit}>
       <h1>PSADT Frontend</h1>
-      <label>Gebruikersnaam<input value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" required /></label>
-      <label>Wachtwoord<input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required /></label>
+      <label>Username<input value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" required /></label>
+      <label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required /></label>
       {error && <p className="error">{error}</p>}
-      <button type="submit">Inloggen</button>
+      <button type="submit">Sign in</button>
     </form>
   )
 }
@@ -41,18 +42,20 @@ function Dashboard({ user, version, onLogout }) {
       <header>
         <nav className="row">
           <strong>PSADT Frontend</strong>
-          <button className={`link ${page === 'packages' ? 'current' : ''}`} onClick={() => setPage('packages')}>Pakketten</button>
-          {user.role === 'admin' && <button className={`link ${page === 'users' ? 'current' : ''}`} onClick={() => setPage('users')}>Gebruikers</button>}
+          <button className={`link ${page === 'packages' ? 'current' : ''}`} onClick={() => setPage('packages')}>Packages</button>
+          {user.role === 'admin' && <button className={`link ${page === 'users' ? 'current' : ''}`} onClick={() => setPage('users')}>Users</button>}
+          {user.role === 'admin' && <button className={`link ${page === 'system' ? 'current' : ''}`} onClick={() => setPage('system')}>System</button>}
         </nav>
         <span className="row">
           <button className="link" onClick={() => setPage('account')}>{user.username} ({user.role})</button> ·
-          <button className="link" onClick={logout}>Uitloggen</button>
+          <button className="link" onClick={logout}>Sign out</button>
         </span>
       </header>
       <main>
         {page === 'packages' && <Packages readOnly={user.role === 'viewer'} />}
         {page === 'users' && <Users me={user} />}
         {page === 'account' && <Account />}
+        {page === 'system' && <System />}
       </main>
       <footer>v{version}</footer>
     </div>

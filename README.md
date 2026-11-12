@@ -1,140 +1,177 @@
 # PSADT Frontend
 
-> **English:** A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolkit.com/) v4 packages: edit install/uninstall/repair steps in a browser, upload installers, preview the generated `Invoke-AppDeployToolkit.ps1`, and export a ready-to-deploy ZIP or Intune `.intunewin` — no Windows build machine needed. Runs as a Docker container or in a Debian LXC. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolkit.com/) (PSADT v4) packages. You can:
 
-Een webinterface voor de [PowerShell App Deployment Toolkit](https://psappdeploytoolkit.com/) (PSADT v4). Draait als Docker-container of als losse LXC-installatie; beide werken identiek.
+- edit install, uninstall and repair steps in a browser,
+- upload installers,
+- preview the generated `Invoke-AppDeployToolkit.ps1`,
+- export a ready-to-deploy ZIP or an Intune `.intunewin`.
 
-**Versie:** 0.1.11 (zie `VERSION`)
+No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-## Status en roadmap
+**Version:** 0.1.22 (see `VERSION`)
 
-| Stap | Inhoud | Status |
-|------|--------|--------|
-| 1 | Fundament: FastAPI + React, cookie-login, Docker, LXC | ✅ v0.0.50 |
-| 2 | Package-editor op basis van het PSADT v4-template, uploads, live scriptpreview | ✅ v0.0.61 |
-| 3 | Bouwen/exporteren: ZIP, `.intunewin`, detectieregels, snippetbibliotheek | ✅ v0.0.72 |
-| 4 | Open source klaarmaken: rollen, gebruikersbeheer, docs, GHCR-image | ✅ v0.0.83 |
+## Status and roadmap
 
-## Architectuur
+| Step | Content | Status |
+|------|---------|--------|
+| 1 | Foundation: FastAPI + React, cookie login, Docker, LXC | ✅ v0.0.50 |
+| 2 | Package editor based on the PSADT v4 template, uploads, live script preview | ✅ v0.0.61 |
+| 3 | Build/export: ZIP, `.intunewin`, detection rules, snippet library | ✅ v0.0.72 |
+| 4 | Open source: roles, user management, docs, GHCR image | ✅ v0.0.83 |
+| 5 | Proxmox helper script (community-scripts style) | ✅ v0.1.0 |
+| 6 | English UI, in-app updates for LXC (System page) | ✅ v0.1.22 |
+
+## Architecture
 
 ```
 backend/   FastAPI (Python 3.12+), SQLAlchemy + SQLite, argon2
-  app/config.py      instellingen via PSADT_* env-variabelen
-  app/db.py          modellen: users, sessions
-  app/security.py    wachtwoorden, sessies, CSRF, eerste admin
-  app/routers/auth.py  /api/auth/login | logout | me | password
-  app/routers/packages.py  /api/packages CRUD, /script, /check, /files
-  app/psadt/schema.py      toegestane stap-types + validatie (whitelist)
-  app/psadt/generator.py   bouwt Invoke-AppDeployToolkit.ps1
-  app/psadt/template_*.ps1 kop/staart van het officiële PSADT 4.1.8-template
-  app/psadt/check.ps1      syntaxcontrole met de PowerShell-parser (voert niets uit)
-  app/psadt/export.py      ZIP (officieel PSADT-pakket + script + Files) en .intunewin
-  app/psadt/detection.py   Intune-detectiescript uit detectieregels
-  app/routers/snippets.py  /api/snippets (herbruikbare stappen)
-  app/routers/users.py     /api/users (alleen beheerders)
-  app/main.py        app, security headers, serveert frontend/dist
-  tests/             pytest
-frontend/  React 18 + Vite (build -> frontend/dist); src/Packages.jsx, Editor.jsx, steps.js
-.github/workflows/  ci.yml (tests + build), release.yml (tag + release uit VERSION)
-lxc/install.sh       installer voor Debian LXC (systemd-service)
+  app/config.py            settings via PSADT_* environment variables
+  app/db.py                models: users, sessions, packages, snippets
+  app/security.py          passwords, sessions, CSRF, first admin
+  app/routers/auth.py      /api/auth/login | logout | me | password
+  app/routers/packages.py  /api/packages CRUD, /script, /check, /files, /detection, /export
+  app/routers/snippets.py  /api/snippets (reusable steps)
+  app/routers/users.py     /api/users (admins only)
+  app/routers/system.py    /api/system/update (admins only): version check and in-app update
+  app/psadt/schema.py      allowed step types + validation (whitelist)
+  app/psadt/generator.py   builds Invoke-AppDeployToolkit.ps1
+  app/psadt/template_*.ps1 header/footer of the official PSADT 4.1.8 template
+  app/psadt/check.ps1      syntax check with the PowerShell parser (runs nothing)
+  app/psadt/export.py      ZIP (official PSADT package + script + Files) and .intunewin
+  app/psadt/detection.py   Intune detection script from detection rules
+  app/main.py              app, security headers, serves frontend/dist
+  tests/                   pytest
+frontend/  React 18 + Vite (build -> frontend/dist): Packages, Editor, Users, System
+.github/workflows/  ci.yml (tests + build), release.yml (tag + release + GHCR image from VERSION)
+ct/psadt-frontend.sh            Proxmox helper (runs on the host)
+install/psadtfrontend-install.sh  runs inside the new container, calls lxc/install.sh
+install/update.sh               in-place updater, installed as /usr/local/bin/psadt-frontend-update
+lxc/install.sh                  installer for a Debian LXC (systemd service + update units)
 Dockerfile, docker-compose.yml
 ```
 
-## Beveiliging (ingebouwd)
+## Security (built in)
 
-- Sessie in een `HttpOnly`, `Secure`, `SameSite=Strict` cookie; alleen de sha256-hash van het token staat in de database, dus uitloggen trekt de sessie echt in.
-- CSRF-token (header `X-CSRF-Token`) verplicht op alle schrijfacties.
-- argon2-wachtwoordhashing, lockout na 5 foute pogingen (15 min), timing-veilige login.
-- Security headers: CSP, X-Frame-Options, nosniff, Referrer-Policy; geen `/docs` in productie.
-- Container draait als niet-root, read-only filesystem, alle capabilities gedropt.
-- Voor online gebruik: zet er een reverse proxy met HTTPS voor (Caddy/Traefik).
+- The session lives in an `HttpOnly`, `Secure`, `SameSite=Strict` cookie. Only the sha256 hash of the token is stored, so signing out really revokes the session.
+- A CSRF token (header `X-CSRF-Token`) is required on every write.
+- Passwords are hashed with argon2. An account locks for 15 minutes after 5 failed attempts, and login is timing-safe.
+- Security headers: CSP, X-Frame-Options, nosniff and Referrer-Policy. There is no `/docs` in production.
+- The container runs as non-root on a read-only filesystem, with all capabilities dropped.
+- For use on the internet, put a reverse proxy with HTTPS in front (Caddy or Traefik).
 
-## Rollen
+## Roles
 
-| Rol | Mag |
-|-----|-----|
-| Beheerder | alles, plus gebruikers beheren (aanmaken, rol, wachtwoord, ontgrendelen, verwijderen) |
-| Bewerker | pakketten en snippets maken, wijzigen en verwijderen |
-| Alleen lezen | alles bekijken, scripts controleren en exporteren |
+| Role | Can |
+|------|-----|
+| Administrator | everything, plus managing users (create, role, password, unlock, delete) and updates |
+| Editor | create, change and delete packages and snippets |
+| Read only | view everything, check scripts and export |
 
-Bij een rol- of wachtwoordwijziging worden de sessies van die gebruiker ingetrokken. De laatste beheerder kan niet worden gedegradeerd of verwijderd.
+When a user's role or password changes, that user's sessions are revoked. The last administrator cannot be demoted or deleted.
 
-## Starten met Docker
+## Running with Docker
 
-Kant-en-klare image (na elke release): `ghcr.io/starf0x/psadt-frontend:latest` (zet in `docker-compose.yml` `image:` in plaats van `build:`).
+A ready-made image is published after every release: `ghcr.io/starf0x/psadt-frontend:latest`. To use it, set `image:` instead of `build:` in `docker-compose.yml`.
 
 ```bash
-cp .env.example .env        # pas aan
+cp .env.example .env        # adjust
 docker compose up -d --build
-docker compose logs | grep admin-wachtwoord   # als PSADT_ADMIN_PASSWORD leeg was
+docker compose logs | grep 'admin password'   # if PSADT_ADMIN_PASSWORD was empty
 ```
 
-Open `http://<host>:8000`. Zonder HTTPS lokaal testen: zet `PSADT_COOKIE_SECURE=false`.
+Open `http://<host>:8000`. To test locally without HTTPS, set `PSADT_COOKIE_SECURE=false`.
 
-## Installeren in een LXC-container (Proxmox)
+To update, run `docker compose pull && docker compose up -d`. The System page tells you when a newer version exists.
 
-**Op de Proxmox-host**, één commando (Proxmox VE Helper Script, zelfde opbouw als de community-scripts):
+## Installing in an LXC container (Proxmox)
+
+Run one command **on the Proxmox host**. It is a Proxmox VE helper script, built the same way as the community-scripts:
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/ct/psadt-frontend.sh)"
 ```
 
-Je krijgt het bekende menu (Default / Advanced, opslag, netwerk, resources). Standaard: Debian 13, unprivileged, 2 cores, 2 GB RAM, 16 GB disk. Aan het eind staan de URL en het admin-wachtwoord (ook in `/root/psadt-frontend-admin.txt` in de container). Hetzelfde commando nogmaals op een bestaande container biedt een update naar de nieuwste release-tag aan.
+You get the familiar menu (Default / Advanced, storage, network, resources). The defaults are Debian 13, unprivileged, 2 cores, 2 GB RAM and a 16 GB disk. At the end the script shows the URL and the admin password. The password is also stored in `/root/psadt-frontend-admin.txt` inside the container.
 
-- `ct/psadt-frontend.sh` draait op de host; de engine komt van `community-scripts/core`, `COMMUNITY_SCRIPTS_URL` wijst naar deze repo.
-- `install/psadtfrontend-install.sh` draait in de container (naam ligt vast: `${APP,,}` zonder spaties + `-install`) en roept `lxc/install.sh` aan.
-- **Werkt alleen met een publieke repo**: de engine haalt bestanden zonder token op via `raw.githubusercontent.com`.
+How the helper fits together:
 
-**In een bestaande Debian-LXC** (als root, niet op de host):
+- `ct/psadt-frontend.sh` runs on the host. The engine comes from `community-scripts/core`, and `COMMUNITY_SCRIPTS_URL` points it at this repo.
+- `install/psadtfrontend-install.sh` runs inside the container and calls `lxc/install.sh`. Its name is fixed by the engine: `${APP,,}` without spaces, plus `-install`.
+
+**In an existing Debian LXC** (as root, not on the host):
 
 ```bash
-GITHUB_TOKEN=<token> PSADT_COOKIE_SECURE=false bash -c "$(curl -fsSL -H "Authorization: Bearer <token>" -H "Accept: application/vnd.github.raw" https://api.github.com/repos/Starf0x/PSADT-Frontend/contents/lxc/install.sh)"
-journalctl -u psadt-frontend | grep admin-wachtwoord
+PSADT_COOKIE_SECURE=false bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/install.sh)"
+journalctl -u psadt-frontend | grep 'admin password'
 ```
 
-Configuratie staat in `/etc/psadt-frontend.env`, data in `/var/lib/psadt-frontend`, broncode in `/opt/psadt-frontend-src`.
-Updaten: `GITHUB_TOKEN=<token> bash /opt/psadt-frontend-src/lxc/install.sh` (zonder token zodra de repo publiek is).
+Files on an LXC install:
 
-`PSADT_COOKIE_SECURE=false` is nodig zolang je via `http://` werkt; zet hem op `true` zodra er een HTTPS-proxy voor staat.
+- configuration: `/etc/psadt-frontend.env`
+- data: `/var/lib/psadt-frontend`
+- source: `/opt/psadt-frontend-src`
 
-## Configuratie
+`PSADT_COOKIE_SECURE=false` is needed as long as you use `http://`. Set it to `true` once an HTTPS proxy is in front.
 
-| Variabele | Standaard | Uitleg |
-|-----------|-----------|--------|
-| `PSADT_ADMIN_USERNAME` | `admin` | Eerste gebruiker |
-| `PSADT_ADMIN_PASSWORD` | leeg | Leeg = gegenereerd en eenmalig gelogd |
-| `PSADT_COOKIE_SECURE` | `true` | Alleen `false` voor lokaal http |
-| `PSADT_SESSION_HOURS` | `12` | Geldigheid van een sessie |
-| `PSADT_DATA_DIR` | `./data` (`/data` in Docker) | Database en uploads |
-| `PSADT_MAX_UPLOAD_MB` | `4096` | Maximale uploadgrootte |
-| `PSADT_TOOLKIT_ZIP` | `/opt/psadt/PSAppDeployToolkit_Template_v4.zip` | Officieel PSADT-pakket voor export |
-| `PSADT_PWSH_PATH` | `pwsh` (`/opt/pwsh/pwsh` in Docker/LXC) | PowerShell 7 voor syntaxcontrole |
+### Updating an LXC install
 
-## Ontwikkelen
+There are three ways, and all of them do the same thing: move to the newest release tag and reinstall.
+
+- **From the app:** sign in as an administrator, open **System** and click **Install it**. A progress bar follows the update, and the app restarts part way through.
+- **In the container:** run `psadt-frontend-update`.
+- **From the Proxmox host:** run the helper command above inside the container's console. On an existing install it offers an update.
+
+How the in-app update works (same design as My Audiobook Collection):
+
+1. The app runs as the unprivileged `psadt` user, so it cannot update itself.
+2. It writes `/var/lib/psadt-frontend/update-wanted`.
+3. The root unit `psadt-frontend-update.path` notices that file and starts `psadt-frontend-update.service`, which runs `/usr/local/bin/psadt-frontend-update` (`install/update.sh`).
+4. The updater writes `update-progress.json` and `update-said.json` to the data folder, which the System page reads.
+5. The updater only ever does this one fixed thing. Nothing is passed in, so asking for an update is not a privilege escalation.
+
+Containers installed before v0.1.22 do not have the updater yet. Update them once from the Proxmox helper, or run `PSADT_SKIP_FETCH=1 bash /opt/psadt-frontend-src/lxc/install.sh` after a `git fetch --tags && git checkout <newest tag>` in `/opt/psadt-frontend-src`. After that, the in-app update works.
+
+## Configuration
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `PSADT_ADMIN_USERNAME` | `admin` | First user |
+| `PSADT_ADMIN_PASSWORD` | empty | Empty = generated and logged once |
+| `PSADT_COOKIE_SECURE` | `true` | Only `false` for local http |
+| `PSADT_SESSION_HOURS` | `12` | Session lifetime |
+| `PSADT_DATA_DIR` | `./data` (`/data` in Docker) | Database and uploads |
+| `PSADT_MAX_UPLOAD_MB` | `4096` | Maximum upload size |
+| `PSADT_TOOLKIT_ZIP` | `/opt/psadt/PSAppDeployToolkit_Template_v4.zip` | Official PSADT package used for export |
+| `PSADT_PWSH_PATH` | `pwsh` (`/opt/pwsh/pwsh` in Docker/LXC) | PowerShell 7 for the syntax check |
+
+## Development
 
 ```bash
 cd backend && python -m venv .venv && . .venv/bin/activate
 pip install -r requirements-dev.txt && pytest
 PSADT_COOKIE_SECURE=false uvicorn app.main:app --reload    # :8000
-cd ../frontend && npm install && npm run dev                # :5173, proxy naar /api
+cd ../frontend && npm install && npm run dev                # :5173, proxies /api
 ```
 
-## Versiebeleid
+## Versioning
 
-Start op 0.0.50 en verhoogt per release met 11 (0.0.61, 0.0.72, ...). Bij 100 of meer wordt het 0.1.0.
+Versions start at 0.0.50 and go up by 11 per release (0.0.61, 0.0.72, ...). When the last part reaches 100 or more, it becomes 0.1.0, and so on.
 
-## Notities voor verder werken
+## Notes for further work
 
-- PowerShell 7.4.6 staat in de Docker-image én via `lxc/install.sh` in `/opt/pwsh`; versie op beide plekken gelijk houden.
-- Nieuw PSADT-template: kop/staart opnieuw uit `src/PSAppDeployToolkit/Frontend/v4/Invoke-AppDeployToolkit.ps1` halen (pad `..\..\..\PSAppDeployToolkit` vervangen door `PSAppDeployToolkit`) en `PSADT_VERSION` in `schema.py` aanpassen.
-- Releases: verhoog `VERSION` (+11) en `frontend/package.json`; na merge maakt `release.yml` de tag en release.
-- Nieuwe PSADT-versie: `PSADT_VERSION` + `PSADT_SHA256` in Dockerfile én `lxc/install.sh`, plus kop/staart van het template en `PSADT_VERSION` in `schema.py`.
-- De .intunewin is cryptografisch getest (roundtrip), maar nog niet daadwerkelijk in Intune geüpload: eerste keer controleren.
-- Lokaal ontwikkelen zonder `/opt/psadt`: download de template-zip en zet `PSADT_TOOLKIT_ZIP`.
-- Open source maken: repo op *Public* zetten, en het GHCR-package op *Public* (Package settings). Alle docs (CONTRIBUTING, SECURITY, NOTICE, issue templates, Dependabot) staan klaar.
-- Mogelijke vervolgstappen: 2FA (TOTP), audit-log, Alembic-migraties, Engelstalige UI.
-- Nieuwe tabellen worden nu via `create_all` gemaakt; bij de eerste schemawijziging Alembic toevoegen.
+- PowerShell 7.4.6 is in the Docker image and in `/opt/pwsh` via `lxc/install.sh`. Keep the version the same in both places.
+- New PSADT version:
+  - update `PSADT_VERSION` and `PSADT_SHA256` in the Dockerfile and in `lxc/install.sh`;
+  - take the header/footer again from `src/PSAppDeployToolkit/Frontend/v4/Invoke-AppDeployToolkit.ps1` (replace the path `..\..\..\PSAppDeployToolkit` with `PSAppDeployToolkit`);
+  - update `PSADT_VERSION` in `schema.py`.
+- Releases: bump `VERSION` (+11), `frontend/package.json` and `docker-compose.yml`. After the merge, `release.yml` creates the tag, the release and the image.
+- The .intunewin is tested cryptographically (roundtrip) but not yet uploaded to Intune. Check that the first time.
+- In-app update (`install/update.sh`) has not yet run on a real Proxmox container. Check that the first time.
+- To develop locally without `/opt/psadt`, download the template zip and set `PSADT_TOOLKIT_ZIP`.
+- Tables are created with `create_all`. Add Alembic at the first schema change.
+- Possible next steps: 2FA (TOTP), an audit log, Alembic migrations.
 
-## Licentie
+## License
 
-MIT, zie `LICENSE`. PSADT-onderdelen: LGPL-3.0, zie `NOTICE.md`.
+MIT, see `LICENSE`. PSADT parts are LGPL-3.0, see `NOTICE.md`.

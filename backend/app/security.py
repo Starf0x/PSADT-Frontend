@@ -55,18 +55,18 @@ def current_session(request: Request, db: Session = Depends(get_db)) -> UserSess
     token = request.cookies.get(COOKIE_NAME)
     sess = db.get(UserSession, _digest(token)) if token else None
     if sess is None or _aware(sess.expires_at) < utcnow():
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Niet ingelogd")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not signed in")
     if request.method not in ("GET", "HEAD", "OPTIONS"):
         sent = request.headers.get(CSRF_HEADER, "")
         if not secrets.compare_digest(sent, sess.csrf_token):
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "Ongeldig CSRF-token")
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "Invalid CSRF token")
     return sess
 
 
 def current_user(sess: UserSession = Depends(current_session), db: Session = Depends(get_db)) -> User:
     user = db.get(User, sess.user_id)
     if user is None:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Niet ingelogd")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not signed in")
     return user
 
 
@@ -76,14 +76,14 @@ WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 
 def require_admin(user: User = Depends(current_user)) -> User:
     if user.role != "admin":
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Alleen voor beheerders")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Administrators only")
     return user
 
 
 def editor_for_writes(request: Request, user: User = Depends(current_user)) -> User:
     """Viewers mogen alles lezen, exporteren en de syntax controleren, maar niets wijzigen."""
     if user.role == "viewer" and request.method in WRITE_METHODS and not request.url.path.endswith("/check"):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Je hebt alleen leesrechten")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "You have read-only access")
     return user
 
 
@@ -93,6 +93,6 @@ def ensure_admin(db: Session) -> None:
     password = settings.admin_password
     if not password:
         password = secrets.token_urlsafe(16)
-        print(f"[psadt-frontend] Eerste start: admin-wachtwoord voor '{settings.admin_username}': {password}", flush=True)
+        print(f"[psadt-frontend] First start: admin password for '{settings.admin_username}': {password}", flush=True)
     db.add(User(username=settings.admin_username, password_hash=hash_password(password), role="admin"))
     db.commit()

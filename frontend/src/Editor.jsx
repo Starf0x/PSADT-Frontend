@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, text, upload } from './api.js'
 import { DETECTION_TYPES, PHASES, STEP_TYPES } from './steps.js'
 
-const TABS = [['app', 'App-info'], ['install', 'Installatie'], ['uninstall', 'Deïnstallatie'], ['repair', 'Reparatie'], ['files', 'Bestanden'], ['detection', 'Detectie'], ['preview', 'Script'], ['export', 'Export']]
+const TABS = [['app', 'App info'], ['install', 'Install'], ['uninstall', 'Uninstall'], ['repair', 'Repair'], ['files', 'Files'], ['detection', 'Detection'], ['preview', 'Script'], ['export', 'Export']]
 
 function Field({ label, type, value, onChange, files }) {
   if (type === 'bool') return <label className="check"><input type="checkbox" checked={!!value} onChange={e => onChange(e.target.checked)} />{label}</label>
@@ -12,7 +12,7 @@ function Field({ label, type, value, onChange, files }) {
   else if (type === 'code') input = <textarea rows={6} className="mono" value={value} onChange={e => onChange(e.target.value)} />
   else if (type === 'file') input = (
     <select value={value || ''} onChange={e => onChange(e.target.value || null)}>
-      <option value="">(geen)</option>
+      <option value="">(none)</option>
       {files.map(f => <option key={f.name}>{f.name}</option>)}
       {value && !files.some(f => f.name === value) && <option>{value}</option>}
     </select>)
@@ -27,17 +27,17 @@ function StepCard({ step, index, count, files, onChange, onMove, onRemove, onSni
       <div className="step-head">
         <strong>{index + 1}. {def.label}</strong>
         <span>
-          <button className="icon" onClick={onSnippet} title="Opslaan als snippet">☆</button>
-          <button className="icon" disabled={index === 0} onClick={() => onMove(-1)} title="Omhoog">↑</button>
-          <button className="icon" disabled={index === count - 1} onClick={() => onMove(1)} title="Omlaag">↓</button>
-          <button className="icon danger" onClick={onRemove} title="Verwijderen">✕</button>
+          <button className="icon" onClick={onSnippet} title="Save as snippet">☆</button>
+          <button className="icon" disabled={index === 0} onClick={() => onMove(-1)} title="Move up">↑</button>
+          <button className="icon" disabled={index === count - 1} onClick={() => onMove(1)} title="Move down">↓</button>
+          <button className="icon danger" onClick={onRemove} title="Delete">✕</button>
         </span>
       </div>
       <div className="grid">
         {def.fields.map(([key, label, type]) => (
           <Field key={key} label={label} type={type} value={step[key]} files={files} onChange={v => onChange({ ...step, [key]: v })} />
         ))}
-        <Field label="Commentaar" type="text" value={step.comment || ''} onChange={v => onChange({ ...step, comment: v })} />
+        <Field label="Comment" type="text" value={step.comment || ''} onChange={v => onChange({ ...step, comment: v })} />
       </div>
     </div>
   )
@@ -50,13 +50,13 @@ function PhaseEditor({ phases, files, onChange }) {
   useEffect(() => { loadSnippets() }, [])
   const set = (key, steps) => onChange({ ...phases, [key]: steps })
   async function saveSnippet(step) {
-    const name = window.prompt('Naam voor deze snippet:', STEP_TYPES[step.type].label)
+    const name = window.prompt('Name for this snippet:', STEP_TYPES[step.type].label)
     if (!name) return
     try { await api('/api/snippets', { method: 'POST', body: { name, step } }); loadSnippets() } catch (e) { window.alert(e.message) }
   }
   async function deleteSnippet(id) {
     const s = snippets.find(x => x.id === id)
-    if (s && window.confirm(`Snippet "${s.name}" verwijderen?`)) { await api(`/api/snippets/${id}`, { method: 'DELETE' }); loadSnippets() }
+    if (s && window.confirm(`Delete snippet "${s.name}"?`)) { await api(`/api/snippets/${id}`, { method: 'DELETE' }); loadSnippets() }
   }
   function add(key) {
     const v = adding[key] || 'msi'
@@ -70,7 +70,7 @@ function PhaseEditor({ phases, files, onChange }) {
     return (
       <section key={key} className="phase">
         <h3>{label}</h3>
-        {steps.length === 0 && <p className="muted">Geen stappen.</p>}
+        {steps.length === 0 && <p className="muted">No steps.</p>}
         {steps.map((s, i) => (
           <StepCard key={i} step={s} index={i} count={steps.length} files={files}
             onChange={ns => set(key, steps.map((x, j) => j === i ? ns : x))}
@@ -80,11 +80,11 @@ function PhaseEditor({ phases, files, onChange }) {
         ))}
         <div className="row">
           <select value={adding[key] || 'msi'} onChange={e => setAdding({ ...adding, [key]: e.target.value })}>
-            <optgroup label="Stappen">{Object.entries(STEP_TYPES).map(([t, d]) => <option key={t} value={t}>{d.label}</option>)}</optgroup>
+            <optgroup label="Steps">{Object.entries(STEP_TYPES).map(([t, d]) => <option key={t} value={t}>{d.label}</option>)}</optgroup>
             {snippets.length > 0 && <optgroup label="Snippets">{snippets.map(x => <option key={x.id} value={`snippet:${x.id}`}>★ {x.name}</option>)}</optgroup>}
           </select>
-          <button className="secondary" onClick={() => add(key)}>Stap toevoegen</button>
-          {(adding[key] || '').startsWith('snippet:') && <button className="link danger" onClick={() => { deleteSnippet(Number(adding[key].slice(8))); setAdding({ ...adding, [key]: 'msi' }) }}>Snippet verwijderen</button>}
+          <button className="secondary" onClick={() => add(key)}>Add step</button>
+          {(adding[key] || '').startsWith('snippet:') && <button className="link danger" onClick={() => { deleteSnippet(Number(adding[key].slice(8))); setAdding({ ...adding, [key]: 'msi' }) }}>Delete snippet</button>}
         </div>
       </section>
     )
@@ -98,15 +98,15 @@ function AppInfo({ app, onChange }) {
     <label>{label}<input value={app[key]} onChange={e => onChange({ ...app, [key]: e.target.value })} {...extra} /></label>)
   return (
     <div className="grid">
-      {f('name', 'Naam *', { required: true })}{f('vendor', 'Leverancier')}{f('version', 'Versie')}
-      <label>Architectuur<select value={app.arch} onChange={e => onChange({ ...app, arch: e.target.value })}>
-        {['', 'x86', 'x64', 'arm64'].map(a => <option key={a} value={a}>{a || '(niet opgegeven)'}</option>)}</select></label>
-      {f('lang', 'Taal')}{f('revision', 'Revisie')}{f('author', 'Auteur script')}{f('script_version', 'Scriptversie')}
-      <label>Processen om te sluiten (komma-gescheiden, zonder .exe)
+      {f('name', 'Name *', { required: true })}{f('vendor', 'Vendor')}{f('version', 'Version')}
+      <label>Architecture<select value={app.arch} onChange={e => onChange({ ...app, arch: e.target.value })}>
+        {['', 'x86', 'x64', 'arm64'].map(a => <option key={a} value={a}>{a || '(not specified)'}</option>)}</select></label>
+      {f('lang', 'Language')}{f('revision', 'Revision')}{f('author', 'Script author')}{f('script_version', 'Script version')}
+      <label>Processes to close (comma-separated, without .exe)
         <input defaultValue={app.processes_to_close.join(', ')} onBlur={e => onChange({ ...app, processes_to_close: list(e.target.value) })} /></label>
-      <label>Succes-exitcodes<input defaultValue={app.success_exit_codes.join(', ')} onBlur={e => onChange({ ...app, success_exit_codes: list(e.target.value).map(Number) })} /></label>
-      <label>Herstart-exitcodes<input defaultValue={app.reboot_exit_codes.join(', ')} onBlur={e => onChange({ ...app, reboot_exit_codes: list(e.target.value).map(Number) })} /></label>
-      <label className="check"><input type="checkbox" checked={app.require_admin} onChange={e => onChange({ ...app, require_admin: e.target.checked })} />Beheerdersrechten vereist</label>
+      <label>Success exit codes<input defaultValue={app.success_exit_codes.join(', ')} onBlur={e => onChange({ ...app, success_exit_codes: list(e.target.value).map(Number) })} /></label>
+      <label>Reboot exit codes<input defaultValue={app.reboot_exit_codes.join(', ')} onBlur={e => onChange({ ...app, reboot_exit_codes: list(e.target.value).map(Number) })} /></label>
+      <label className="check"><input type="checkbox" checked={app.require_admin} onChange={e => onChange({ ...app, require_admin: e.target.checked })} />Requires administrator rights</label>
     </div>
   )
 }
@@ -128,13 +128,13 @@ function Files({ id, files, reload }) {
   }
   return (
     <section>
-      <p className="muted">Bestanden komen in de map <code>Files</code> van het pakket.</p>
+      <p className="muted">Files go into the package's <code>Files</code> folder.</p>
       <input type="file" multiple onChange={onPick} disabled={busy} />
-      {busy && <p>Bezig met uploaden…</p>}
+      {busy && <p>Uploading…</p>}
       {error && <p className="error">{error}</p>}
       <table><tbody>{files.map(f => (
         <tr key={f.name}><td>{f.name}</td><td>{(f.size / 1048576).toFixed(1)} MB</td>
-          <td><button className="link danger" onClick={() => remove(f.name)}>Verwijderen</button></td></tr>))}
+          <td><button className="link danger" onClick={() => remove(f.name)}>Delete</button></td></tr>))}
       </tbody></table>
     </section>
   )
@@ -144,19 +144,19 @@ function DetectionEditor({ rules, onChange }) {
   const [type, setType] = useState('msi')
   return (
     <section>
-      <p className="muted">Intune gebruikt dit script om te zien of de app geïnstalleerd is. Alle regels moeten kloppen.</p>
-      {rules.length === 0 && <p className="muted">Nog geen regels.</p>}
+      <p className="muted">Intune uses this script to see whether the app is installed. All rules must match.</p>
+      {rules.length === 0 && <p className="muted">No rules yet.</p>}
       {rules.map((r, i) => (
         <div className="step" key={i}>
           <div className="step-head"><strong>{i + 1}. {DETECTION_TYPES[r.type].label}</strong>
-            <button className="icon danger" onClick={() => onChange(rules.filter((_, j) => j !== i))} title="Verwijderen">✕</button></div>
+            <button className="icon danger" onClick={() => onChange(rules.filter((_, j) => j !== i))} title="Delete">✕</button></div>
           <div className="grid">{DETECTION_TYPES[r.type].fields.map(([k, label]) => (
             <label key={k}>{label}<input value={r[k] ?? ''} onChange={e => onChange(rules.map((x, j) => j === i ? { ...x, [k]: e.target.value } : x))} /></label>))}
           </div>
         </div>))}
       <div className="row">
         <select value={type} onChange={e => setType(e.target.value)}>{Object.entries(DETECTION_TYPES).map(([t, d]) => <option key={t} value={t}>{d.label}</option>)}</select>
-        <button className="secondary" onClick={() => onChange([...rules, { type, ...DETECTION_TYPES[type].defaults }])}>Regel toevoegen</button>
+        <button className="secondary" onClick={() => onChange([...rules, { type, ...DETECTION_TYPES[type].defaults }])}>Add rule</button>
       </div>
     </section>
   )
@@ -171,15 +171,15 @@ function Export({ id }) {
       <div className="row">
         <a className="button" href={`/api/packages/${id}/export/zip`}>Download ZIP</a>
         <a className="button" href={`/api/packages/${id}/export/intunewin`}>Download .intunewin</a>
-        <a className="button" href={`/api/packages/${id}/detection?download=1`}>Download detectiescript</a>
+        <a className="button" href={`/api/packages/${id}/detection?download=1`}>Download detection script</a>
       </div>
-      <p className="muted">Het bouwen kan bij grote installatiebestanden even duren.</p>
-      <h3>Intune-instellingen</h3>
+      <p className="muted">Building can take a while with large installer files.</p>
+      <h3>Intune settings</h3>
       <table><tbody>
-        <tr><td>Installatieopdracht</td><td><code>{cmd('Install')}</code></td></tr>
-        <tr><td>Verwijderopdracht</td><td><code>{cmd('Uninstall')}</code></td></tr>
-        <tr><td>Installatiegedrag</td><td>Systeem</td></tr>
-        <tr><td>Detectie</td><td>Aangepast detectiescript (hieronder)</td></tr>
+        <tr><td>Install command</td><td><code>{cmd('Install')}</code></td></tr>
+        <tr><td>Uninstall command</td><td><code>{cmd('Uninstall')}</code></td></tr>
+        <tr><td>Install behavior</td><td>System</td></tr>
+        <tr><td>Detection</td><td>Custom detection script (below)</td></tr>
       </tbody></table>
       <pre className="code">{detect}</pre>
     </section>
@@ -199,9 +199,9 @@ function Preview({ id }) {
     <section>
       <div className="row">
         <a className="button" href={`/api/packages/${id}/script?download=1`}>Download Invoke-AppDeployToolkit.ps1</a>
-        <button className="secondary" onClick={runCheck}>Syntax controleren</button>
-        {check && !check.busy && (!check.available ? <span className="muted">PowerShell niet beschikbaar op de server</span>
-          : check.errors.length ? <span className="error">{check.errors.length} fout(en)</span> : <span className="ok">Geen syntaxfouten</span>)}
+        <button className="secondary" onClick={runCheck}>Check syntax</button>
+        {check && !check.busy && (!check.available ? <span className="muted">PowerShell not available on the server</span>
+          : check.errors.length ? <span className="error">{check.errors.length} error(s)</span> : <span className="ok">No syntax errors</span>)}
       </div>
       {check?.errors?.length > 0 && <pre className="error">{check.errors.join('\n')}</pre>}
       {error ? <pre className="error">{error}</pre> : <pre className="code">{script}</pre>}
@@ -223,7 +223,7 @@ export default function Editor({ id, readOnly, onClose }) {
   async function save() {
     try {
       setPkg(await api(`/api/packages/${id}`, { method: 'PUT', body: pkg.data }))
-      setDirty(false); setMsg({ ok: true, text: 'Opgeslagen' })
+      setDirty(false); setMsg({ ok: true, text: 'Saved' })
       return true
     } catch (e) { setMsg({ ok: false, text: e.message }); return false }
   }
@@ -232,7 +232,7 @@ export default function Editor({ id, readOnly, onClose }) {
     setTab(t)
   }
   function close() {
-    if (dirty && !window.confirm('Er zijn niet-opgeslagen wijzigingen. Toch sluiten?')) return
+    if (dirty && !window.confirm('There are unsaved changes. Close anyway?')) return
     onClose()
   }
 
@@ -241,10 +241,10 @@ export default function Editor({ id, readOnly, onClose }) {
   return (
     <section>
       <div className="row between">
-        <h2><button className="link" onClick={close}>Pakketten</button> › {d.app.name}</h2>
+        <h2><button className="link" onClick={close}>Packages</button> › {d.app.name}</h2>
         <span className="row">
           {msg && <span className={msg.ok ? 'ok' : 'error pre'}>{msg.text}</span>}
-          {readOnly ? <span className="muted">Alleen lezen</span> : <button onClick={save} disabled={!dirty}>Opslaan</button>}
+          {readOnly ? <span className="muted">Read only</span> : <button onClick={save} disabled={!dirty}>Save</button>}
         </span>
       </div>
       <nav className="tabs">{TABS.map(([k, l]) => <button key={k} className={tab === k ? 'active' : ''} onClick={() => switchTab(k)}>{l}</button>)}</nav>

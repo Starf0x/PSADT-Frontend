@@ -21,7 +21,7 @@ export default function Packages({ readOnly }) {
   }
 
   async function remove(p) {
-    if (!window.confirm(`Pakket "${p.name}" en alle bestanden verwijderen?`)) return
+    if (!window.confirm(`Delete package "${p.name}" and all its files?`)) return
     await api(`/api/packages/${p.id}`, { method: 'DELETE' }).catch(e => setError(e.message))
     load()
   }
@@ -30,20 +30,20 @@ export default function Packages({ readOnly }) {
 
   return (
     <section>
-      <h2>Pakketten</h2>
+      <h2>Packages</h2>
       {!readOnly && <form className="row" onSubmit={create}>
-        <input placeholder="Naam van de applicatie" value={name} onChange={e => setName(e.target.value)} required maxLength={100} />
-        <button>Nieuw pakket</button>
+        <input placeholder="Application name" value={name} onChange={e => setName(e.target.value)} required maxLength={100} />
+        <button>New package</button>
       </form>}
       {error && <p className="error">{error}</p>}
-      {list.length === 0 ? <p className="muted">Nog geen pakketten.</p> : (
+      {list.length === 0 ? <p className="muted">No packages yet.</p> : (
         <table>
-          <thead><tr><th>Naam</th><th>Leverancier</th><th>Versie</th><th>Gewijzigd</th><th /></tr></thead>
+          <thead><tr><th>Name</th><th>Vendor</th><th>Version</th><th>Modified</th><th /></tr></thead>
           <tbody>{list.map(p => (
             <tr key={p.id}>
               <td><button className="link" onClick={() => setOpenId(p.id)}>{p.name}</button></td>
               <td>{p.vendor}</td><td>{p.version}</td><td>{new Date(p.updated_at).toLocaleString()}</td>
-              <td>{!readOnly && <button className="link danger" onClick={() => remove(p)}>Verwijderen</button>}</td>
+              <td>{!readOnly && <button className="link danger" onClick={() => remove(p)}>Delete</button>}</td>
             </tr>))}
           </tbody>
         </table>

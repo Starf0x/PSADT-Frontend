@@ -11,7 +11,7 @@ export async function api(path, { method = 'GET', body } = {}) {
   })
   if (res.status === 204) return null
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(formatError(data.detail) || `Fout ${res.status}`)
+  if (!res.ok) throw new Error(formatError(data.detail) || `Error ${res.status}`)
   if (data.csrf_token) csrf = data.csrf_token
   return data
 }
@@ -21,7 +21,7 @@ export async function upload(path, file) {
   form.append('file', file)
   const res = await fetch(path, { method: 'POST', body: form, credentials: 'same-origin', headers: { 'X-CSRF-Token': csrf } })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.detail || `Fout ${res.status}`)
+  if (!res.ok) throw new Error(data.detail || `Error ${res.status}`)
   return data
 }
 
