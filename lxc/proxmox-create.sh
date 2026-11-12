@@ -29,15 +29,16 @@ command -v pct >/dev/null || { echo "Dit script moet op een Proxmox VE-host draa
 [ "$(id -u)" -eq 0 ] || { echo "Draai dit script als root."; exit 1; }
 if pct status "$CTID" >/dev/null 2>&1; then echo "CT $CTID bestaat al; kies een andere CTID."; exit 1; fi
 
-# Opslag voor de container: opgegeven, anders local-lvm/local-zfs, anders de eerste die containers toestaat
-ROOTDIR_STORES=$(pvesm status -content rootdir 2>/dev/null | awk 'NR>1 && $3=="active" {print $1}')
+# Opslag voor de container: opgegeven, anders de lokale opslag (geen nfs/cifs) met de meeste vrije ruimte (min. 2x DISK)
+PVESM=$(pvesm status -content rootdir 2>/dev/null | awk 'NR>1 && $3=="active"')
+ROOTDIR_STORES=$(echo "$PVESM" | awk '{print $1}')
 if [ -z "$STORAGE" ]; then
-  for s in local-lvm local-zfs; do echo "$ROOTDIR_STORES" | grep -qx "$s" && STORAGE=$s && break; done
-  [ -z "$STORAGE" ] && STORAGE=$(echo "$ROOTDIR_STORES" | head -1)
+  STORAGE=$(echo "$PVESM" | awk -v need=$((DISK * 2 * 1024 * 1024)) '$2!="nfs" && $2!="cifs" && $6>=need {print $6, $1}' | sort -nr | head -1 | cut -d" " -f2)
 fi
 if [ -z "$STORAGE" ] || ! echo "$ROOTDIR_STORES" | grep -qx "$STORAGE"; then
-  echo "Opslag '${STORAGE:-?}' niet bruikbaar voor containers. Beschikbaar: $(echo $ROOTDIR_STORES)"
-  echo "Kies er een met STORAGE=<naam> bash ..."
+  echo "Geen geschikte opslag gevonden. Beschikbaar voor containers:"
+  echo "$PVESM" | awk '{printf "  %-12s %-8s %6.0f GB vrij\n", $1, $2, $6/1048576}'
+  echo "Kies er een met: STORAGE=<naam> bash ..."
   exit 1
 fi
 echo "==> Opslag: $STORAGE"

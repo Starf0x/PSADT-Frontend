@@ -84,7 +84,7 @@ bash -c "$(curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: appli
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/proxmox-create.sh)"
 ```
 
-Aanpasbaar met variabelen, bijv. `CTID=120 IP=192.168.1.50/24 GW=192.168.1.1 STORAGE=local-zfs MEMORY=4096`. Standaard: DHCP, `vmbr0`, 2 cores, 2 GB RAM, 16 GB disk, unprivileged met nesting; opslag wordt automatisch gekozen (`local-lvm`, `local-zfs` of de eerste die containers toestaat, zie `pvesm status -content rootdir`). Aan het eind toont het script de URL en het admin-wachtwoord.
+Aanpasbaar met variabelen, bijv. `CTID=120 IP=192.168.1.50/24 GW=192.168.1.1 STORAGE=local-zfs MEMORY=4096`. Standaard: DHCP, `vmbr0`, 2 cores, 2 GB RAM, 16 GB disk, unprivileged met nesting; opslag wordt automatisch gekozen: lokale opslag (geen NFS/CIFS) met de meeste vrije ruimte, zie `pvesm status -content rootdir`. Aan het eind toont het script de URL en het admin-wachtwoord.
 
 Let op: gebruik de **raw**-link (`raw.githubusercontent.com`), niet de `github.com/.../blob/...`-link; die geeft HTML (of 404 bij een privé-repo).
 
