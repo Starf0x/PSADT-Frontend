@@ -59,7 +59,9 @@ def _install_id(db: Session) -> str:
 
 def _post(url: str, token: str, body: dict) -> None:
     req = urllib.request.Request(url, data=json.dumps(body).encode(), method="POST",
-                                 headers={"Content-Type": "application/json", "X-Webhook-Token": token})
+                                 headers={"Content-Type": "application/json", "X-Webhook-Token": token,
+                                          # urllib's own "Python-urllib" agent is refused by many web firewalls
+                                          "User-Agent": f"PSADT-Frontend/{body.get('version', '')}"})
     with urllib.request.urlopen(req, timeout=10) as res:  # noqa: S310 - fixed https URL or the operator's own
         if res.status >= 300:
             raise OSError(f"answered {res.status}")
