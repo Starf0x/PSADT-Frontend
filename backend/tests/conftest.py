@@ -12,6 +12,7 @@ from app.config import settings
 def client(monkeypatch, tmp_path):
     monkeypatch.setattr(settings, "admin_password", "correct-horse-battery")
     monkeypatch.setattr(settings, "cookie_secure", False)
+    monkeypatch.setenv("PSADT_USAGE_OPTOUT", "1")  # tests never phone home
     monkeypatch.setattr(settings, "data_dir", tmp_path)
     dbmod.engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     dbmod.SessionLocal = sessionmaker(dbmod.engine, expire_on_commit=False)

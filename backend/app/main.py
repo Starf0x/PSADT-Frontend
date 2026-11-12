@@ -30,8 +30,10 @@ async def lifespan(app: FastAPI):
 
 
 async def _purge_loop():
-    """Hourly: remove uploads that are older than the retention chosen on the System page."""
+    """Hourly: remove old uploads (retention on the System page) and send the daily usage check-in."""
     from .retention import purge_old_uploads
+
+    from .usage import report_once
 
     while True:
         try:
@@ -39,6 +41,11 @@ async def _purge_loop():
                 purge_old_uploads(db)
         except Exception as e:  # noqa: BLE001 - keep the loop alive
             print(f"[psadt-frontend] upload cleanup failed: {e}", flush=True)
+        try:
+            with dbmod.SessionLocal() as db:
+                await asyncio.to_thread(report_once, db, APP_VERSION)
+        except Exception as e:  # noqa: BLE001
+            print(f"[psadt-frontend] usage check-in failed: {e}", flush=True)
         await asyncio.sleep(3600)
 
 
