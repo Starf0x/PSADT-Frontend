@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..config import settings
-from ..db import Package, User, get_db, get_setting
+from ..db import Export, Package, User, get_db, get_setting
 from ..psadt.detection import generate_detection
 from ..psadt.export import build_intunewin, build_zip, to_windows
 from ..psadt.generator import generate
@@ -128,7 +128,7 @@ def get_detection(pid: int, download: bool = False, db: Session = Depends(get_db
 
 
 @router.get("/{pid}/export/{fmt}")
-def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get_db), user: User = Depends(current_user)):
     if fmt not in ("zip", "intunewin"):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Unknown format")
     pkg = _get(db, pid)
@@ -150,13 +150,20 @@ def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get
     if after_export:
         tasks.add_task(purge_package, files_dir(pid))
     if fmt == "zip":
+        _count(db, pkg, user, fmt)
         tasks.add_task(_cleanup, zip_path)
         return FileResponse(zip_path, filename=f"{_slug(pkg)}.zip", media_type="application/zip")
     out = zip_path.with_suffix(".intunewin")
     build_intunewin(zip_path, out)
     zip_path.unlink()
+    _count(db, pkg, user, fmt)
     tasks.add_task(_cleanup, out)
     return FileResponse(out, filename=f"{_slug(pkg)}.intunewin", media_type="application/octet-stream")
+
+
+def _count(db: Session, pkg: Package, user: User, fmt: str) -> None:
+    db.add(Export(user_id=user.id, package_id=pkg.id, package_name=pkg.name[:100], fmt=fmt))
+    db.commit()
 
 
 @router.get("/{pid}/script")

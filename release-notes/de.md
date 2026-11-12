@@ -1,5 +1,12 @@
 # Was ist neu
 
+## 0.2.33
+- Die Seite Pakete zählt jeden erfolgreichen Download: insgesamt, von dir und pro Benutzer.
+- Neue Erkennungsregel "MSIX-Paket": findet eine für alle Benutzer installierte App, mit Get-AppxProvisionedPackage oder mit DISM. Ein Teil des Namens genügt.
+- Registrierungsschlüssel haben Schaltflächen für HKLM, HKCU, HKEY_CLASSES_ROOT und HKU.
+- Das Update über die Seite System zeigt jetzt einen animierten Fortschrittsbalken mit Prozentangabe, und die Seite lädt sich danach selbst neu.
+- Behoben: Nach einem Update lief die alte Version im Hintergrund weiter, wodurch manche Seiten leer blieben und neue Optionen (wie winget) abgelehnt wurden. Die App wird jetzt immer neu gestartet.
+
 ## 0.2.22
 - Erkennungsregel "MSI ProductCode": MSI wählen (bereits hochgeladen oder auf dem PC durchsuchen), der ProductCode wird automatisch eingetragen. Produktname und Version werden zur Kontrolle angezeigt.
 - Nach einem Update lädt der Browser jetzt immer sofort die neue Version, statt die alte Seite aus dem Cache zu zeigen.

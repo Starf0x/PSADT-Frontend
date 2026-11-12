@@ -147,5 +147,7 @@ fi
 
 systemctl daemon-reload
 [ -f /etc/systemd/system/psadt-frontend-update.path ] && systemctl enable -q --now psadt-frontend-update.path
-systemctl enable --now psadt-frontend
+# restart, not just start: on an update the old code is still running in memory
+systemctl enable -q psadt-frontend
+systemctl restart psadt-frontend
 echo "Done. Admin password (first start): journalctl -u psadt-frontend | grep 'admin password'"

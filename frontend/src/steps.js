@@ -28,4 +28,5 @@ export const DETECTION_TYPES = {
   msi: { label: 'MSI ProductCode', fields: [['product_code', 'ProductCode {GUID}'], ['min_version', 'Minimum version (optional)']], defaults: { product_code: '', min_version: '' } },
   file: { label: 'File', fields: [['path', 'Path (may contain %ProgramFiles%)'], ['min_version', 'Minimum file version (optional)']], defaults: { path: '', min_version: '' } },
   registry: { label: 'Registry', fields: [['key', 'Key (HKLM\\...)'], ['name', 'Value name (empty = key exists)'], ['value', 'Expected value (optional)']], defaults: { key: 'HKLM\\SOFTWARE\\', name: '', value: '' } },
+  msix: { label: 'MSIX package', fields: [['name', 'Package name (part of it is enough)'], ['method', 'Check with', ['Get-AppxProvisionedPackage', 'DISM']], ['min_version', 'Minimum version (optional, not with DISM)']], defaults: { name: '', method: 'Get-AppxProvisionedPackage', min_version: '' } },
 }

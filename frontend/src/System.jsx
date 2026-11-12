@@ -85,7 +85,8 @@ export default function System() {
     if (!running) return
     const timer = setInterval(() => api('/api/system/update').then(i => {
       setInfo(i)
-      if (i.progress?.done && i.progress.to?.replace(/^v/, '') === i.current) setAsked(false)
+      // Finished on the new version: load the new page after a moment.
+      if (i.progress?.done && i.progress.ok && i.progress.to?.replace(/^v/, '') === i.current) setTimeout(() => window.location.reload(), 2500)
       if (i.progress?.done && !i.progress.ok) setAsked(false)
     }).catch(() => {}), 2000)
     return () => clearInterval(timer)
@@ -98,6 +99,7 @@ export default function System() {
 
   if (!info) return <section><h2>{t('System')}</h2>{error ? <p className="error">{error}</p> : <p className="muted">{t('Loading…')}</p>}</section>
   const last = info.last
+  const pct = p ? (p.done ? 100 : Math.max(4, Math.round((p.step / p.of) * 100))) : 0
   return (
     <section>
       <h2>{t('System')}</h2>
@@ -111,7 +113,8 @@ export default function System() {
       {running && p ? (
         <div className="card">
           <p>{p.done ? (p.ok ? t('Finished: now on {v}. Reload the page.', { v: p.to }) : `${t('Update failed')}: ${p.said}`) : `${t('Step {n} of {of}', { n: p.step, of: p.of })}: ${t(p.doing)}`}</p>
-          <progress max={p.of} value={p.step} style={{ width: '100%' }} />
+          <div className={`bar big${p.done ? '' : ' busy'}${p.done && !p.ok ? ' failed' : ''}`}><div style={{ width: `${pct}%` }} /></div>
+          <p className="muted small" style={{ textAlign: 'right', margin: '.3rem 0 0' }}>{pct}%</p>
           {!p.done && <p className="muted">{t('The app restarts during the update; this page carries on by itself.')}</p>}
         </div>
       ) : info.newer ? (

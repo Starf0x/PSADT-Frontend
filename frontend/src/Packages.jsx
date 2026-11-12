@@ -3,14 +3,32 @@ import { api } from './api.js'
 import Editor from './Editor.jsx'
 import { t } from './i18n.js'
 
+// Counters of successful exports: in total, by you, and per user.
+function Stats({ stats }) {
+  if (!stats) return null
+  return (
+    <div className="stats">
+      <div className="stat"><span>{t('Packages exported')}</span><b>{stats.total}</b></div>
+      <div className="stat"><span>{t('Exported by you')}</span><b>{stats.mine}</b></div>
+      <div className="stat wide">
+        <span>{t('Per user')}</span>
+        {stats.per_user.length === 0 ? <em className="muted small">{t('No exports yet.')}</em> : (
+          <ul>{stats.per_user.map((u, i) => (
+            <li key={i} className={u.me ? 'me' : undefined}><span>{u.name || t('(removed user)')}</span><b>{u.count}</b></li>))}</ul>)}
+      </div>
+    </div>
+  )
+}
+
 export default function Packages({ readOnly }) {
+  const [stats, setStats] = useState(null)
   const [list, setList] = useState([])
   const [openId, setOpenId] = useState(null)
   const [name, setName] = useState('')
   const [error, setError] = useState('')
 
   const load = () => api('/api/packages').then(setList).catch(e => setError(e.message))
-  useEffect(() => { if (openId === null) load() }, [openId])
+  useEffect(() => { if (openId === null) { load(); api('/api/stats').then(setStats).catch(() => {}) } }, [openId])
 
   async function create(e) {
     e.preventDefault()
@@ -32,6 +50,7 @@ export default function Packages({ readOnly }) {
   return (
     <section>
       <h2>{t('Packages')}</h2>
+      <Stats stats={stats} />
       {!readOnly && <form className="row" onSubmit={create}>
         <input placeholder={t('Application name')} value={name} onChange={e => setName(e.target.value)} required maxLength={100} />
         <button>{t('New package')}</button>
