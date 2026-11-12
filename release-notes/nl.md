@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.3.0
+- Alleen beheerders kunnen nu pakketten verwijderen. Bewerkers kunnen ze nog wel maken en aanpassen.
+
 ## 0.2.99
 - Opgelost: de dagelijkse melding kon door de firewall van de ontvanger worden geweigerd, omdat hij zich als Python-script voordeed. Hij meldt zich nu als PSADT Frontend.
 - De GitHub-pagina heeft een nieuwe README met screenshots, en de wiki heeft nu een uitgebreide handleiding met een pagina voor elk scherm.

@@ -6,8 +6,8 @@ Administrators manage users on the **Users** page: create, change the role, set 
 
 | Role | Can |
 |------|-----|
-| Administrator | Everything, plus users, updates and system settings |
-| Editor | Create, change and delete packages and snippets |
+| Administrator | Everything, including deleting packages, plus users, updates and system settings |
+| Editor | Create and change packages; create, change and delete snippets. Can't delete packages. |
 | Read only | View everything, check scripts and export |
 
 - Every user has a **login name** (to sign in) and a **full name** (shown in the app and used as script author for new packages).
