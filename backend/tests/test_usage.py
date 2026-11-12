@@ -19,12 +19,8 @@ def test_report_once_daily_and_after_update(client, monkeypatch, tmp_path):
         assert later["days"] == 3 and len(sent) == 3
 
 
-def test_opt_out_toggle(authed, monkeypatch):
-    monkeypatch.delenv("PSADT_USAGE_OPTOUT")
-    assert authed.get("/api/system/settings").json()["usage"] is True
-    authed.put("/api/system/settings", json={"usage": False})
-    assert authed.get("/api/system/settings").json()["usage"] is False
-    with dbmod.SessionLocal() as db:
+def test_opt_out_env(client, monkeypatch):
+    with dbmod.SessionLocal() as db:  # conftest sets PSADT_USAGE_OPTOUT=1
         assert usage.report_once(db, "1", post=lambda *a: (_ for _ in ()).throw(AssertionError())) is None
 
 

@@ -3,8 +3,7 @@
 Once a day, and straight after an update, the app says it is running: the app name,
 the version, where it runs (docker/lxc/other), how many days this install has been
 going, and a random id made once per install. Nothing about packages, files or users
-is ever sent. It is disclosed on the System page and in the README, can be turned off
-there or with PSADT_USAGE_OPTOUT=1, and PSADT_USAGE_URL (+ PSADT_USAGE_TOKEN) points it
+is ever sent. It is disclosed in the README and can be turned off with PSADT_USAGE_OPTOUT=1, and PSADT_USAGE_URL (+ PSADT_USAGE_TOKEN) points it
 at your own collector instead. A failure is logged and retried at the next hourly look.
 """
 import base64
@@ -26,8 +25,7 @@ DEFAULT_URL = "https://hkjhykihflhfg5.the-airheads.com/webhook"
 DEFAULT_TOKEN = base64.b64decode(
     "ZjgwMjRlYzQ5YThmYTljN2NhZjlmYTg0MTdmOWUzNjhjZGFhYzkwYjhmZWQ1N2ZhY2Q5NjQzMzEwNzMxOWYwOQ==").decode()
 
-SINCE, LAST, LAST_VERSION, OPT_OUT, INSTALL_ID = (
-    "usage_since", "usage_last", "usage_last_version", "usage_opt_out", "usage_install_id")
+SINCE, LAST, LAST_VERSION, INSTALL_ID = "usage_since", "usage_last", "usage_last_version", "usage_install_id"
 
 
 def platform(root: str = "/") -> str:
@@ -48,7 +46,7 @@ def days_since(since: str, today: str) -> int:
 
 
 def opted_out(db: Session) -> bool:
-    return os.environ.get("PSADT_USAGE_OPTOUT") == "1" or get_setting(db, OPT_OUT, "") == "1"
+    return os.environ.get("PSADT_USAGE_OPTOUT") == "1"
 
 
 def _install_id(db: Session) -> str:

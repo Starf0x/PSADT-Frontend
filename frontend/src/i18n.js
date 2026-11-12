@@ -5,10 +5,6 @@ export const LANGS = [['en', 'English'], ['nl', 'Nederlands'], ['de', 'Deutsch']
 const ROWS = [
   ['(none)', '(geen)', '(keine)'],
   ['Browse…', 'Bladeren…', 'Durchsuchen…'],
-  ['Anonymous usage', 'Anoniem gebruik', 'Anonyme Nutzung'],
-  ['Once a day, and right after an update, the app tells its author it is running: the version, where it runs (Docker, LXC or other), how many days it has been running and a random id for this install. Nothing about packages, files or users is ever sent. It helps decide whether to keep developing the app.', 'Eén keer per dag, en direct na een update, laat de app de maker weten dat hij draait: de versie, waar hij draait (Docker, LXC of anders), hoeveel dagen hij al draait en een willekeurige id voor deze installatie. Er wordt nooit iets over pakketten, bestanden of gebruikers verstuurd. Het helpt om te beslissen of de app verder ontwikkeld wordt.', 'Einmal am Tag und direkt nach einem Update meldet die App ihrem Autor, dass sie läuft: die Version, wo sie läuft (Docker, LXC oder anders), seit wie vielen Tagen und eine zufällige ID für diese Installation. Über Pakete, Dateien oder Benutzer wird nie etwas gesendet. Es hilft zu entscheiden, ob die App weiterentwickelt wird.'],
-  ['Send the anonymous daily check-in', 'Dagelijkse anonieme melding versturen', 'Tägliche anonyme Meldung senden'],
-  ['Switched off on the server with PSADT_USAGE_OPTOUT=1.', 'Op de server uitgezet met PSADT_USAGE_OPTOUT=1.', 'Auf dem Server mit PSADT_USAGE_OPTOUT=1 ausgeschaltet.'],
   ['The download buttons work once the problems in the check above are fixed.', 'De downloadknoppen werken zodra de problemen in de controle hierboven zijn opgelost.', 'Die Download-Schaltflächen funktionieren, sobald die Probleme in der Prüfung oben behoben sind.'],
   ['Building the package…', 'Pakket wordt gebouwd…', 'Paket wird erstellt…'],
   ['Downloading…', 'Downloaden…', 'Wird heruntergeladen…'],

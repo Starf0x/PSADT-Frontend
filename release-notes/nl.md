@@ -2,7 +2,7 @@
 
 ## 0.2.66
 - De achtergrond heeft nu dezelfde zachte gloed als My Audiobook Collection, en de kleuren van de hele app veranderen elke nacht een beetje.
-- Anonieme dagelijkse melding, net als in My Audiobook Collection: één keer per dag laat de app de maker weten dat hij draait (versie, Docker/LXC, aantal dagen, een willekeurige id). Er wordt niets over je pakketten, bestanden of gebruikers verstuurd. Je kunt het uitzetten op de System-pagina.
+- Anonieme dagelijkse melding, net als in My Audiobook Collection: één keer per dag laat de app de maker weten dat hij draait (versie, Docker/LXC, aantal dagen, een willekeurige id). Er wordt niets over je pakketten, bestanden of gebruikers verstuurd. Uitzetten kan met PSADT_USAGE_OPTOUT=1 op de server.
 
 ## 0.2.55
 - Bij het downloaden van een pakket zie je nu wat er gebeurt: eerst "Pakket wordt gebouwd…", dan een voortgangsbalk en tot slot de bestandsnaam als het klaar is.
