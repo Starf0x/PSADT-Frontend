@@ -11,7 +11,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-**Version:** 0.1.88 (see `VERSION`)
+**Version:** 0.1.99 (see `VERSION`)
 
 ## Status and roadmap
 
@@ -29,6 +29,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 10 | Full name per user (used as script author), upload progress bars | ✅ v0.1.66 |
 | 11 | `{Files}` placeholder in step arguments | ✅ v0.1.77 |
 | 12 | Full-width argument, path and code fields; one-click {Files} and file inserts | ✅ v0.1.88 |
+| 13 | Update notice for admins (dot in the menu, banner, "Check now") | ✅ v0.1.99 |
 
 ## Architecture
 

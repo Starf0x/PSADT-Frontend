@@ -1,5 +1,9 @@
 # Was ist neu
 
+## 0.1.99
+- Wenn eine neuere Version verfügbar ist, sehen Administratoren einen orangen Punkt bei System und einen Hinweis oben auf jeder Seite.
+- Auf der Systemseite gibt es die Schaltfläche „Jetzt prüfen“, und die App sucht alle 15 Minuten statt stündlich nach neuen Versionen.
+
 ## 0.1.88
 - Argumente, Pfade und Code in einem Schritt nutzen jetzt die volle Breite, damit lange Befehle gut lesbar sind.
 - Unter den Argumenten klicken Sie auf {Files} oder eine hochgeladene Datei, um den vollständigen Pfad einzufügen, ohne ihn zu tippen.

@@ -3,6 +3,10 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.1.99
+- When a newer version is out, administrators see an orange dot next to System and a message at the top of every page.
+- The System page has a "Check now" button, and the app looks for new versions every 15 minutes instead of every hour.
+
 ## 0.1.88
 - Arguments, paths and code in a step now use the full width, so long commands are easy to read.
 - Under the arguments you can click {Files} or one of your uploaded files to insert its full path, so you do not have to type it.

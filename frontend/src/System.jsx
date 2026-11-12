@@ -73,6 +73,8 @@ export default function System() {
   const [error, setError] = useState('')
   const [asked, setAsked] = useState(false)
 
+  const [checking, setChecking] = useState(false)
+  const checkNow = () => { setChecking(true); api('/api/system/update?refresh=1').then(i => { setInfo(i); setError('') }).catch(e => setError(e.message)).finally(() => setChecking(false)) }
   const load = () => api('/api/system/update').then(i => { setInfo(i); setError('') }).catch(e => setError(e.message))
   useEffect(() => { load() }, [])
 
@@ -101,7 +103,7 @@ export default function System() {
       <h2>{t('System')}</h2>
       <table><tbody>
         <tr><td>{t('Installed version')}</td><td>v{info.current}</td></tr>
-        <tr><td>{t('Newest release')}</td><td>{info.newest ? `v${info.newest}` : '—'} {info.error && <span className="muted">({info.error})</span>}</td></tr>
+        <tr><td>{t('Newest release')}</td><td>{info.newest ? `v${info.newest}` : '—'} {info.error && <span className="muted">({info.error})</span>} <button className="link small" onClick={checkNow} disabled={checking}>{checking ? t('Checking…') : t('Check now')}</button></td></tr>
         <tr><td>{t('Install type')}</td><td>{t({ lxc: 'LXC container', docker: 'Docker', other: 'Other / development' }[info.install])}</td></tr>
         {last && <tr><td>{t('Last update')}</td><td>{new Date(last.at).toLocaleString()}: {last.ok ? `${last.from} → ${last.to}` : t('failed')}{last.said && ` (${last.said})`}</td></tr>}
       </tbody></table>

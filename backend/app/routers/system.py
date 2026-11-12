@@ -46,18 +46,18 @@ def current_version() -> str:
     return APP_VERSION
 
 
-def newest_release() -> tuple[str | None, str | None]:
-    """Newest version tag on GitHub, cached for an hour (10 minutes after an error)."""
-    if time.time() - _cache["at"] < _cache["ttl"]:
+def newest_release(fresh: bool = False) -> tuple[str | None, str | None]:
+    """Newest version tag on GitHub, cached for 15 minutes (5 after an error); fresh=True asks GitHub now."""
+    if not fresh and time.time() - _cache["at"] < _cache["ttl"]:
         return _cache["tag"], _cache["error"]
     try:
         req = urllib.request.Request(f"https://api.github.com/repos/{REPO}/tags?per_page=100",
                                      headers={"Accept": "application/vnd.github+json", "User-Agent": "psadt-frontend"})
         with urllib.request.urlopen(req, timeout=10) as r:
             tags = [t["name"] for t in json.load(r) if re.fullmatch(r"v?\d+\.\d+\.\d+", t["name"])]
-        _cache.update(tag=max(tags, key=_version_tuple) if tags else None, error=None, ttl=3600)
+        _cache.update(tag=max(tags, key=_version_tuple) if tags else None, error=None, ttl=900)
     except Exception as e:  # noqa: BLE001 - network trouble must never break the page
-        _cache.update(error=f"Could not reach GitHub: {e}", ttl=600)
+        _cache.update(error=f"Could not reach GitHub: {e}", ttl=300)
     _cache["at"] = time.time()
     return _cache["tag"], _cache["error"]
 
@@ -78,8 +78,8 @@ def _read_json(name: str):
 
 
 @router.get("/update")
-def update_status():
-    newest, error = newest_release()
+def update_status(refresh: bool = False):
+    newest, error = newest_release(fresh=refresh)
     current = current_version()
     return {
         "current": current,
