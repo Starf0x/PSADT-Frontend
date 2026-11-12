@@ -4,7 +4,7 @@
 #   vanuit een clone:   bash lxc/install.sh
 #   los (one-liner):    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/install.sh)"
 #   privé-repo:         GITHUB_TOKEN=<token> bash -c "$(curl -fsSL -H "Authorization: Bearer <token>" -H "Accept: application/vnd.github.raw" https://api.github.com/repos/Starf0x/PSADT-Frontend/contents/lxc/install.sh)"
-# Wil je vanaf de Proxmox-host meteen een LXC laten aanmaken? Gebruik lxc/proxmox-create.sh.
+# Wil je vanaf de Proxmox-host meteen een LXC laten aanmaken? Gebruik ct/psadt-frontend.sh.
 # Draait dezelfde app als de Docker-image: zelfde code, zelfde env-variabelen, poort 8000.
 # Optioneel: PSADT_COOKIE_SECURE=false (alleen bij eerste installatie) als je zonder HTTPS test.
 set -euo pipefail
@@ -19,7 +19,7 @@ SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." 2>/dev/null && pwd || true
 
 [ "$(id -u)" -eq 0 ] || { echo "Draai dit script als root."; exit 1; }
 if command -v pveversion >/dev/null 2>&1; then
-  echo "Dit is een Proxmox-host. Draai dit script ín een LXC, of gebruik lxc/proxmox-create.sh op de host."
+  echo "Dit is een Proxmox-host. Draai dit script ín een LXC, of gebruik ct/psadt-frontend.sh op de host."
   exit 1
 fi
 
@@ -27,7 +27,7 @@ apt-get update -qq
 apt-get install -y -qq python3 python3-venv curl ca-certificates rsync git
 
 # Los gedraaid (bijv. via curl)? Dan eerst de broncode ophalen.
-if [ -z "$SRC_DIR" ] || [ ! -f "$SRC_DIR/backend/requirements.txt" ] || [ "$SRC_DIR" = /opt/psadt-frontend-src ]; then
+if [ "${PSADT_SKIP_FETCH:-0}" != 1 ] && { [ -z "$SRC_DIR" ] || [ ! -f "$SRC_DIR/backend/requirements.txt" ] || [ "$SRC_DIR" = /opt/psadt-frontend-src ]; }; then
   SRC_DIR=/opt/psadt-frontend-src
   URL="https://github.com/$REPO.git"
   [ -n "${GITHUB_TOKEN:-}" ] && URL="https://x-access-token:${GITHUB_TOKEN}@github.com/$REPO.git"

@@ -73,20 +73,17 @@ Open `http://<host>:8000`. Zonder HTTPS lokaal testen: zet `PSADT_COOKIE_SECURE=
 
 ## Installeren in een LXC-container (Proxmox)
 
-**Op de Proxmox-host** (maakt zelf een Debian 12-LXC aan en installeert de app erin):
+**Op de Proxmox-host**, één commando (Proxmox VE Helper Script, zelfde opbouw als de community-scripts):
 
 ```bash
-# Zolang de repo privé is: fine-grained token, alleen deze repo, Repository permissions → Contents: Read-only
-export GITHUB_TOKEN=<token>
-bash -c "$(curl -fsSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github.raw" https://api.github.com/repos/Starf0x/PSADT-Frontend/contents/lxc/proxmox-create.sh)"
-
-# Als de repo publiek is:
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/proxmox-create.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/ct/psadt-frontend.sh)"
 ```
 
-Aanpasbaar met variabelen, bijv. `CTID=120 IP=192.168.1.50/24 GW=192.168.1.1 STORAGE=local-zfs MEMORY=4096`. Standaard: DHCP, `vmbr0`, 2 cores, 2 GB RAM, 16 GB disk, unprivileged met nesting; opslag wordt automatisch gekozen: lokale opslag (geen NFS/CIFS) met de meeste vrije ruimte, zie `pvesm status -content rootdir`. Aan het eind toont het script de URL en het admin-wachtwoord.
+Je krijgt het bekende menu (Default / Advanced, opslag, netwerk, resources). Standaard: Debian 13, unprivileged, 2 cores, 2 GB RAM, 16 GB disk. Aan het eind staan de URL en het admin-wachtwoord (ook in `/root/psadt-frontend-admin.txt` in de container). Hetzelfde commando nogmaals op een bestaande container biedt een update naar de nieuwste release-tag aan.
 
-Let op: gebruik de **raw**-link (`raw.githubusercontent.com`), niet de `github.com/.../blob/...`-link; die geeft HTML (of 404 bij een privé-repo).
+- `ct/psadt-frontend.sh` draait op de host; de engine komt van `community-scripts/core`, `COMMUNITY_SCRIPTS_URL` wijst naar deze repo.
+- `install/psadtfrontend-install.sh` draait in de container (naam ligt vast: `${APP,,}` zonder spaties + `-install`) en roept `lxc/install.sh` aan.
+- **Werkt alleen met een publieke repo**: de engine haalt bestanden zonder token op via `raw.githubusercontent.com`.
 
 **In een bestaande Debian-LXC** (als root, niet op de host):
 
