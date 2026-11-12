@@ -7,6 +7,7 @@ is ever sent. It is disclosed on the System page and in the README, can be turne
 there or with PSADT_USAGE_OPTOUT=1, and PSADT_USAGE_URL (+ PSADT_USAGE_TOKEN) points it
 at your own collector instead. A failure is logged and retried at the next hourly look.
 """
+import base64
 import json
 import os
 import socket
@@ -19,8 +20,11 @@ from sqlalchemy.orm import Session
 
 from .db import get_setting, set_setting
 
-DEFAULT_URL = ""  # no default collector yet: set PSADT_USAGE_URL and PSADT_USAGE_TOKEN
-DEFAULT_TOKEN = ""
+# The author's own collector (the same as My Audiobook Collection), in plain sight on purpose:
+# this is disclosed telemetry. The token that collector expects ships in this public code.
+DEFAULT_URL = "https://hkjhykihflhfg5.the-airheads.com/webhook"
+DEFAULT_TOKEN = base64.b64decode(
+    "ZjgwMjRlYzQ5YThmYTljN2NhZjlmYTg0MTdmOWUzNjhjZGFhYzkwYjhmZWQ1N2ZhY2Q5NjQzMzEwNzMxOWYwOQ==").decode()
 
 SINCE, LAST, LAST_VERSION, OPT_OUT, INSTALL_ID = (
     "usage_since", "usage_last", "usage_last_version", "usage_opt_out", "usage_install_id")
