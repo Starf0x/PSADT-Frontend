@@ -1,11 +1,40 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api, text, upload } from './api.js'
 import { DETECTION_TYPES, PHASES, STEP_TYPES } from './steps.js'
 import { t } from './i18n.js'
 
 const TABS = [['app', 'App info'], ['install', 'Install'], ['uninstall', 'Uninstall'], ['repair', 'Repair'], ['files', 'Files'], ['detection', 'Detection'], ['preview', 'Script'], ['export', 'Export']]
 
-function Field({ label, type, value, onChange, files }) {
+// Fields that hold long text get the full width of the step, so arguments and code stay readable.
+const WIDE = new Set(['args', 'code', 'message', 'key', 'path', 'destination'])
+
+// Arguments field with one-click inserts: {Files} and the full path of every uploaded file.
+function ArgsInput({ value, onChange, files }) {
+  const ref = useRef(null)
+  function insert(text) {
+    const el = ref.current
+    const v = value ?? ''
+    const start = el ? el.selectionStart ?? v.length : v.length
+    const end = el ? el.selectionEnd ?? v.length : v.length
+    const before = v.slice(0, start), after = v.slice(end)
+    const pad = before && !/\s$/.test(before) ? ' ' : ''
+    const next = before + pad + text + after
+    onChange(next)
+    requestAnimationFrame(() => { if (el) { el.focus(); const pos = (before + pad + text).length; el.setSelectionRange(pos, pos) } })
+  }
+  return (
+    <>
+      <input ref={ref} value={value ?? ''} onChange={e => onChange(e.target.value)} />
+      <span className="chips">
+        <span className="muted small">{t('Insert:')}</span>
+        <button type="button" className="chip" onClick={() => insert('{Files}')} title={t("The package's Files folder on the PC")}>{'{Files}'}</button>
+        {files.map(f => <button type="button" key={f.name} className="chip" onClick={() => insert(`"{Files}\\${f.name}"`)} title={t('Full path to this file on the PC, in quotes')}>{f.name}</button>)}
+      </span>
+    </>
+  )
+}
+
+function Field({ name, label, type, value, onChange, files, wide }) {
   if (type === 'bool') return <label className="check"><input type="checkbox" checked={!!value} onChange={e => onChange(e.target.checked)} />{t(label)}</label>
   let input
   if (Array.isArray(type)) input = <select value={value} onChange={e => onChange(e.target.value)}>{type.map(o => <option key={o}>{o}</option>)}</select>
@@ -17,8 +46,9 @@ function Field({ label, type, value, onChange, files }) {
       {files.map(f => <option key={f.name}>{f.name}</option>)}
       {value && !files.some(f => f.name === value) && <option>{value}</option>}
     </select>)
+  else if (name === 'args') input = <ArgsInput value={value} onChange={onChange} files={files} />
   else input = <input value={value ?? ''} onChange={e => onChange(e.target.value)} />
-  return <label>{t(label)}{input}</label>
+  return <label className={wide ? 'wide' : undefined}>{t(label)}{input}</label>
 }
 
 function StepCard({ step, index, count, files, onChange, onMove, onRemove, onSnippet }) {
@@ -36,7 +66,7 @@ function StepCard({ step, index, count, files, onChange, onMove, onRemove, onSni
       </div>
       <div className="grid">
         {def.fields.map(([key, label, type]) => (
-          <Field key={key} label={label} type={type} value={step[key]} files={files} onChange={v => onChange({ ...step, [key]: v })} />
+          <Field key={key} name={key} label={label} type={type} value={step[key]} files={files} wide={WIDE.has(key)} onChange={v => onChange({ ...step, [key]: v })} />
         ))}
         <Field label="Comment" type="text" value={step.comment || ''} onChange={v => onChange({ ...step, comment: v })} />
       </div>

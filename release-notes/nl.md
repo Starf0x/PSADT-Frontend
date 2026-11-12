@@ -1,5 +1,9 @@
 # Wat is er nieuw
 
+## 0.1.88
+- Argumenten, paden en code in een stap gebruiken nu de volle breedte, zodat lange opdrachten goed leesbaar zijn.
+- Onder de argumenten klik je op {Files} of op een van je geüploade bestanden om het volledige pad in te voegen, zodat je het niet hoeft te typen.
+
 ## 0.1.77
 - In de argumenten van een stap kun je {Files} schrijven voor de map Files van het pakket op de pc. Bijvoorbeeld: --msix-path "{Files}\app.msix".
 

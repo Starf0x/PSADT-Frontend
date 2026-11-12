@@ -245,6 +245,9 @@ const ROWS = [
   ['The script could not be checked, because PowerShell did not start on the server. This is a server problem, not a mistake in your package.', 'Het script kon niet worden gecontroleerd, omdat PowerShell niet startte op de server. Dit is een serverprobleem, geen fout in je pakket.', 'Das Skript konnte nicht geprüft werden, weil PowerShell auf dem Server nicht gestartet ist. Das ist ein Serverproblem, kein Fehler in Ihrem Paket.'],
   ['Additional arguments ({Files} = Files folder)', 'Extra argumenten ({Files} = map Files)', 'Zusätzliche Argumente ({Files} = Ordner Files)'],
   ['Arguments ({Files} = Files folder)', 'Argumenten ({Files} = map Files)', 'Argumente ({Files} = Ordner Files)'],
+  ['Insert:', 'Invoegen:', 'Einfügen:'],
+  ["The package's Files folder on the PC", 'De map Files van het pakket op de pc', 'Der Ordner Files des Pakets auf dem PC'],
+  ['Full path to this file on the PC, in quotes', 'Volledig pad naar dit bestand op de pc, tussen aanhalingstekens', 'Vollständiger Pfad zu dieser Datei auf dem PC, in Anführungszeichen'],
 ]
 
 const DICT = { nl: {}, de: {} }
