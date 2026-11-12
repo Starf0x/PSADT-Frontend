@@ -1,5 +1,9 @@
 # Wat is er nieuw
 
+## 0.1.99
+- Als er een nieuwere versie is, zien beheerders een oranje stip bij Systeem en een melding bovenaan elke pagina.
+- Op de Systeem-pagina staat een knop "Nu controleren", en de app zoekt elke 15 minuten naar nieuwe versies in plaats van elk uur.
+
 ## 0.1.88
 - Argumenten, paden en code in een stap gebruiken nu de volle breedte, zodat lange opdrachten goed leesbaar zijn.
 - Onder de argumenten klik je op {Files} of op een van je geüploade bestanden om het volledige pad in te voegen, zodat je het niet hoeft te typen.

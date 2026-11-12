@@ -51,6 +51,9 @@ code { background: var(--accent-soft); padding: .1rem .35rem; border-radius: 5px
 .nav-item { display: flex; align-items: center; gap: .7rem; width: 100%; text-align: left; background: none; color: inherit; padding: .6rem .7rem; border-radius: 9px; font-size: .95rem; font-weight: 500; }
 .nav-item:hover { background: var(--side-hover); color: #fff; }
 .nav-item.current { background: var(--grad); color: #fff; box-shadow: 0 4px 14px #5b5bf055; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; margin-left: auto; box-shadow: 0 0 0 3px #f59e0b33; }
+.banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .7rem 1rem; margin-bottom: 1.25rem; border-radius: var(--radius); background: var(--warn-soft); color: var(--warn); border: 1px solid #f59e0b55; font-weight: 500; }
+.banner button { padding: .35rem .8rem; }
 .who { display: grid; line-height: 1.2; }
 .who small { opacity: .65; font-weight: 400; }
 .ico { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

@@ -48,13 +48,21 @@ export const Icon = ({ name }) => <svg className="ico" viewBox="0 0 24 24" aria-
 
 function Dashboard({ user, version, onLogout, onLang, onMe }) {
   const [page, setPage] = useState('packages')
+  // Admins see a dot on System and a banner when a newer version is out (checked at start and every 30 minutes).
+  const [update, setUpdate] = useState(null)
+  useEffect(() => {
+    if (user.role !== 'admin') return
+    const check = () => api('/api/system/update').then(i => setUpdate(i.newer ? i.newest : null)).catch(() => {})
+    check(); const timer = setInterval(check, 30 * 60 * 1000)
+    return () => clearInterval(timer)
+  }, [user.role])
   async function logout() {
     await api('/api/auth/logout', { method: 'POST' }).catch(() => {})
     clearCsrf()
     onLogout()
   }
-  const item = (key, label) => (
-    <button className={`nav-item ${page === key ? 'current' : ''}`} onClick={() => setPage(key)}><Icon name={key} />{label}</button>)
+  const item = (key, label, dot) => (
+    <button className={`nav-item ${page === key ? 'current' : ''}`} onClick={() => setPage(key)}><Icon name={key} />{label}{dot && <span className="dot" title={t('Update available')} />}</button>)
   return (
     <div className="shell">
       <aside className="sidebar">
@@ -62,7 +70,7 @@ function Dashboard({ user, version, onLogout, onLang, onMe }) {
         <nav>
           {item('packages', t('Packages'))}
           {user.role === 'admin' && item('users', t('Users'))}
-          {user.role === 'admin' && item('system', t('System'))}
+          {user.role === 'admin' && item('system', t('System'), !!update)}
         </nav>
         <div className="side-foot">
           {item('account', <span className="who">{user.display_name || user.username}<small>{t(user.role)}</small></span>)}
@@ -71,6 +79,7 @@ function Dashboard({ user, version, onLogout, onLang, onMe }) {
         </div>
       </aside>
       <main>
+        {update && page !== 'system' && <div className="banner"><span>{t('Version {v} is available.', { v: update })}</span><button className="secondary" onClick={() => setPage('system')}>{t('See what is new')}</button></div>}
         {page === 'packages' && <Packages readOnly={user.role === 'viewer'} />}
         {page === 'users' && <Users me={user} />}
         {page === 'account' && <Account me={user} onMe={onMe} />}
