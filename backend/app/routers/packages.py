@@ -18,9 +18,9 @@ from ..psadt.detection import generate_detection
 from ..psadt.export import build_intunewin, build_zip, to_windows
 from ..psadt.generator import generate
 from ..psadt.schema import FILE_RE, PackageData, default_package
-from ..security import current_user
+from ..security import current_user, editor_for_writes
 
-router = APIRouter(prefix="/api/packages", tags=["packages"], dependencies=[Depends(current_user)])
+router = APIRouter(prefix="/api/packages", tags=["packages"], dependencies=[Depends(editor_for_writes)])
 
 ALLOWED_EXT = {".msi", ".msp", ".mst", ".exe", ".zip", ".cab", ".ps1", ".psm1", ".reg", ".xml", ".ini", ".cfg",
                ".json", ".txt", ".bat", ".cmd", ".vbs", ".ico", ".png", ".lnk", ".config"}

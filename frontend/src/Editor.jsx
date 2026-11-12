@@ -209,7 +209,7 @@ function Preview({ id }) {
   )
 }
 
-export default function Editor({ id, onClose }) {
+export default function Editor({ id, readOnly, onClose }) {
   const [pkg, setPkg] = useState(null)
   const [tab, setTab] = useState('app')
   const [files, setFiles] = useState([])
@@ -244,14 +244,16 @@ export default function Editor({ id, onClose }) {
         <h2><button className="link" onClick={close}>Pakketten</button> › {d.app.name}</h2>
         <span className="row">
           {msg && <span className={msg.ok ? 'ok' : 'error pre'}>{msg.text}</span>}
-          <button onClick={save} disabled={!dirty}>Opslaan</button>
+          {readOnly ? <span className="muted">Alleen lezen</span> : <button onClick={save} disabled={!dirty}>Opslaan</button>}
         </span>
       </div>
       <nav className="tabs">{TABS.map(([k, l]) => <button key={k} className={tab === k ? 'active' : ''} onClick={() => switchTab(k)}>{l}</button>)}</nav>
+      <fieldset disabled={readOnly} className="plain">
       {tab === 'app' && <AppInfo app={d.app} onChange={app => update({ ...d, app })} />}
       {['install', 'uninstall', 'repair'].includes(tab) && <PhaseEditor key={tab} phases={d[tab]} files={files} onChange={p => update({ ...d, [tab]: p })} />}
       {tab === 'files' && <Files id={id} files={files} reload={loadFiles} />}
       {tab === 'detection' && <DetectionEditor rules={d.detection || []} onChange={detection => update({ ...d, detection })} />}
+      </fieldset>
       {tab === 'preview' && <Preview id={id} />}
       {tab === 'export' && <Export id={id} />}
     </section>
