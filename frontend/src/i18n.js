@@ -220,6 +220,8 @@ const ROWS = [
     'Waar PSADT zijn log op de client schrijft. Geldt voor elk pakket zonder eigen logmap; leeg = de PSADT-standaard ({d}). PSADT-variabelen zoals $envWinDir en $envProgramData werken.',
     'Wohin PSADT sein Log auf dem Client schreibt. Gilt für jedes Paket ohne eigenen Logordner; leer = PSADT-Standard ({d}). PSADT-Variablen wie $envWinDir und $envProgramData funktionieren.'],
   ['Log folder (empty = default from the System page)', 'Logmap (leeg = standaard van de System-pagina)', 'Logordner (leer = Standard der Systemseite)'],
+  ['What the update brings', 'Wat de update brengt', 'Was das Update bringt'],
+  ['What is new in this version', 'Wat is er nieuw in deze versie', 'Was ist neu in dieser Version'],
 ]
 
 const DICT = { nl: {}, de: {} }
