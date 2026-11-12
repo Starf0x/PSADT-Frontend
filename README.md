@@ -4,7 +4,7 @@
 
 Een webinterface voor de [PowerShell App Deployment Toolkit](https://psappdeploytoolkit.com/) (PSADT v4). Draait als Docker-container of als losse LXC-installatie; beide werken identiek.
 
-**Versie:** 0.1.0 (zie `VERSION`)
+**Versie:** 0.1.11 (zie `VERSION`)
 
 ## Status en roadmap
 

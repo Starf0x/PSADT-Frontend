@@ -77,6 +77,9 @@ python3 -m venv "$APP_DIR/.venv"
 
 if [ ! -f "$ENV_FILE" ]; then
   cp "$APP_DIR/.env.example" "$ENV_FILE"
+  if [ -n "${PSADT_ADMIN_PASSWORD:-}" ]; then
+    sed -i "s|^PSADT_ADMIN_PASSWORD=.*|PSADT_ADMIN_PASSWORD=${PSADT_ADMIN_PASSWORD}|" "$ENV_FILE"
+  fi
   if [ -n "${PSADT_COOKIE_SECURE:-}" ]; then
     sed -i "s/^PSADT_COOKIE_SECURE=.*/PSADT_COOKIE_SECURE=${PSADT_COOKIE_SECURE}/" "$ENV_FILE"
   fi
