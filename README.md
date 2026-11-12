@@ -19,7 +19,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 📖 **New here? Read the [user guide in the wiki](https://github.com/Starf0x/PSADT-Frontend/wiki).**
 
-**Version:** 0.2.99 (see `VERSION`)
+**Version:** 0.3.0 (see `VERSION`)
 
 ## Features
 
@@ -91,6 +91,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). The wiki 
 | 21 | Softer button colours with dark, readable text on every day colour | ✅ v0.2.77 |
 | 22 | Export counter counts each package once per version (no double counts) | ✅ v0.2.88 |
 | 23 | README with screenshots and a full user guide in the wiki | ✅ v0.2.99 |
+| 24 | Only administrators can delete packages | ✅ v0.3.0 |
 
 </details>
 
@@ -160,8 +161,8 @@ PSADT writes its log on the client to `$envWinDir\Logs\Software` by default. On 
 
 | Role | Can |
 |------|-----|
-| Administrator | everything, plus managing users (create, role, password, unlock, delete) and updates |
-| Editor | create, change and delete packages and snippets |
+| Administrator | everything, including deleting packages, plus managing users (create, role, password, unlock, delete) and updates |
+| Editor | create and change packages, create, change and delete snippets (only administrators delete packages) |
 | Read only | view everything, check scripts and export |
 
 Every user has a **login name** (to sign in) and a **full name** (shown in the app and filled in as script author for new packages). Users change their own full name under their account; admins can change anyone's.

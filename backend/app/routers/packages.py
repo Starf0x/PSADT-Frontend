@@ -22,7 +22,7 @@ from ..psadt.msi import read_properties
 from ..psadt.schema import FILE_RE, PackageData, default_package
 from ..psadt.validate import validate_package
 from ..retention import purge_package, retention
-from ..security import current_user, editor_for_writes
+from ..security import current_user, editor_for_writes, require_admin
 
 router = APIRouter(prefix="/api/packages", tags=["packages"], dependencies=[Depends(editor_for_writes)])
 
@@ -85,7 +85,7 @@ def update_package(pid: int, data: PackageData, db: Session = Depends(get_db)):
 
 
 @router.delete("/{pid}", status_code=204)
-def delete_package(pid: int, db: Session = Depends(get_db)):
+def delete_package(pid: int, db: Session = Depends(get_db), _: User = Depends(require_admin)):
     pkg = _get(db, pid)
     db.delete(pkg)
     db.commit()

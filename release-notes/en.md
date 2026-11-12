@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.3.0
+- Only administrators can delete packages now. Editors can still create and change them.
+
 ## 0.2.99
 - Fixed: the daily usage check-in could be refused by the collector's firewall because it identified itself as a Python script. It now identifies itself as PSADT Frontend.
 - The GitHub page has a new README with screenshots, and the wiki now has a full user guide with a page for every screen.

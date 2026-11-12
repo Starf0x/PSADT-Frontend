@@ -34,6 +34,9 @@ def test_admin_manages_users(authed, other):
     assert other.get("/api/auth/me").status_code == 401
     _login(other, "piet", "lang-genoeg-123")
     assert other.post("/api/packages", json={"name": "X"}).status_code == 201
+    pid = other.post("/api/packages", json={"name": "Y"}).json()["id"]
+    assert other.delete(f"/api/packages/{pid}").status_code == 403  # only administrators delete packages
+    assert authed.delete(f"/api/packages/{pid}").status_code == 204
 
     assert authed.delete(f"/api/users/{uid}").status_code == 204
     assert other.get("/api/auth/me").status_code == 401

@@ -16,4 +16,4 @@ A package counts **once per version**. Downloading the same version again, or do
 
 ## Creating a package
 
-Click **New package**, give it a name, and the [editor](App-info) opens. Editors and administrators can create and delete packages. Read-only users can view and export them.
+Click **New package**, give it a name, and the [editor](App-info) opens. Editors and administrators can create packages. Only administrators can delete a package (the **Delete** link in the list). Read-only users can view and export them.

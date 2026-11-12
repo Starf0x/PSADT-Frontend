@@ -80,7 +80,7 @@ function Dashboard({ user, version, onLogout, onLang, onMe }) {
       </aside>
       <main>
         {update && page !== 'system' && <div className="banner"><span>{t('Version {v} is available.', { v: update })}</span><button className="secondary" onClick={() => setPage('system')}>{t('See what is new')}</button></div>}
-        {page === 'packages' && <Packages readOnly={user.role === 'viewer'} />}
+        {page === 'packages' && <Packages readOnly={user.role === 'viewer'} canDelete={user.role === 'admin'} />}
         {page === 'users' && <Users me={user} />}
         {page === 'account' && <Account me={user} onMe={onMe} />}
         {page === 'system' && <System />}

@@ -20,7 +20,7 @@ function Stats({ stats }) {
   )
 }
 
-export default function Packages({ readOnly }) {
+export default function Packages({ readOnly, canDelete }) {
   const [stats, setStats] = useState(null)
   const [list, setList] = useState([])
   const [openId, setOpenId] = useState(null)
@@ -63,7 +63,7 @@ export default function Packages({ readOnly }) {
             <tr key={p.id}>
               <td><button className="link" onClick={() => setOpenId(p.id)}>{p.name}</button></td>
               <td>{p.vendor}</td><td>{p.version}</td><td>{new Date(p.updated_at).toLocaleString()}</td>
-              <td>{!readOnly && <button className="link danger" onClick={() => remove(p)}>{t('Delete')}</button>}</td>
+              <td>{canDelete && <button className="link danger" onClick={() => remove(p)}>{t('Delete')}</button>}</td>
             </tr>))}
           </tbody>
         </table>
