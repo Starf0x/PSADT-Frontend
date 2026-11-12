@@ -18,32 +18,59 @@ export async function api(path, { method = 'GET', body } = {}) {
   return data
 }
 
-// XMLHttpRequest instead of fetch: only XHR reports upload progress. onProgress gets 0..1.
-export function upload(path, file, onProgress = () => {}) {
+// Files go up in 5 MB pieces, so a reverse proxy with a body-size limit (Zoraxy, Cloudflare, nginx...)
+// never sees a large request. XMLHttpRequest instead of fetch: only XHR reports upload progress. onProgress gets 0..1.
+const PIECE = 5 * 1024 * 1024
+
+function sendPiece(url, blob, onSent) {
   return new Promise((resolve, reject) => {
-    const form = new FormData()
-    form.append('file', file)
     const xhr = new XMLHttpRequest()
-    xhr.open('POST', path)
+    xhr.open('PUT', url)
     xhr.withCredentials = true
     if (csrf) xhr.setRequestHeader('X-CSRF-Token', csrf)
-    // A proxy or full disk can stop an upload without closing the connection; give up after a minute without progress.
+    xhr.setRequestHeader('Content-Type', 'application/octet-stream')
+    // A proxy or full disk can stop a request without closing the connection; give up after a minute without progress.
     let last = Date.now()
     let stalled = false
     const watch = setInterval(() => { if (Date.now() - last > 60000) { stalled = true; xhr.abort() } }, 5000)
-    xhr.upload.onprogress = e => { last = Date.now(); if (e.lengthComputable) onProgress(e.loaded / e.total) }
+    xhr.upload.onprogress = e => { last = Date.now(); onSent(e.loaded) }
     xhr.upload.onload = () => clearInterval(watch) // all sent; the server may still need time to store it
     xhr.onloadend = () => clearInterval(watch)
-    xhr.onabort = () => reject(new Error(stalled ? t('Upload stopped: the server received nothing for a minute. A reverse proxy or tunnel may limit the size, or the server disk may be full.') : t('Upload cancelled')))
+    xhr.onabort = () => reject(Object.assign(new Error(stalled ? t('Upload stopped: the server received nothing for a minute. A reverse proxy or tunnel may limit the size, or the server disk may be full.') : t('Upload cancelled')), { retry: false }))
+    xhr.onerror = () => reject(Object.assign(new Error(t('Upload failed: connection lost')), { retry: true }))
     xhr.onload = () => {
-      if (xhr.status === 413) { reject(new Error(t('Upload refused: the file is too large for the server or a proxy in between.'))); return }
       let data = {}
       try { data = JSON.parse(xhr.responseText) } catch { /* not JSON */ }
-      if (xhr.status >= 200 && xhr.status < 300) { onProgress(1); resolve(data) } else reject(new Error(formatError(data.detail) || `${t('Error')} ${xhr.status}`))
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data)
+      else if (xhr.status === 409 && /offset (\d+)/.test(data.detail || '')) reject(Object.assign(new Error('offset'), { expected: Number(/offset (\d+)/.exec(data.detail)[1]) }))
+      else if (xhr.status === 413 && !data.detail) reject(new Error(t('Upload refused: the file is too large for the server or a proxy in between.')))
+      else reject(Object.assign(new Error(formatError(data.detail) || `${t('Error')} ${xhr.status}`), { retry: xhr.status >= 500 }))
     }
-    xhr.onerror = () => reject(new Error(t('Upload failed: connection lost')))
-    xhr.send(form)
+    xhr.send(blob)
   })
+}
+
+export async function upload(path, file, onProgress = () => {}) {
+  const total = file.size
+  const base = `${path}/${encodeURIComponent(file.name)}/chunk?total=${total}&offset=`
+  let offset = 0
+  let data = {}
+  do {
+    const piece = file.slice(offset, offset + PIECE)
+    for (let attempt = 1; ; attempt++) {
+      try {
+        data = await sendPiece(base + offset, piece, sent => onProgress(total ? (offset + sent) / total : 0))
+        break
+      } catch (e) {
+        if (e.expected !== undefined) { data = { size: e.expected }; break } // the server already has more; go on from there
+        if (!e.retry || attempt >= 3) throw e
+        await new Promise(r => setTimeout(r, 2000 * attempt))
+      }
+    }
+    offset = data.size ?? offset + piece.size
+  } while (offset < total)
+  onProgress(1)
+  return data
 }
 
 export async function text(path) {

@@ -12,6 +12,9 @@ The check above them found an error. Fix the red items (they name the step or fi
 ### "Fix the problems shown in the check first"
 The server checked the package again and found an error, for example because a file was removed by the [retention](System) setting. Open the Export tab again to see which problem it is.
 
+### An upload gets stuck or is refused
+Since 0.3.22 files go up in pieces of 5 MB, so a reverse proxy or tunnel with a size limit (Zoraxy, Cloudflare, nginx) lets them through. If an upload still stops, the app shows a message after a minute without progress. Check that the proxy allows request bodies of at least 5 MB and doesn't time out, and that the server disk isn't full (`df -h`). Uploading via the LAN address (`http://<ip>:8000`) skips the proxy altogether.
+
 ### The syntax check says pwsh is not available
 PowerShell 7 isn't installed on the server. The Docker image and LXC install include it; on a self-built server install `powershell` from Microsoft's package repository. The check never runs your script, it only parses it.
 

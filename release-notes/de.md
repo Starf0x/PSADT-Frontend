@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.3.22
+- Große Dateien werden jetzt in Stücken von 5 MB hochgeladen. Uploads über einen Reverse Proxy oder Tunnel mit Größenlimit (etwa Zoraxy oder Cloudflare) bleiben nicht mehr hängen. Ein fehlgeschlagenes Stück wird automatisch erneut gesendet.
+
 ## 0.3.11
 - Ein hängender Upload bricht jetzt nach einer Minute ohne Fortschritt ab und nennt den Grund (oft ein Reverse Proxy oder Tunnel mit Größenlimit oder eine volle Festplatte), statt endlos zu warten.
 
