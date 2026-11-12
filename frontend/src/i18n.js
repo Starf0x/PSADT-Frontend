@@ -4,6 +4,9 @@ export const LANGS = [['en', 'English'], ['nl', 'Nederlands'], ['de', 'Deutsch']
 // [English, Dutch, German]
 const ROWS = [
   ['(none)', '(geen)', '(keine)'],
+  ['Browse…', 'Bladeren…', 'Durchsuchen…'],
+  ['Programs on the Windows PC', "Programma's op de Windows-pc", 'Programme auf dem Windows-PC'],
+  ['Unknown Windows program', 'Onbekend Windows-programma', 'Unbekanntes Windows-Programm'],
   ['(not specified)', '(niet opgegeven)', '(nicht angegeben)'],
   ['A newer version is available.', 'Er is een nieuwere versie beschikbaar.', 'Eine neuere Version ist verfügbar.'],
   ['Account unlocked', 'Account ontgrendeld', 'Konto entsperrt'],

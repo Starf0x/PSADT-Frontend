@@ -3,6 +3,11 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.2.11
+- Every file field in a step now has a Browse button: pick a file on your PC and it is uploaded and selected in one go.
+- Run EXE can now also start programs that are already on every Windows PC, such as winget, msiexec, PowerShell and cmd. No upload needed. winget is found automatically, also when Intune installs as SYSTEM.
+- The app now always uses a dark design, with more colour and depth.
+
 ## 0.2.0
 - Changes to a package are now saved automatically a moment after you make them. Nothing is lost anymore when the page reloads or the app restarts for an update.
 - If you try to leave the page while something is still being saved, your browser warns you first.

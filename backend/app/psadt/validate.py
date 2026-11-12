@@ -6,7 +6,7 @@ Each item has a level ("error" blocks the export, "warning" does not), an Englis
 from pydantic import ValidationError
 
 from .generator import generate
-from .schema import PackageData
+from .schema import WINDOWS_PREFIX, PackageData
 
 FILE_FIELDS = ("file", "transforms")
 PHASE_NAMES = {"pre": "Pre", "main": "Main", "post": "Post"}
@@ -36,7 +36,7 @@ def validate_package(raw: dict, uploaded: set[str], toolkit_ok: bool) -> tuple[l
             for i, step in enumerate(getattr(phases, phase), 1):
                 for f in FILE_FIELDS:
                     name = getattr(step, f, None)
-                    if name and name not in uploaded:
+                    if name and not name.startswith(WINDOWS_PREFIX) and name not in uploaded:
                         items.append(_item("error", "{kind} › {phase}, step {n}: file {file} has not been uploaded",
                                            kind=KIND_NAMES[kind], phase=PHASE_NAMES[phase], n=i, file=name))
 
