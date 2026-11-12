@@ -1,6 +1,7 @@
 # Wat is er nieuw
 
 ## 0.2.99
+- Opgelost: de dagelijkse melding kon door de firewall van de ontvanger worden geweigerd, omdat hij zich als Python-script voordeed. Hij meldt zich nu als PSADT Frontend.
 - De GitHub-pagina heeft een nieuwe README met screenshots, en de wiki heeft nu een uitgebreide handleiding met een pagina voor elk scherm.
 
 ## 0.2.88

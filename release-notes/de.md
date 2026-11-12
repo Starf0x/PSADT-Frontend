@@ -1,6 +1,7 @@
 # Was ist neu
 
 ## 0.2.99
+- Behoben: Die tägliche Meldung konnte von der Firewall des Empfängers abgelehnt werden, weil sie sich als Python-Skript ausgab. Sie meldet sich jetzt als PSADT Frontend.
 - Die GitHub-Seite hat eine neue README mit Screenshots, und das Wiki enthält jetzt eine ausführliche Anleitung mit einer Seite für jeden Bildschirm.
 
 ## 0.2.88
