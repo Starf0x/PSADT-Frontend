@@ -250,9 +250,17 @@ function Preview({ id }) {
         <a className="button" href={`/api/packages/${id}/script?download=1`}>{t('Download')} Invoke-AppDeployToolkit.ps1</a>
         <button className="secondary" onClick={runCheck}>{t('Check syntax')}</button>
         {check && !check.busy && (!check.available ? <span className="muted">{t('PowerShell not available on the server')}</span>
+          : check.failed ? <span className="warn">{t('Check could not run')}</span>
           : check.errors.length ? <span className="error">{check.errors.length} {t('error(s)')}</span> : <span className="ok">{t('No syntax errors')}</span>)}
       </div>
-      {check?.errors?.length > 0 && <pre className="error">{check.errors.join('\n')}</pre>}
+      {check?.failed && <div className="panel">
+        <p style={{ marginTop: 0 }}><strong>{t('The script could not be checked.')}</strong> {t('PowerShell did not start on the server, so nothing was checked. This is a problem with the server, not a mistake in your package. Ask your administrator to look at it; downloading still works.')}</p>
+        <details><summary className="muted small">{t('Technical details for the administrator')}</summary><pre className="code">{check.failed}</pre></details>
+      </div>}
+      {check?.errors?.length > 0 && <div className="panel">
+        <p style={{ marginTop: 0 }}><strong>{t('PowerShell found {n} problem(s) in the script.', { n: check.errors.length })}</strong> {t('Usually this comes from a Custom PowerShell step. Fix the step and check again.')}</p>
+        <ul className="checks">{check.errors.map((e, i) => { const m = e.match(/^(\d+):(\d+) (.*)$/); return <li key={i} className="error">{m ? t('Line {l}, column {c}: {msg}', { l: m[1], c: m[2], msg: m[3] }) : e}</li> })}</ul>
+      </div>}
       {error ? <pre className="error">{error}</pre> : <pre className="code">{script}</pre>}
     </section>
   )

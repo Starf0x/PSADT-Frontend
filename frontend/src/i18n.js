@@ -232,6 +232,17 @@ const ROWS = [
   ['Shown in the app and filled in as script author for new packages. You sign in with {login}.', 'Zichtbaar in de app en ingevuld als scriptauteur bij nieuwe pakketten. Je logt in met {login}.', 'Wird in der App angezeigt und bei neuen Paketen als Skriptautor eingetragen. Sie melden sich mit {login} an.'],
   ['Full name', 'Volledige naam', 'Vollständiger Name'],
   ['Upload failed: connection lost', 'Upload mislukt: verbinding verbroken', 'Hochladen fehlgeschlagen: Verbindung unterbrochen'],
+  // syntax check
+  ['Check could not run', 'Controle kon niet draaien', 'Prüfung konnte nicht laufen'],
+  ['The script could not be checked.', 'Het script kon niet worden gecontroleerd.', 'Das Skript konnte nicht geprüft werden.'],
+  ['PowerShell did not start on the server, so nothing was checked. This is a problem with the server, not a mistake in your package. Ask your administrator to look at it; downloading still works.',
+    'PowerShell startte niet op de server, dus er is niets gecontroleerd. Dit is een probleem met de server, geen fout in je pakket. Vraag je beheerder ernaar te kijken; downloaden werkt gewoon.',
+    'PowerShell ist auf dem Server nicht gestartet, daher wurde nichts geprüft. Das ist ein Serverproblem, kein Fehler in Ihrem Paket. Bitten Sie Ihren Administrator, es sich anzusehen; das Herunterladen funktioniert weiterhin.'],
+  ['Technical details for the administrator', 'Technische details voor de beheerder', 'Technische Details für den Administrator'],
+  ['PowerShell found {n} problem(s) in the script.', 'PowerShell vond {n} probleem/problemen in het script.', 'PowerShell hat {n} Problem(e) im Skript gefunden.'],
+  ['Usually this comes from a Custom PowerShell step. Fix the step and check again.', 'Meestal komt dit door een stap "Eigen PowerShell". Pas die stap aan en controleer opnieuw.', 'Meist liegt das an einem Schritt „Eigenes PowerShell“. Korrigieren Sie den Schritt und prüfen Sie erneut.'],
+  ['Line {l}, column {c}: {msg}', 'Regel {l}, kolom {c}: {msg}', 'Zeile {l}, Spalte {c}: {msg}'],
+  ['The script could not be checked, because PowerShell did not start on the server. This is a server problem, not a mistake in your package.', 'Het script kon niet worden gecontroleerd, omdat PowerShell niet startte op de server. Dit is een serverprobleem, geen fout in je pakket.', 'Das Skript konnte nicht geprüft werden, weil PowerShell auf dem Server nicht gestartet ist. Das ist ein Serverproblem, kein Fehler in Ihrem Paket.'],
 ]
 
 const DICT = { nl: {}, de: {} }
