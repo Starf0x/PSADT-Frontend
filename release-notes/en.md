@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.3.22
+- Large files now upload in 5 MB pieces. Uploads through a reverse proxy or tunnel with a size limit (such as Zoraxy or Cloudflare) no longer get stuck. A piece that fails is retried automatically.
+
 ## 0.3.11
 - An upload that gets stuck now stops after a minute without progress and says why (often a reverse proxy or tunnel with a size limit, or a full disk), instead of waiting forever.
 

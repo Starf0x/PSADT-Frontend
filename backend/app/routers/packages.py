@@ -7,7 +7,7 @@ from pathlib import Path
 
 import re
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response, UploadFile, status
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import select
@@ -259,6 +259,40 @@ async def upload_file(pid: int, file: UploadFile, db: Session = Depends(get_db))
     finally:
         tmp.unlink(missing_ok=True)
     return {"name": name, "size": size}
+
+
+CHUNK_MAX = 16 * 1024 * 1024
+
+
+@router.put("/{pid}/files/{name}/chunk")
+async def upload_chunk(pid: int, name: str, offset: int, total: int, request: Request, db: Session = Depends(get_db)):
+    """Upload a file in pieces, so a reverse proxy with a body-size limit (Zoraxy, Cloudflare...) never sees a big request.
+
+    Pieces must arrive in order: offset is where this piece starts. The file appears once offset + piece = total.
+    """
+    _get(db, pid)
+    if not FILE_RE.match(name) or name in (".", "..") or Path(name).suffix.lower() not in ALLOWED_EXT:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "File name or type not allowed")
+    if total < 0 or total > settings.max_upload_mb * 1024 * 1024:
+        raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File is too large")
+    d = files_dir(pid)
+    d.mkdir(parents=True, exist_ok=True)
+    tmp = d / f".{name}.part"
+    have = tmp.stat().st_size if offset and tmp.exists() else 0
+    if offset != have:
+        raise HTTPException(status.HTTP_409_CONFLICT, f"Expected offset {have}")
+    size = offset
+    with tmp.open("ab" if offset else "wb") as out:
+        async for chunk in request.stream():
+            size += len(chunk)
+            if size - offset > CHUNK_MAX or size > total:
+                out.truncate(offset)
+                raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Piece is too large")
+            out.write(chunk)
+    done = size == total
+    if done:
+        tmp.replace(d / name)
+    return {"name": name, "size": size, "done": done}
 
 
 @router.get("/{pid}/files/{name}/msi")

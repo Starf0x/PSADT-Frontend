@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.3.22
+- Grote bestanden worden nu in stukken van 5 MB geüpload. Uploads via een reverse proxy of tunnel met een groottelimiet (zoals Zoraxy of Cloudflare) blijven niet meer hangen. Een stuk dat mislukt, wordt vanzelf opnieuw geprobeerd.
+
 ## 0.3.11
 - Een upload die vastloopt, stopt nu na een minuut zonder voortgang en zegt waarom (vaak een reverse proxy of tunnel met een groottelimiet, of een volle schijf), in plaats van eindeloos te wachten.
 

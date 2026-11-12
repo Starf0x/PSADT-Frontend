@@ -69,3 +69,17 @@ def test_upload_rules(authed):
 
 def test_requires_login(client):
     assert client.get("/api/packages").status_code == 401
+
+
+def test_chunked_upload(authed):
+    pid = authed.post("/api/packages", json={"name": "Chunks"}).json()["id"]
+    data = b"0123456789" * 1000
+    url = f"/api/packages/{pid}/files/app.msi/chunk"
+    r = authed.put(f"{url}?offset=0&total={len(data)}", content=data[:4000])
+    assert r.json() == {"name": "app.msi", "size": 4000, "done": False}
+    assert authed.put(f"{url}?offset=1000&total={len(data)}", content=data[4000:]).status_code == 409  # wrong place
+    r = authed.put(f"{url}?offset=4000&total={len(data)}", content=data[4000:])
+    assert r.json()["done"] is True
+    files = authed.get(f"/api/packages/{pid}/files").json()
+    assert any(f["name"] == "app.msi" and f["size"] == len(data) for f in files)
+    assert authed.put(f"/api/packages/{pid}/files/evil.sh/chunk?offset=0&total=3", content=b"abc").status_code == 400
