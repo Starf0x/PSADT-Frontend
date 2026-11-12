@@ -22,6 +22,21 @@ def q(value: str) -> str:
     return f"'{value}'"
 
 
+FILES_TOKEN = "{Files}"
+
+
+def args(value: str) -> str:
+    """Arguments as a PowerShell string. "{Files}" becomes the package's Files folder on the PC;
+    everything else stays literal (escaped for a double-quoted string)."""
+    if FILES_TOKEN not in value:
+        return q(value)
+    def lit(part: str) -> str:
+        for ch in ("`", "$", '"', "“", "”", "„"):
+            part = part.replace(ch, "`" + ch)
+        return part
+    return '"' + "$($adtSession.DirFiles)".join(lit(x) for x in value.split(FILES_TOKEN)) + '"'
+
+
 def _files(name: str) -> str:
     return f'"$($adtSession.DirFiles)\\{name}"'
 
@@ -67,12 +82,12 @@ def _step(s) -> list[str]:
         if s.transforms:
             cmd += f" -Transforms {_files(s.transforms)}"
         if s.args:
-            cmd += f" -AdditionalArgumentList {q(s.args)}"
+            cmd += f" -AdditionalArgumentList {args(s.args)}"
         out.append(cmd)
     elif t == "exe":
         cmd = f"Start-ADTProcess -FilePath {_files(s.file)}"
         if s.args:
-            cmd += f" -ArgumentList {q(s.args)}"
+            cmd += f" -ArgumentList {args(s.args)}"
         if s.ignore_exit_codes.strip():
             codes = [c for c in s.ignore_exit_codes.replace(" ", "").split(",") if c]
             cmd += " -IgnoreExitCodes " + ", ".join(c if c.lstrip("-").isdigit() else q(c) for c in codes)
@@ -80,7 +95,7 @@ def _step(s) -> list[str]:
     elif t == "uninstall_app":
         cmd = f"Uninstall-ADTApplication -Name {q(s.name)} -NameMatch {s.name_match}"
         if s.args:
-            cmd += f" -AdditionalArgumentList {q(s.args)}"
+            cmd += f" -AdditionalArgumentList {args(s.args)}"
         out.append(cmd)
     elif t == "registry":
         cmd = f"Set-ADTRegistryKey -LiteralPath {q(s.key)}"

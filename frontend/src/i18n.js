@@ -243,6 +243,8 @@ const ROWS = [
   ['Usually this comes from a Custom PowerShell step. Fix the step and check again.', 'Meestal komt dit door een stap "Eigen PowerShell". Pas die stap aan en controleer opnieuw.', 'Meist liegt das an einem Schritt „Eigenes PowerShell“. Korrigieren Sie den Schritt und prüfen Sie erneut.'],
   ['Line {l}, column {c}: {msg}', 'Regel {l}, kolom {c}: {msg}', 'Zeile {l}, Spalte {c}: {msg}'],
   ['The script could not be checked, because PowerShell did not start on the server. This is a server problem, not a mistake in your package.', 'Het script kon niet worden gecontroleerd, omdat PowerShell niet startte op de server. Dit is een serverprobleem, geen fout in je pakket.', 'Das Skript konnte nicht geprüft werden, weil PowerShell auf dem Server nicht gestartet ist. Das ist ein Serverproblem, kein Fehler in Ihrem Paket.'],
+  ['Additional arguments ({Files} = Files folder)', 'Extra argumenten ({Files} = map Files)', 'Zusätzliche Argumente ({Files} = Ordner Files)'],
+  ['Arguments ({Files} = Files folder)', 'Argumenten ({Files} = map Files)', 'Argumente ({Files} = Ordner Files)'],
 ]
 
 const DICT = { nl: {}, de: {} }
