@@ -1,19 +1,70 @@
+<div align="center">
+
+<img src="assets/icon.png" width="112" alt="PSADT Frontend icon">
+
 # PSADT Frontend
 
-<img src="assets/icon.png" width="96" alt="PSADT Frontend icon">
+**Build PSAppDeployToolkit v4 packages in your browser. No Windows build machine needed.**
 
-A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolkit.com/) (PSADT v4) packages. You can:
+[![Release](https://img.shields.io/github/v/release/Starf0x/PSADT-Frontend?color=7c5cff)](https://github.com/Starf0x/PSADT-Frontend/releases)
+[![CI](https://github.com/Starf0x/PSADT-Frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/Starf0x/PSADT-Frontend/actions/workflows/ci.yml)
+[![Docker](https://img.shields.io/badge/ghcr.io-psadt--frontend-2ea8c9)](https://github.com/Starf0x/PSADT-Frontend/pkgs/container/psadt-frontend)
+[![Wiki](https://img.shields.io/badge/docs-wiki-5b8def)](https://github.com/Starf0x/PSADT-Frontend/wiki)
 
-- edit install, uninstall and repair steps in a browser,
-- upload installers,
-- preview the generated `Invoke-AppDeployToolkit.ps1`,
-- export a ready-to-deploy ZIP or an Intune `.intunewin`.
+<img src="docs/screenshots/04-install-steps.webp" width="860" alt="The package editor with install steps">
 
-No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+</div>
 
-**Version:** 0.2.88 (see `VERSION`)
+A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolkit.com/) (PSADT v4) packages. Fill in the app details, add install and uninstall steps, upload the installers, and download a ready-to-deploy ZIP or an Intune `.intunewin`. It runs as a Docker container or in a Debian LXC on Proxmox, and both behave identically.
 
-## Status and roadmap
+📖 **New here? Read the [user guide in the wiki](https://github.com/Starf0x/PSADT-Frontend/wiki).**
+
+**Version:** 0.2.99 (see `VERSION`)
+
+## Features
+
+- **Step editor** for install, uninstall and repair: Run MSI, Run EXE (with Browse for uploaded files and built-in Windows programs such as `winget` and `msiexec`), welcome dialog (close apps, deferrals), progress message, uninstall by name, registry, copy or remove files and folders, and custom PowerShell.
+- **Live script preview** of the generated `Invoke-AppDeployToolkit.ps1`, plus a PowerShell syntax check that only parses the script and never runs it.
+- **Detection rules** for Intune: MSI ProductCode (read straight from an uploaded MSI), file, registry (all hives incl. `HKEY_CLASSES_ROOT`) and MSIX.
+- **Check before download**: errors block the export, warnings only inform.
+- **Export** as a ZIP with the official PSADT 4.1.8 toolkit, or as `.intunewin`, with visible progress.
+- **Teams**: administrators, editors and read-only users, with per-user language (English, Dutch, German) and export counters.
+- **Autosave** in the editor and a warning before you leave with unsaved changes.
+- **In-app updates** for the LXC install, with release notes in plain language.
+- **Secure by default**: HttpOnly cookie sessions, CSRF tokens, argon2 passwords, account lockout, strict security headers.
+- **Dark design** whose colours change a little every night.
+
+## Screenshots
+
+| | |
+|---|---|
+| <img src="docs/screenshots/02-packages.webp" alt="Packages overview"> **Packages** with export counters | <img src="docs/screenshots/03-app-info.webp" alt="App info"> **App info** |
+| <img src="docs/screenshots/07-detection.webp" alt="Detection rules"> **Detection** with MSI ProductCode reader | <img src="docs/screenshots/08-script.webp" alt="Script preview"> **Script** preview and syntax check |
+| <img src="docs/screenshots/09-export.webp" alt="Export"> **Export** to ZIP or `.intunewin` | <img src="docs/screenshots/11-system.webp" alt="System"> **System**: updates, retention, log folder |
+
+## Quick start
+
+**Proxmox (LXC)**, run on the Proxmox host:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/ct/psadt-frontend.sh)"
+```
+
+**Docker:**
+
+```bash
+git clone https://github.com/Starf0x/PSADT-Frontend.git && cd PSADT-Frontend
+cp .env.example .env        # adjust
+docker compose up -d --build
+docker compose logs | grep 'admin password'
+```
+
+Then open `http://<host>:8000` and sign in as `admin`. Full instructions are in [Installation](https://github.com/Starf0x/PSADT-Frontend/wiki/Installation) and in the sections below.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). The wiki pages live in [`docs/wiki/`](docs/wiki) and are published to the wiki automatically.
+
+<details>
+<summary><b>Release history</b></summary>
 
 | Step | Content | Status |
 |------|---------|--------|
@@ -39,6 +90,9 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 20 | Background and daily colour change as in My Audiobook Collection; anonymous daily usage check-in (off with PSADT_USAGE_OPTOUT=1) | ✅ v0.2.66 |
 | 21 | Softer button colours with dark, readable text on every day colour | ✅ v0.2.77 |
 | 22 | Export counter counts each package once per version (no double counts) | ✅ v0.2.88 |
+| 23 | README with screenshots and a full user guide in the wiki | ✅ v0.2.99 |
+
+</details>
 
 ## Architecture
 
