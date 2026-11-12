@@ -59,6 +59,10 @@ async def security_headers(request: Request, call_next):
     h["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     if request.url.path.startswith("/api/"):
         h["Cache-Control"] = "no-store"
+    elif request.url.path.startswith("/assets/"):
+        h["Cache-Control"] = "public, max-age=31536000, immutable"  # file names change with every build
+    else:
+        h["Cache-Control"] = "no-cache"  # always ask for the newest page, so an update shows at once
     return response
 
 

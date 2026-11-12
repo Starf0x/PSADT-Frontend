@@ -1,5 +1,6 @@
 import os
 import shutil
+import struct
 import subprocess
 import tempfile
 from pathlib import Path
@@ -17,6 +18,7 @@ from ..db import Package, User, get_db, get_setting
 from ..psadt.detection import generate_detection
 from ..psadt.export import build_intunewin, build_zip, to_windows
 from ..psadt.generator import generate
+from ..psadt.msi import read_properties
 from ..psadt.schema import FILE_RE, PackageData, default_package
 from ..psadt.validate import validate_package
 from ..retention import purge_package, retention
@@ -247,6 +249,21 @@ async def upload_file(pid: int, file: UploadFile, db: Session = Depends(get_db))
     finally:
         tmp.unlink(missing_ok=True)
     return {"name": name, "size": size}
+
+
+@router.get("/{pid}/files/{name}/msi")
+def msi_properties(pid: int, name: str, db: Session = Depends(get_db)):
+    """ProductCode, version, name and manufacturer read from an uploaded MSI."""
+    _get(db, pid)
+    if not FILE_RE.match(name) or name in (".", "..") or not name.lower().endswith(".msi"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid file name")
+    path = files_dir(pid) / name
+    if not path.is_file():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "File not found")
+    try:
+        return read_properties(path)
+    except (ValueError, OSError, struct.error):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "This is not a valid MSI file")
 
 
 @router.delete("/{pid}/files/{name}", status_code=204)

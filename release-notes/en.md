@@ -3,6 +3,10 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.2.22
+- Detection rule "MSI ProductCode": choose an MSI (already uploaded, or browse your PC) and its ProductCode is filled in for you. The product name and version are shown as a check.
+- After an update the browser now always loads the new version straight away, instead of showing the old page from its cache.
+
 ## 0.2.11
 - Every file field in a step now has a Browse button: pick a file on your PC and it is uploaded and selected in one go.
 - Run EXE can now also start programs that are already on every Windows PC, such as winget, msiexec, PowerShell and cmd. No upload needed. winget is found automatically, also when Intune installs as SYSTEM.
