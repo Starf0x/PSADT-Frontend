@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -21,7 +22,22 @@ async def lifespan(app: FastAPI):
         from .security import ensure_admin
 
         ensure_admin(db)
+    task = asyncio.create_task(_purge_loop())
     yield
+    task.cancel()
+
+
+async def _purge_loop():
+    """Hourly: remove uploads that are older than the retention chosen on the System page."""
+    from .retention import purge_old_uploads
+
+    while True:
+        try:
+            with dbmod.SessionLocal() as db:
+                purge_old_uploads(db)
+        except Exception as e:  # noqa: BLE001 - keep the loop alive
+            print(f"[psadt-frontend] upload cleanup failed: {e}", flush=True)
+        await asyncio.sleep(3600)
 
 
 app = FastAPI(title="PSADT Frontend", version=APP_VERSION, lifespan=lifespan, docs_url=None, redoc_url=None)
@@ -62,4 +78,8 @@ if (static_dir / "index.html").exists():
 
     @app.get("/{path:path}", include_in_schema=False)
     def spa(path: str):
+        # Files in the root of dist (favicon.svg, apple-touch-icon.png); everything else is the SPA.
+        f = (static_dir / path).resolve()
+        if path and "/" not in path and f.parent == static_dir and f.is_file():
+            return FileResponse(f)
         return FileResponse(static_dir / "index.html")

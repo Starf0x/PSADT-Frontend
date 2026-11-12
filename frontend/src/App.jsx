@@ -21,9 +21,10 @@ function Login({ onLogin }) {
   }
 
   return (
-    <form className="card" onSubmit={submit}>
-      <h1>PSADT Frontend</h1>
-      <label>{t('Username')}<input value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" required /></label>
+    <form className="card login" onSubmit={submit}>
+      <div className="brand big"><img src="/favicon.svg" alt="" /><span>PSADT <b>Frontend</b></span></div>
+      <p className="muted small">{t('Build PSAppDeployToolkit packages in your browser')}</p>
+      <label>{t('Username')}<input value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" required autoFocus /></label>
       <label>{t('Password')}<input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required /></label>
       {error && <p className="error">{error}</p>}
       <button type="submit">{t('Sign in')}</button>
@@ -36,6 +37,15 @@ function LangPicker({ onLang }) {
     {LANGS.map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select>
 }
 
+const ICONS = {
+  packages: 'M12 2 21 7v10l-9 5-9-5V7zM3 7l9 5 9-5M12 12v10',
+  users: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8',
+  system: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
+  account: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+  logout: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+}
+export const Icon = ({ name }) => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><path d={ICONS[name]} /></svg>
+
 function Dashboard({ user, version, onLogout, onLang }) {
   const [page, setPage] = useState('packages')
   async function logout() {
@@ -43,28 +53,29 @@ function Dashboard({ user, version, onLogout, onLang }) {
     clearCsrf()
     onLogout()
   }
+  const item = (key, label) => (
+    <button className={`nav-item ${page === key ? 'current' : ''}`} onClick={() => setPage(key)}><Icon name={key} />{label}</button>)
   return (
-    <div className="layout">
-      <header>
-        <nav className="row">
-          <strong>PSADT Frontend</strong>
-          <button className={`link ${page === 'packages' ? 'current' : ''}`} onClick={() => setPage('packages')}>{t('Packages')}</button>
-          {user.role === 'admin' && <button className={`link ${page === 'users' ? 'current' : ''}`} onClick={() => setPage('users')}>{t('Users')}</button>}
-          {user.role === 'admin' && <button className={`link ${page === 'system' ? 'current' : ''}`} onClick={() => setPage('system')}>{t('System')}</button>}
+    <div className="shell">
+      <aside className="sidebar">
+        <div className="brand"><img src="/favicon.svg" alt="" /><span>PSADT <b>Frontend</b></span></div>
+        <nav>
+          {item('packages', t('Packages'))}
+          {user.role === 'admin' && item('users', t('Users'))}
+          {user.role === 'admin' && item('system', t('System'))}
         </nav>
-        <span className="row">
-          <button className="link" onClick={() => setPage('account')}>{user.username} ({t(user.role)})</button> ·
-          <LangPicker onLang={onLang} /> ·
-          <button className="link" onClick={logout}>{t('Sign out')}</button>
-        </span>
-      </header>
+        <div className="side-foot">
+          {item('account', <span className="who">{user.username}<small>{t(user.role)}</small></span>)}
+          <button className="nav-item" onClick={logout}><Icon name="logout" />{t('Sign out')}</button>
+          <div className="row between"><LangPicker onLang={onLang} /><span className="muted small">v{version}</span></div>
+        </div>
+      </aside>
       <main>
         {page === 'packages' && <Packages readOnly={user.role === 'viewer'} />}
         {page === 'users' && <Users me={user} />}
         {page === 'account' && <Account />}
         {page === 'system' && <System />}
       </main>
-      <footer>v{version}</footer>
     </div>
   )
 }
