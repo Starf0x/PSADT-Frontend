@@ -11,7 +11,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-**Version:** 0.1.33 (see `VERSION`)
+**Version:** 0.1.44 (see `VERSION`)
 
 ## Status and roadmap
 
@@ -24,6 +24,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 5 | Proxmox helper script (community-scripts style) | ✅ v0.1.0 |
 | 6 | UI in English, Dutch and German (language picker), in-app updates for LXC (System page) | ✅ v0.1.22 |
 | 7 | Check before download, upload retention, default log folder, new icon and design | ✅ v0.1.33 |
+| 8 | Language per user (stored on the account, follows the user to every device) | ✅ v0.1.44 |
 
 ## Architecture
 
@@ -48,7 +49,8 @@ backend/   FastAPI (Python 3.12+), SQLAlchemy + SQLite, argon2
   app/main.py              app, security headers, serves frontend/dist
   tests/                   pytest
 frontend/  React 18 + Vite (build -> frontend/dist): Packages, Editor, Users, System
-           src/i18n.js: UI languages (en, nl, de); the English text is the key, a missing translation shows English
+           src/i18n.js: UI languages (en, nl, de); the English text is the key, a missing translation shows English.
+           Each user's language is stored in users.language (PUT /api/auth/language) and applied at sign-in.
 .github/workflows/  ci.yml (tests + build), release.yml (tag + release + GHCR image from VERSION)
 ct/psadt-frontend.sh            Proxmox helper (runs on the host)
 install/psadtfrontend-install.sh  runs inside the new container, calls lxc/install.sh
@@ -191,7 +193,7 @@ Versions start at 0.0.50 and go up by 11 per release (0.0.61, 0.0.72, ...). When
 - The .intunewin is tested cryptographically (roundtrip) but not yet uploaded to Intune. Check that the first time.
 - In-app update (`install/update.sh`) has not yet run on a real Proxmox container. Check that the first time.
 - To develop locally without `/opt/psadt`, download the template zip and set `PSADT_TOOLKIT_ZIP`.
-- Tables are created with `create_all`. Add Alembic at the first schema change.
+- Tables are created with `create_all`; new columns on existing tables are added in `db._add_missing_columns()`. Move to Alembic when this grows.
 - New UI text: wrap it in `t('English text')` and add a row with the Dutch and German to `frontend/src/i18n.js`. Server error messages are translated the same way in the browser.
 - Possible next steps: 2FA (TOTP), an audit log, Alembic migrations.
 
