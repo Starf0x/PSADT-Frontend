@@ -1,5 +1,7 @@
 # PSADT Frontend
 
+<img src="assets/icon.png" width="96" alt="PSADT Frontend icon">
+
 A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolkit.com/) (PSADT v4) packages. You can:
 
 - edit install, uninstall and repair steps in a browser,
@@ -9,7 +11,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-**Version:** 0.1.22 (see `VERSION`)
+**Version:** 0.1.33 (see `VERSION`)
 
 ## Status and roadmap
 
@@ -21,6 +23,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 4 | Open source: roles, user management, docs, GHCR image | ✅ v0.0.83 |
 | 5 | Proxmox helper script (community-scripts style) | ✅ v0.1.0 |
 | 6 | UI in English, Dutch and German (language picker), in-app updates for LXC (System page) | ✅ v0.1.22 |
+| 7 | Check before download, upload retention, new icon and design | ✅ v0.1.33 |
 
 ## Architecture
 
@@ -33,7 +36,9 @@ backend/   FastAPI (Python 3.12+), SQLAlchemy + SQLite, argon2
   app/routers/packages.py  /api/packages CRUD, /script, /check, /files, /detection, /export
   app/routers/snippets.py  /api/snippets (reusable steps)
   app/routers/users.py     /api/users (admins only)
-  app/routers/system.py    /api/system/update (admins only): version check and in-app update
+  app/routers/system.py    /api/system/update and /settings (admins only): version check, in-app update, upload retention
+  app/retention.py         removes uploads after the chosen retention (hourly, and right after export if chosen)
+  app/psadt/validate.py    the check before a download (/api/packages/{id}/validate); errors block the export
   app/psadt/schema.py      allowed step types + validation (whitelist)
   app/psadt/generator.py   builds Invoke-AppDeployToolkit.ps1
   app/psadt/template_*.ps1 header/footer of the official PSADT 4.1.8 template
@@ -49,6 +54,7 @@ ct/psadt-frontend.sh            Proxmox helper (runs on the host)
 install/psadtfrontend-install.sh  runs inside the new container, calls lxc/install.sh
 install/update.sh               in-place updater, installed as /usr/local/bin/psadt-frontend-update
 lxc/install.sh                  installer for a Debian LXC (systemd service + update units)
+assets/icon.png      app icon (also used as Docker/Unraid icon); the SVG is frontend/public/favicon.svg
 Dockerfile, docker-compose.yml
 ```
 
@@ -60,6 +66,17 @@ Dockerfile, docker-compose.yml
 - Security headers: CSP, X-Frame-Options, nosniff and Referrer-Policy. There is no `/docs` in production.
 - The container runs as non-root on a read-only filesystem, with all capabilities dropped.
 - For use on the internet, put a reverse proxy with HTTPS in front (Caddy or Traefik).
+
+## Check before download
+
+The Export tab checks the package before you can download it:
+
+- **Errors** block the download, and the server refuses the export too. They cover a missing PSADT toolkit, invalid settings, steps that use a file that is not uploaded, a script that cannot be generated, and PowerShell syntax errors (when `pwsh` is available).
+- **Warnings** do not block. They cover no main install or uninstall step, no detection rules, an empty vendor or version, and no uploaded files.
+
+## Upload retention
+
+On the **System** page an administrator chooses how long uploaded files stay on the server: keep forever (the default), remove right after a download, or remove after 1, 7, 30 or 90 days. The package itself is kept; only its files are removed. The cleanup runs at start-up, every hour, and when the setting is changed.
 
 ## Roles
 

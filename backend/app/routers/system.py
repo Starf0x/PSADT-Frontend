@@ -13,8 +13,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
+from .. import retention as ret
 from ..config import settings
+from ..db import get_db, set_setting
 from ..security import require_admin
 
 router = APIRouter(prefix="/api/system", tags=["system"], dependencies=[Depends(require_admin)])
@@ -91,3 +95,21 @@ def request_update():
     (settings.data_dir / "update-progress.json").write_text(json.dumps(progress))
     (settings.data_dir / "update-wanted").write_text(now)
     return progress
+
+
+class SettingsIn(BaseModel):
+    upload_retention: str
+
+
+@router.get("/settings")
+def get_settings(db: Session = Depends(get_db)):
+    return {"upload_retention": ret.retention(db), "choices": list(ret.CHOICES)}
+
+
+@router.put("/settings")
+def put_settings(body: SettingsIn, db: Session = Depends(get_db)):
+    if body.upload_retention not in ret.CHOICES:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Unknown retention choice")
+    set_setting(db, ret.KEY, body.upload_retention)
+    removed = ret.purge_old_uploads(db)
+    return {"upload_retention": body.upload_retention, "choices": list(ret.CHOICES), "removed": removed}

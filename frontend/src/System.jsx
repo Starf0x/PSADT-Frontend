@@ -2,6 +2,32 @@ import { useEffect, useState } from 'react'
 import { api } from './api.js'
 import { t } from './i18n.js'
 
+const RETENTION = [['forever', 'Keep forever'], ['export', 'Remove right after a download'], ['1', '1 day'], ['7', '7 days'], ['30', '30 days'], ['90', '90 days']]
+
+function Retention() {
+  const [value, setValue] = useState(null)
+  const [msg, setMsg] = useState(null)
+  useEffect(() => { api('/api/system/settings').then(r => setValue(r.upload_retention)).catch(e => setMsg({ ok: false, text: e.message })) }, [])
+  async function change(v) {
+    setValue(v)
+    try {
+      const r = await api('/api/system/settings', { method: 'PUT', body: { upload_retention: v } })
+      setMsg({ ok: true, text: r.removed ? t('Saved; {n} old file(s) removed', { n: r.removed }) : t('Saved') })
+    } catch (e) { setMsg({ ok: false, text: e.message }) }
+  }
+  if (value === null) return null
+  return (
+    <div className="panel">
+      <h3 style={{ marginTop: 0 }}>{t('Uploaded files')}</h3>
+      <p className="muted small">{t('How long installers and other uploads stay on this server. The package itself is kept; only its files are removed.')}</p>
+      <div className="row">
+        <select value={value} onChange={e => change(e.target.value)}>{RETENTION.map(([k, l]) => <option key={k} value={k}>{t(l)}</option>)}</select>
+        {msg && <span className={msg.ok ? 'ok' : 'error'}>{msg.text}</span>}
+      </div>
+    </div>
+  )
+}
+
 export default function System() {
   const [info, setInfo] = useState(null)
   const [error, setError] = useState('')
@@ -55,6 +81,7 @@ export default function System() {
       ) : info.newest && <p className="ok">{t('You are on the newest version.')}</p>}
       {p?.done && !running && !p.ok && <p className="error">{t('Last update failed')}: {p.said}</p>}
       {error && <p className="error">{error}</p>}
+      <Retention />
     </section>
   )
 }

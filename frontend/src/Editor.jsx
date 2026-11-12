@@ -163,18 +163,47 @@ function DetectionEditor({ rules, onChange }) {
   )
 }
 
+const RETENTION_NOTE = {
+  export: 'Uploaded files are removed from the server right after the download.',
+  1: 'Uploaded files are removed from the server after {n} day(s).', 7: 'Uploaded files are removed from the server after {n} day(s).',
+  30: 'Uploaded files are removed from the server after {n} day(s).', 90: 'Uploaded files are removed from the server after {n} day(s).',
+}
+
+function Checks({ id, onResult }) {
+  const [res, setRes] = useState(null)
+  const run = () => { setRes(null); api(`/api/packages/${id}/validate`).then(r => { setRes(r); onResult(r) }).catch(e => setRes({ ok: false, items: [{ level: 'error', text: e.message, vars: {} }] })) }
+  useEffect(run, [id])
+  if (!res) return <p className="muted">{t('Checking the package…')}</p>
+  const icon = { error: '✕', warning: '!', ok: '✓' }
+  const items = res.items.length ? res.items : [{ level: 'ok', text: 'Everything is set up correctly', vars: {} }]
+  return (
+    <div className="panel">
+      <div className="row between" style={{ margin: 0 }}>
+        <strong>{res.ok ? t('Ready to download') : t('Fix these problems before downloading')}</strong>
+        <button className="secondary" onClick={run}>{t('Check again')}</button>
+      </div>
+      <ul className="checks">{items.map((i, k) => <li key={k} className={i.level}><b>{icon[i.level]}</b><span>{t(i.text, i.vars)}</span></li>)}</ul>
+      {!res.syntax_checked && <p className="muted small">{t('PowerShell not available on the server')}: {t('the syntax was not checked.')}</p>}
+      {RETENTION_NOTE[res.retention] && <p className="muted small">{t(RETENTION_NOTE[res.retention], { n: res.retention })}</p>}
+    </div>
+  )
+}
+
 function Export({ id }) {
   const [detect, setDetect] = useState('')
+  const [ok, setOk] = useState(false)
   useEffect(() => { text(`/api/packages/${id}/detection`).then(setDetect).catch(e => setDetect(e.message)) }, [id])
   const cmd = x => `Invoke-AppDeployToolkit.exe -DeploymentType ${x} -DeployMode Silent`
+  const dis = ok ? '' : ' disabled'
   return (
     <section>
+      <Checks id={id} onResult={r => setOk(r.ok)} />
       <div className="row">
-        <a className="button" href={`/api/packages/${id}/export/zip`}>{t('Download')} ZIP</a>
-        <a className="button" href={`/api/packages/${id}/export/intunewin`}>{t('Download')} .intunewin</a>
-        <a className="button" href={`/api/packages/${id}/detection?download=1`}>{t('Download detection script')}</a>
+        <a className={'button' + dis} href={`/api/packages/${id}/export/zip`}>{t('Download')} ZIP</a>
+        <a className={'button' + dis} href={`/api/packages/${id}/export/intunewin`}>{t('Download')} .intunewin</a>
+        <a className="button secondary" href={`/api/packages/${id}/detection?download=1`}>{t('Download detection script')}</a>
       </div>
-      <p className="muted">{t('Building can take a while with large installer files.')}</p>
+      <p className="muted small">{t('Building can take a while with large installer files.')}</p>
       <h3>{t('Intune settings')}</h3>
       <table><tbody>
         <tr><td>{t('Install command')}</td><td><code>{cmd('Install')}</code></td></tr>
