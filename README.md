@@ -188,7 +188,6 @@ Containers installed before v0.1.22 do not have the updater yet. Update them onc
 | `PSADT_MAX_UPLOAD_MB` | `4096` | Maximum upload size |
 | `PSADT_TOOLKIT_ZIP` | `/opt/psadt/PSAppDeployToolkit_Template_v4.zip` | Official PSADT package used for export |
 | `PSADT_PWSH_PATH` | `pwsh` (`/opt/pwsh/pwsh` in Docker/LXC) | PowerShell 7 for the syntax check |
-| `PSADT_USAGE_OPTOUT` | empty | **Anonymous usage.** Once a day, and right after an update, the app tells its author it is running: version, Docker/LXC/other, days running and a random per-install id (never your server name, nothing about packages, files or users). Turn it off with `PSADT_USAGE_OPTOUT=1`. Set `PSADT_USAGE_URL` (and `PSADT_USAGE_TOKEN`) to send your own numbers to your own server instead |
 
 ## Development
 
