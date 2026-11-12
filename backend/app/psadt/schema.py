@@ -15,7 +15,7 @@ Text = Annotated[str, Field(max_length=2000)]
 
 def _file(v: str | None) -> str | None:
     if v and (not FILE_RE.match(v) or v in (".", "..")):
-        raise ValueError("Ongeldige bestandsnaam")
+        raise ValueError("Invalid file name")
     return v
 
 
@@ -51,13 +51,13 @@ class MsiStep(_Step):
     @classmethod
     def _guid(cls, v):
         if v and not GUID_RE.match(v):
-            raise ValueError("ProductCode moet een GUID zijn, bijv. {xxxxxxxx-...}")
+            raise ValueError("ProductCode must be a GUID, e.g. {xxxxxxxx-...}")
         return v
 
     @model_validator(mode="after")
     def _target(self):
         if not self.file and not self.product_code:
-            raise ValueError("MSI-stap heeft een bestand of ProductCode nodig")
+            raise ValueError("MSI step needs a file or ProductCode")
         return self
 
 
@@ -88,7 +88,7 @@ class RegistryStep(_Step):
     @classmethod
     def _key(cls, v):
         if not REG_RE.match(v):
-            raise ValueError("Registersleutel moet beginnen met HKLM\\, HKCU\\, ...")
+            raise ValueError("Registry key must start with HKLM\\, HKCU\\, ...")
         return v
 
 
@@ -151,7 +151,7 @@ class MsiDetection(BaseModel):
     @classmethod
     def _guid(cls, v):
         if not GUID_RE.match(v):
-            raise ValueError("ProductCode moet een GUID zijn, bijv. {xxxxxxxx-...}")
+            raise ValueError("ProductCode must be a GUID, e.g. {xxxxxxxx-...}")
         return v
 
 
@@ -171,7 +171,7 @@ class RegistryDetection(BaseModel):
     @classmethod
     def _key(cls, v):
         if not REG_RE.match(v):
-            raise ValueError("Registersleutel moet beginnen met HKLM\\, HKCU\\, ...")
+            raise ValueError("Registry key must start with HKLM\\, HKCU\\, ...")
         return v
 
 

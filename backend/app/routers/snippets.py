@@ -36,6 +36,6 @@ def create_snippet(data: SnippetIn, db: Session = Depends(get_db), user: User = 
 def delete_snippet(sid: int, db: Session = Depends(get_db)):
     s = db.get(Snippet, sid)
     if s is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Snippet niet gevonden")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Snippet not found")
     db.delete(s)
     db.commit()
