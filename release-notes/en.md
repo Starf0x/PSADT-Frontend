@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.2.44
+- The download buttons check the package once more just before downloading. If something is wrong, you stay on the page and see what to fix, instead of a page with a technical error.
+
 ## 0.2.33
 - The Packages page counts every successful download: in total, by you, and per user.
 - New detection rule "MSIX package": finds an app installed for all users, with Get-AppxProvisionedPackage or with DISM. Part of the name is enough.

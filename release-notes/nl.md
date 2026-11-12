@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.2.44
+- De downloadknoppen controleren het pakket vlak voor het downloaden nog een keer. Klopt er iets niet, dan blijf je op de pagina en zie je wat je moet oplossen, in plaats van een pagina met een technische foutmelding.
+
 ## 0.2.33
 - De pagina Pakketten telt elke geslaagde download: in totaal, door jou en per gebruiker.
 - Nieuwe detectieregel "MSIX-pakket": vindt een app die voor alle gebruikers is geïnstalleerd, met Get-AppxProvisionedPackage of met DISM. Een deel van de naam is genoeg.
