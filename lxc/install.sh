@@ -27,6 +27,16 @@ if [ ! -x /opt/pwsh/pwsh ] || ! /opt/pwsh/pwsh -NoProfile -Command '$PSVersionTa
   chmod +x /opt/pwsh/pwsh
 fi
 
+# Officieel PSADT v4-pakket voor de export (zelfde versie en hash als de Docker-image)
+PSADT_VERSION=4.1.8
+PSADT_SHA256=50cb8d32973fc7648060a48cad63912ecb5caca5a70754f37e83aa06bd380283
+mkdir -p /opt/psadt
+TK=/opt/psadt/PSAppDeployToolkit_Template_v4.zip
+if ! echo "$PSADT_SHA256  $TK" | sha256sum -c - >/dev/null 2>&1; then
+  curl -fsSL -o "$TK" "https://github.com/PSAppDeployToolkit/PSAppDeployToolkit/releases/download/${PSADT_VERSION}/PSAppDeployToolkit_Template_v4.zip"
+  echo "$PSADT_SHA256  $TK" | sha256sum -c -
+fi
+
 id psadt >/dev/null 2>&1 || useradd --system --home "$APP_DIR" --shell /usr/sbin/nologin psadt
 mkdir -p "$APP_DIR" "$DATA_DIR"
 rsync -a --delete --exclude node_modules --exclude .git --exclude data "$SRC_DIR"/ "$APP_DIR"/
@@ -41,6 +51,7 @@ if [ ! -f "$ENV_FILE" ]; then
   cat >> "$ENV_FILE" <<ENVX
 PSADT_DATA_DIR=$DATA_DIR
 PSADT_PWSH_PATH=/opt/pwsh/pwsh
+PSADT_TOOLKIT_ZIP=/opt/psadt/PSAppDeployToolkit_Template_v4.zip
 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 POWERSHELL_TELEMETRY_OPTOUT=1
 POWERSHELL_UPDATECHECK=Off

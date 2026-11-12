@@ -2,7 +2,7 @@
 
 Een webinterface voor de [PowerShell App Deployment Toolkit](https://psappdeploytoolkit.com/) (PSADT v4). Draait als Docker-container of als losse LXC-installatie; beide werken identiek.
 
-**Versie:** 0.0.61 (zie `VERSION`)
+**Versie:** 0.0.72 (zie `VERSION`)
 
 ## Status en roadmap
 
@@ -10,7 +10,7 @@ Een webinterface voor de [PowerShell App Deployment Toolkit](https://psappdeploy
 |------|--------|--------|
 | 1 | Fundament: FastAPI + React, cookie-login, Docker, LXC | ✅ v0.0.50 |
 | 2 | Package-editor op basis van het PSADT v4-template, uploads, live scriptpreview | ✅ v0.0.61 |
-| 3 | Bouwen/exporteren: ZIP, `.intunewin`, detectieregels, snippetbibliotheek | gepland |
+| 3 | Bouwen/exporteren: ZIP, `.intunewin`, detectieregels, snippetbibliotheek | ✅ v0.0.72 |
 | 4 | Open source klaarmaken: rollen, CI, docs | gepland |
 
 ## Architectuur
@@ -26,6 +26,9 @@ backend/   FastAPI (Python 3.12+), SQLAlchemy + SQLite, argon2
   app/psadt/generator.py   bouwt Invoke-AppDeployToolkit.ps1
   app/psadt/template_*.ps1 kop/staart van het officiële PSADT 4.1.8-template
   app/psadt/check.ps1      syntaxcontrole met de PowerShell-parser (voert niets uit)
+  app/psadt/export.py      ZIP (officieel PSADT-pakket + script + Files) en .intunewin
+  app/psadt/detection.py   Intune-detectiescript uit detectieregels
+  app/routers/snippets.py  /api/snippets (herbruikbare stappen)
   app/main.py        app, security headers, serveert frontend/dist
   tests/             pytest
 frontend/  React 18 + Vite (build -> frontend/dist); src/Packages.jsx, Editor.jsx, steps.js
@@ -74,6 +77,14 @@ Configuratie staat in `/etc/psadt-frontend.env`, data in `/var/lib/psadt-fronten
 - Tab *Script*: live preview, download (UTF-8 met BOM, CRLF) en syntaxcontrole via PowerShell 7 in de container.
 - Veiligheid: alle invoer komt als letterlijke string (enkele quotes) in het script; bestandsnamen zijn gevalideerd; het script wordt op de server nooit uitgevoerd.
 
+## Export (stap 3)
+
+- **ZIP:** het officiële `PSAppDeployToolkit_Template_v4.zip` (4.1.8, sha256 gecontroleerd) met het gegenereerde `Invoke-AppDeployToolkit.ps1` en de geüploade bestanden in `Files/`.
+- **.intunewin:** zelfde formaat als Microsofts IntuneWinAppUtil (AES-256-CBC + HMAC-SHA256, `Detection.xml`), gebouwd in Python, dus zonder Windows. Setup-bestand: `Invoke-AppDeployToolkit.exe`.
+- **Detectie:** regels (MSI ProductCode, bestand met minimale versie, registerwaarde) worden een Intune-detectiescript (alle regels moeten kloppen).
+- **Snippets:** ☆ op een stap slaat hem op; daarna kies je hem bij *Stap toevoegen*.
+- Tijdelijke exportbestanden staan in `$PSADT_DATA_DIR/tmp` en worden na de download verwijderd.
+
 ## Configuratie
 
 | Variabele | Standaard | Uitleg |
@@ -84,6 +95,7 @@ Configuratie staat in `/etc/psadt-frontend.env`, data in `/var/lib/psadt-fronten
 | `PSADT_SESSION_HOURS` | `12` | Geldigheid van een sessie |
 | `PSADT_DATA_DIR` | `./data` (`/data` in Docker) | Database en uploads |
 | `PSADT_MAX_UPLOAD_MB` | `4096` | Maximale uploadgrootte |
+| `PSADT_TOOLKIT_ZIP` | `/opt/psadt/PSAppDeployToolkit_Template_v4.zip` | Officieel PSADT-pakket voor export |
 | `PSADT_PWSH_PATH` | `pwsh` (`/opt/pwsh/pwsh` in Docker/LXC) | PowerShell 7 voor syntaxcontrole |
 
 ## Ontwikkelen
@@ -104,7 +116,10 @@ Start op 0.0.50 en verhoogt per release met 11 (0.0.61, 0.0.72, ...). Bij 100 of
 - PowerShell 7.4.6 staat in de Docker-image én via `lxc/install.sh` in `/opt/pwsh`; versie op beide plekken gelijk houden.
 - Nieuw PSADT-template: kop/staart opnieuw uit `src/PSAppDeployToolkit/Frontend/v4/Invoke-AppDeployToolkit.ps1` halen (pad `..\..\..\PSAppDeployToolkit` vervangen door `PSAppDeployToolkit`) en `PSADT_VERSION` in `schema.py` aanpassen.
 - Releases: verhoog `VERSION` (+11) en `frontend/package.json`; na merge maakt `release.yml` de tag en release.
-- Stap 3: ZIP-export met PSADT-module, `.intunewin`, detectieregels, snippetbibliotheek.
+- Nieuwe PSADT-versie: `PSADT_VERSION` + `PSADT_SHA256` in Dockerfile én `lxc/install.sh`, plus kop/staart van het template en `PSADT_VERSION` in `schema.py`.
+- De .intunewin is cryptografisch getest (roundtrip), maar nog niet daadwerkelijk in Intune geüpload: eerste keer controleren.
+- Lokaal ontwikkelen zonder `/opt/psadt`: download de template-zip en zet `PSADT_TOOLKIT_ZIP`.
+- Stap 4: rollen/gebruikersbeheer, docs, open source klaarmaken.
 - Nieuwe tabellen worden nu via `create_all` gemaakt; bij de eerste schemawijziging Alembic toevoegen.
 
 ## Licentie

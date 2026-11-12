@@ -23,3 +23,9 @@ export const STEP_TYPES = {
 }
 
 export const PHASES = [['pre', 'Voor'], ['main', 'Hoofdactie'], ['post', 'Na']]
+
+export const DETECTION_TYPES = {
+  msi: { label: 'MSI ProductCode', fields: [['product_code', 'ProductCode {GUID}'], ['min_version', 'Minimale versie (optioneel)']], defaults: { product_code: '', min_version: '' } },
+  file: { label: 'Bestand', fields: [['path', 'Pad (mag %ProgramFiles% bevatten)'], ['min_version', 'Minimale bestandsversie (optioneel)']], defaults: { path: '', min_version: '' } },
+  registry: { label: 'Register', fields: [['key', 'Sleutel (HKLM\\...)'], ['name', 'Waardenaam (leeg = sleutel bestaat)'], ['value', 'Verwachte waarde (optioneel)']], defaults: { key: 'HKLM\\SOFTWARE\\', name: '', value: '' } },
+}
