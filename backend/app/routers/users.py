@@ -34,7 +34,7 @@ def _out(u: User) -> dict:
 def _get(db: Session, uid: int) -> User:
     u = db.get(User, uid)
     if u is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Gebruiker niet gevonden")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
     return u
 
 
@@ -54,7 +54,7 @@ def list_users(db: Session = Depends(get_db)):
 @router.post("", status_code=201)
 def create_user(data: UserIn, db: Session = Depends(get_db)):
     if db.scalar(select(User).where(User.username == data.username)):
-        raise HTTPException(status.HTTP_409_CONFLICT, "Gebruikersnaam bestaat al")
+        raise HTTPException(status.HTTP_409_CONFLICT, "Username already exists")
     u = User(username=data.username, password_hash=hash_password(data.password), role=data.role)
     db.add(u)
     db.commit()
@@ -66,7 +66,7 @@ def update_user(uid: int, data: UserUpdate, db: Session = Depends(get_db)):
     u = _get(db, uid)
     if data.role and data.role != u.role:
         if u.role == "admin" and _admins(db) <= 1:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Er moet minstens één beheerder overblijven")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "At least one administrator must remain")
         u.role = data.role
         _revoke(db, u.id)
     if data.password:
@@ -83,7 +83,7 @@ def update_user(uid: int, data: UserUpdate, db: Session = Depends(get_db)):
 def delete_user(uid: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
     u = _get(db, uid)
     if u.id == admin.id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Je kunt jezelf niet verwijderen")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "You cannot delete yourself")
     _revoke(db, u.id)
     db.delete(u)
     db.commit()

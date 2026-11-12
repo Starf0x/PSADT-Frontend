@@ -60,9 +60,10 @@ def test_upload_rules(authed):
     ok = authed.post(f"/api/packages/{pid}/files", files={"file": ("setup.msi", b"data")})
     assert ok.status_code == 201
     assert authed.post(f"/api/packages/{pid}/files", files={"file": ("evil.dll", b"x")}).status_code == 400
+    assert authed.post(f"/api/packages/{pid}/files", files={"file": ("app.msix", b"x")}).status_code == 201
     r = authed.post(f"/api/packages/{pid}/files", files={"file": ("../../etc/passwd.txt", b"x")})
     assert r.status_code == 201 and r.json()["name"] == "passwd.txt"
-    assert [f["name"] for f in authed.get(f"/api/packages/{pid}/files").json()] == ["passwd.txt", "setup.msi"]
+    assert [f["name"] for f in authed.get(f"/api/packages/{pid}/files").json()] == ["app.msix", "passwd.txt", "setup.msi"]
     assert authed.delete(f"/api/packages/{pid}/files/setup.msi").status_code == 204
 
 

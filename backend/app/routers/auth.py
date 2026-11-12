@@ -38,7 +38,7 @@ def _me(user: User, sess: UserSession) -> dict:
 def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.username == data.username))
     if user and user.locked_until and _aware(user.locked_until) > utcnow():
-        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Account tijdelijk geblokkeerd")
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "Account temporarily locked")
     if not verify_password(data.password, user.password_hash if user else None):
         if user:
             user.failed_logins += 1
@@ -46,7 +46,7 @@ def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
                 user.locked_until = utcnow() + timedelta(minutes=settings.lockout_minutes)
                 user.failed_logins = 0
             db.commit()
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Onjuiste gebruikersnaam of wachtwoord")
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Incorrect username or password")
     user.failed_logins = 0
     user.locked_until = None
     token, sess = create_session(db, user)
@@ -82,7 +82,7 @@ def change_password(
     db: Session = Depends(get_db),
 ):
     if not verify_password(data.current_password, user.password_hash):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Huidig wachtwoord onjuist")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Current password is incorrect")
     user.password_hash = hash_password(data.new_password)
     # Alle andere sessies van deze gebruiker intrekken
     db.execute(delete(UserSession).where(UserSession.user_id == user.id, UserSession.id != sess.id))

@@ -17,9 +17,9 @@ DATA_DIR=/var/lib/psadt-frontend
 ENV_FILE=/etc/psadt-frontend.env
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." 2>/dev/null && pwd || true)"
 
-[ "$(id -u)" -eq 0 ] || { echo "Draai dit script als root."; exit 1; }
+[ "$(id -u)" -eq 0 ] || { echo "Run this script as root."; exit 1; }
 if command -v pveversion >/dev/null 2>&1; then
-  echo "Dit is een Proxmox-host. Draai dit script ín een LXC, of gebruik ct/psadt-frontend.sh op de host."
+  echo "This is a Proxmox host. Run this script inside an LXC, or use ct/psadt-frontend.sh on the host."
   exit 1
 fi
 
@@ -35,7 +35,7 @@ if [ "${PSADT_SKIP_FETCH:-0}" != 1 ] && { [ -z "$SRC_DIR" ] || [ ! -f "$SRC_DIR/
     if git -C "$SRC_DIR" fetch -q "$URL" "$BRANCH"; then
       git -C "$SRC_DIR" reset -q --hard FETCH_HEAD
     else
-      echo "Let op: kon $REPO niet ophalen (privé-repo? zet GITHUB_TOKEN). Bestaande code wordt gebruikt."
+      echo "Warning: could not fetch $REPO (private repo? set GITHUB_TOKEN). Using the existing code."
     fi
   else
     rm -rf "$SRC_DIR" && git clone -q --depth 1 -b "$BRANCH" "$URL" "$SRC_DIR"
@@ -116,6 +116,36 @@ ReadWritePaths=$DATA_DIR
 WantedBy=multi-user.target
 UNIT
 
+# In-app updates (System page): the app leaves $DATA_DIR/update-wanted, this root path unit
+# sees it and runs psadt-frontend-update. Only for git installs, which is what it updates.
+if [ -d /opt/psadt-frontend-src/.git ]; then
+  install -m 0755 "$APP_DIR/install/update.sh" /usr/local/bin/psadt-frontend-update
+  cat > /etc/systemd/system/psadt-frontend-update.service <<UNIT
+[Unit]
+Description=Update PSADT Frontend
+Documentation=https://github.com/$REPO
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/psadt-frontend-update
+TimeoutStartSec=1800
+UNIT
+  cat > /etc/systemd/system/psadt-frontend-update.path <<UNIT
+[Unit]
+Description=Watch for PSADT Frontend asking to be updated
+
+[Path]
+PathExists=$DATA_DIR/update-wanted
+Unit=psadt-frontend-update.service
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+fi
+
 systemctl daemon-reload
+[ -f /etc/systemd/system/psadt-frontend-update.path ] && systemctl enable -q --now psadt-frontend-update.path
 systemctl enable --now psadt-frontend
-echo "Klaar. Admin-wachtwoord (bij eerste start): journalctl -u psadt-frontend | grep admin-wachtwoord"
+echo "Done. Admin password (first start): journalctl -u psadt-frontend | grep 'admin password'"
