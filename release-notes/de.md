@@ -1,5 +1,9 @@
 # Was ist neu
 
+## 0.2.66
+- Der Hintergrund hat jetzt denselben sanften Schimmer wie My Audiobook Collection, und die Farben der ganzen App ändern sich jede Nacht ein wenig.
+- Anonyme tägliche Meldung wie in My Audiobook Collection: einmal am Tag meldet die App ihrem Autor, dass sie läuft (Version, Docker/LXC, Tage, eine zufällige ID). Über Pakete, Dateien oder Benutzer wird nichts gesendet. Abschaltbar mit PSADT_USAGE_OPTOUT=1 auf dem Server.
+
 ## 0.2.55
 - Beim Herunterladen eines Pakets siehst du jetzt, was passiert: zuerst "Paket wird erstellt…", dann einen Fortschrittsbalken und am Ende den Dateinamen.
 - Sind die Download-Schaltflächen gesperrt, steht darunter, dass zuerst die Probleme aus der Prüfung zu beheben sind.

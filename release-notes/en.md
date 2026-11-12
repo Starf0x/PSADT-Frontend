@@ -3,6 +3,10 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.2.66
+- The background now has the same soft glow as My Audiobook Collection, and the colours of the whole app change a little every night.
+- Anonymous daily check-in, as in My Audiobook Collection: once a day the app tells its author it is running (version, Docker/LXC, days running, a random id). Nothing about your packages, files or users is sent. It can be turned off with PSADT_USAGE_OPTOUT=1 on the server.
+
 ## 0.2.55
 - Downloading a package now shows what is happening: first "Building the package…", then a progress bar, and finally the file name when it is done.
 - When the download buttons are locked, a line below them tells you to fix the problems in the check first.

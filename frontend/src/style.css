@@ -1,16 +1,21 @@
 :root {
   color-scheme: dark;
-  --bg: #080a16; --fg: #eceefb; --card: #12152b; --card-2: #181c38; --line: #262b4d; --muted: #969bc0;
-  --accent: #8b7bff; --accent-2: #22d3ee; --accent-3: #f472b6; --accent-soft: #8b7bff1f; --err: #ff6b84; --err-soft: #ff6b841a;
+  --bg: #0e1014; --fg: #e6e8ec; --card: #16191f; --card-2: #1c2027; --line: #262b34; --muted: #a2a9b8;
+  /* Today's colours, as in My Audiobook Collection: day.js sets --day (37° a day) and the
+     two hues turn with it. 252° and 188° are the colours the app was drawn in. */
+  --day: 0; --hue1: calc(252 + var(--day)); --hue2: calc(188 + var(--day));
+  --glow1: hsl(var(--hue1) 100% 68% / .34); --glow2: hsl(var(--hue2) 86% 53% / .30);
+  --accent: hsl(var(--hue1) 100% 72%); --accent-2: hsl(var(--hue2) 86% 53%); --accent-3: #f472b6; --accent-soft: hsl(var(--hue1) 100% 72% / .12); --err: #ff6b84; --err-soft: #ff6b841a;
   --ok: #3ddc97; --ok-soft: #3ddc971a; --warn: #ffb547; --warn-soft: #ffb5471a;
-  --side: #0b0d1e; --side-fg: #c3c6e8; --side-hover: #1a1e3d;
-  --shadow: 0 1px 2px #0008, 0 10px 30px #0006; --glow: 0 0 0 1px #8b7bff33, 0 8px 30px #8b7bff2e; --radius: 14px;
-  --grad: linear-gradient(135deg, #8b7bff 0%, #6366f1 45%, #22d3ee 100%);
-  --grad-hot: linear-gradient(135deg, #8b7bff, #f472b6);
+  --side: #12141a; --side-fg: #c9ccd4; --side-hover: #1f232b;
+  --shadow: 0 1px 2px #0008, 0 10px 30px #0006; --glow: 0 0 0 1px hsl(var(--hue1) 100% 72% / 0.20), 0 8px 30px hsl(var(--hue1) 100% 72% / 0.18); --radius: 14px;
+  --grad: linear-gradient(135deg, var(--accent) 0%, hsl(calc(var(--hue1) - 13) 84% 66%) 45%, var(--accent-2) 100%);
+  --grad-hot: linear-gradient(135deg, var(--accent), #f472b6);
 }
 * { box-sizing: border-box; }
 body { margin: 0; font: 15px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; min-height: 100vh;
-  background: radial-gradient(900px 500px at 85% -10%, #8b7bff22, transparent 60%), radial-gradient(800px 500px at 0% 110%, #22d3ee18, transparent 60%), var(--bg); background-attachment: fixed; color: var(--fg); -webkit-font-smoothing: antialiased; }
+  /* the same soft glow as My Audiobook Collection, in today's colours */
+  background: radial-gradient(1500px 1100px at 4% 0%, var(--glow1), transparent 68%), radial-gradient(1400px 1050px at 96% 96%, var(--glow2), transparent 66%), var(--bg); background-attachment: fixed; color: var(--fg); -webkit-font-smoothing: antialiased; }
 h2 { font-size: 1.5rem; margin: 0 0 1rem; letter-spacing: -.01em; }
 h3 { font-size: 1.05rem; margin: 1.25rem 0 .5rem; }
 code { background: var(--accent-soft); padding: .1rem .35rem; border-radius: 5px; font-size: .85em; }
@@ -137,41 +142,41 @@ details summary { cursor: pointer; }
 h2 { font-size: 1.75rem; font-weight: 750; background: linear-gradient(90deg, #fff, #c9c3ff 60%, #8ee9f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
 h3 { color: #d9dbff; display: flex; align-items: center; gap: .5rem; }
 h3::before { content: ""; width: 4px; height: 1.05em; border-radius: 4px; background: var(--grad); }
-.sidebar { background: linear-gradient(180deg, #0f1230, #090b1c); border-right: 1px solid #ffffff10; box-shadow: 4px 0 30px #0007; }
-.nav-item.current { box-shadow: 0 6px 20px #8b7bff55, inset 0 1px 0 #ffffff33; }
+.sidebar { background: linear-gradient(180deg, #171a21, #12141a); border-right: 1px solid #ffffff10; box-shadow: 4px 0 30px #0007; }
+.nav-item.current { box-shadow: 0 6px 20px hsl(var(--hue1) 100% 72% / 0.33), inset 0 1px 0 #ffffff33; }
 .card, .panel, .step, table, .tabs { background: linear-gradient(180deg, var(--card-2), var(--card)); border-color: var(--line); }
 .panel, .step { transition: border-color .2s, box-shadow .2s, transform .2s; }
-.panel:hover, .step:hover { border-color: #8b7bff55; box-shadow: var(--glow); }
+.panel:hover, .step:hover { border-color: hsl(var(--hue1) 100% 72% / 0.33); box-shadow: var(--glow); }
 .step { border-left: 0; position: relative; overflow: hidden; padding-left: 1.4rem; }
 .step::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--grad); }
 .step-head strong { font-size: 1rem; }
 .card.login { box-shadow: var(--glow), var(--shadow); }
-.center { background: radial-gradient(900px 600px at 15% 0%, #8b7bff38, transparent 60%), radial-gradient(800px 500px at 100% 100%, #22d3ee26, transparent 60%), radial-gradient(500px 400px at 60% 40%, #f472b614, transparent 60%), var(--bg); }
-input, select, textarea { background: #0c0f22; border-color: var(--line); }
-input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px #8b7bff40, 0 0 18px #8b7bff33; }
+.center { background: radial-gradient(1500px 1100px at 4% 0%, var(--glow1), transparent 68%), radial-gradient(1400px 1050px at 96% 96%, var(--glow2), transparent 66%), var(--bg); }
+input, select, textarea { background: #12151b; border-color: var(--line); }
+input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 3px hsl(var(--hue1) 100% 72% / 0.25), 0 0 18px hsl(var(--hue1) 100% 72% / 0.20); }
 button:not(.nav-item, .link, .icon, .chip, .secondary, .tabs button), a.button:not(.secondary) { box-shadow: 0 4px 16px #6366f140; }
-button:not(.nav-item, .link, .icon, .chip, .secondary):hover:not(:disabled), a.button:not(.secondary):hover { box-shadow: 0 6px 24px #8b7bff66; filter: brightness(1.08); }
+button:not(.nav-item, .link, .icon, .chip, .secondary):hover:not(:disabled), a.button:not(.secondary):hover { box-shadow: 0 6px 24px hsl(var(--hue1) 100% 72% / 0.40); filter: brightness(1.08); }
 .nav-item:hover:not(.current) { box-shadow: none; }
-button.secondary, a.button.secondary { background: #8b7bff14; color: #c9c3ff; border: 1px solid #8b7bff44; box-shadow: none; }
-button.secondary:hover:not(:disabled) { background: #8b7bff26; }
+button.secondary, a.button.secondary { background: hsl(var(--hue1) 100% 72% / 0.08); color: #c9c3ff; border: 1px solid hsl(var(--hue1) 100% 72% / 0.27); box-shadow: none; }
+button.secondary:hover:not(:disabled) { background: hsl(var(--hue1) 100% 72% / 0.15); }
 .tabs { box-shadow: var(--shadow); }
-.tabs button.active { box-shadow: 0 4px 16px #8b7bff55; }
-th { background: #0e1127; color: #a9adda; }
-tbody tr:hover td { background: #8b7bff12; }
-pre.code { background: #060814; border-color: #8b7bff33; box-shadow: inset 0 0 40px #8b7bff0d; }
+.tabs button.active { box-shadow: 0 4px 16px hsl(var(--hue1) 100% 72% / 0.33); }
+th { background: #13161c; color: #a9adda; }
+tbody tr:hover td { background: hsl(var(--hue1) 100% 72% / 0.07); }
+pre.code { background: #060814; border-color: hsl(var(--hue1) 100% 72% / 0.20); box-shadow: inset 0 0 40px hsl(var(--hue1) 100% 72% / 0.05); }
 code { color: #c9c3ff; }
 .badge { background: var(--grad-hot); color: #fff; }
-.brand img { box-shadow: 0 0 20px #8b7bff66; }
+.brand img { box-shadow: 0 0 20px hsl(var(--hue1) 100% 72% / 0.40); }
 .dot { animation: pulse 2s infinite; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 7px #f59e0b00; } }
-::selection { background: #8b7bff66; }
+::selection { background: hsl(var(--hue1) 100% 72% / 0.40); }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: #2a2f57; border-radius: 99px; border: 2px solid var(--bg); }
 
 /* Export counters */
 .stats { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: .9rem; margin: 0 0 1.25rem; }
 .stat { background: linear-gradient(180deg, var(--card-2), var(--card)); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem 1.2rem; box-shadow: var(--shadow); display: grid; gap: .25rem; align-content: start; position: relative; overflow: hidden; }
-.stat::after { content: ""; position: absolute; inset: auto -30% -60% auto; width: 160px; height: 160px; background: radial-gradient(#8b7bff33, transparent 70%); pointer-events: none; }
+.stat::after { content: ""; position: absolute; inset: auto -30% -60% auto; width: 160px; height: 160px; background: radial-gradient(hsl(var(--hue1) 100% 72% / 0.20), transparent 70%); pointer-events: none; }
 .stat > span { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
 .stat > b { font-size: 2.2rem; line-height: 1.1; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .stat ul { list-style: none; margin: .2rem 0 0; padding: 0; display: grid; gap: .3rem; max-height: 7.5rem; overflow: auto; }
