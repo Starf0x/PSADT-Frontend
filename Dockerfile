@@ -7,7 +7,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # --- Runtime ---
-FROM python:3.13-slim
+FROM python:3.15-slim
 LABEL org.opencontainers.image.title="PSADT Frontend" \
       org.opencontainers.image.description="Web UI for building PSAppDeployToolkit v4 packages" \
       org.opencontainers.image.source="https://github.com/Starf0x/PSADT-Frontend" \
