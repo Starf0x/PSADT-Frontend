@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.1.77
+- In the arguments of a step you can write {Files} for the package's Files folder on the PC. For example: --msix-path "{Files}\app.msix".
+
 ## 0.1.66
 - Users now have a full name next to their login name. Add it when you create a user; everyone can change their own name under their account.
 - New packages fill in your full name as script author.
