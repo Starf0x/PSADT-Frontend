@@ -99,7 +99,13 @@ export default function App() {
   const onUserLang = l => { onLang(l); api('/api/auth/language', { method: 'PUT', body: { language: l } }).catch(() => {}) }
 
   useEffect(() => {
-    api('/api/health').then(h => setVersion(h.version)).catch(() => {})
+    api('/api/health').then(h => {
+      setVersion(h.version)
+      // After an update the browser may still hold the old page: load the new one once.
+      if (h.version && h.version !== __APP_VERSION__ && sessionStorage.getItem('reloadedFor') !== h.version) {
+        sessionStorage.setItem('reloadedFor', h.version); window.location.reload()
+      }
+    }).catch(() => {})
     api('/api/auth/me').then(signedIn).catch(() => setUser(null))
   }, [])
 

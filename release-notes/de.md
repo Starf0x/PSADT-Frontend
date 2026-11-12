@@ -1,5 +1,9 @@
 # Was ist neu
 
+## 0.2.22
+- Erkennungsregel "MSI ProductCode": MSI wählen (bereits hochgeladen oder auf dem PC durchsuchen), der ProductCode wird automatisch eingetragen. Produktname und Version werden zur Kontrolle angezeigt.
+- Nach einem Update lädt der Browser jetzt immer sofort die neue Version, statt die alte Seite aus dem Cache zu zeigen.
+
 ## 0.2.11
 - Jedes Dateifeld in einem Schritt hat jetzt eine Schaltfläche Durchsuchen: Datei auf dem PC wählen, sie wird in einem Schritt hochgeladen und ausgewählt.
 - Run EXE kann jetzt auch Programme starten, die auf jedem Windows-PC vorhanden sind, etwa winget, msiexec, PowerShell und cmd. Kein Hochladen nötig. winget wird automatisch gefunden, auch wenn Intune als SYSTEM installiert.

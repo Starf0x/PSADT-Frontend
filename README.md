@@ -11,7 +11,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-**Version:** 0.2.11 (see `VERSION`)
+**Version:** 0.2.22 (see `VERSION`)
 
 ## Status and roadmap
 
@@ -32,6 +32,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 13 | Update notice for admins (dot in the menu, banner, "Check now") | ✅ v0.1.99 |
 | 14 | Autosave in the package editor, warning before leaving with unsaved changes | ✅ v0.2.0 |
 | 15 | Browse button for installer files, built-in Windows programs (winget, msiexec…) in Run EXE, always-dark design | ✅ v0.2.11 |
+| 16 | Read the ProductCode from an MSI for detection; browser always loads the newest version after an update | ✅ v0.2.22 |
 
 ## Architecture
 

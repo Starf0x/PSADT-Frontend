@@ -218,7 +218,26 @@ function Files({ id, files, reload }) {
   )
 }
 
-function DetectionEditor({ rules, onChange }) {
+// Pick an MSI (uploaded, or browse the PC) and fill in its ProductCode.
+function MsiReader({ id, files, onUpload, onRead }) {
+  const [file, setFile] = useState('')
+  const [info, setInfo] = useState(null)
+  const [error, setError] = useState('')
+  async function read(name) {
+    setFile(name || ''); setInfo(null); setError('')
+    if (!name) return
+    try { const p = await api(`/api/packages/${id}/files/${encodeURIComponent(name)}/msi`); setInfo(p); onRead(p) } catch (e) { setError(e.message) }
+  }
+  return (
+    <label className="wide">{t('Read from MSI file')}
+      <FilePicker value={file} onChange={read} files={files.filter(f => /\.msi$/i.test(f.name))} accept=".msi" onUpload={onUpload} />
+      {info && <span className="ok small">✓ {info.ProductName} {info.ProductVersion}{info.Manufacturer ? ` · ${info.Manufacturer}` : ''}</span>}
+      {error && <span className="error small">{error}</span>}
+    </label>
+  )
+}
+
+function DetectionEditor({ id, rules, files, onUpload, onChange }) {
   const [type, setType] = useState('msi')
   return (
     <section>
@@ -228,7 +247,9 @@ function DetectionEditor({ rules, onChange }) {
         <div className="step" key={i}>
           <div className="step-head"><strong>{i + 1}. {t(DETECTION_TYPES[r.type].label)}</strong>
             <button className="icon danger" onClick={() => onChange(rules.filter((_, j) => j !== i))} title={t('Delete')}>✕</button></div>
-          <div className="grid">{DETECTION_TYPES[r.type].fields.map(([k, label]) => (
+          <div className="grid">
+            {r.type === 'msi' && <MsiReader id={id} files={files} onUpload={onUpload} onRead={p => onChange(rules.map((x, j) => j === i ? { ...x, product_code: p.ProductCode || x.product_code } : x))} />}
+            {DETECTION_TYPES[r.type].fields.map(([k, label]) => (
             <label key={k}>{t(label)}<input value={r[k] ?? ''} onChange={e => onChange(rules.map((x, j) => j === i ? { ...x, [k]: e.target.value } : x))} /></label>))}
           </div>
         </div>))}
@@ -386,7 +407,7 @@ export default function Editor({ id, readOnly, onClose }) {
       {tab === 'app' && <AppInfo app={d.app} onChange={app => update({ ...d, app })} />}
       {['install', 'uninstall', 'repair'].includes(tab) && <PhaseEditor key={tab} phases={d[tab]} files={files} onUpload={readOnly ? null : uploadFile} onChange={p => update({ ...d, [tab]: p })} />}
       {tab === 'files' && <Files id={id} files={files} reload={loadFiles} />}
-      {tab === 'detection' && <DetectionEditor rules={d.detection || []} onChange={detection => update({ ...d, detection })} />}
+      {tab === 'detection' && <DetectionEditor id={id} files={files} onUpload={readOnly ? null : uploadFile} rules={d.detection || []} onChange={detection => update({ ...d, detection })} />}
       </fieldset>
       {tab === 'preview' && <Preview id={id} />}
       {tab === 'export' && <Export id={id} />}
