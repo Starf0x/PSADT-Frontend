@@ -4,7 +4,7 @@
 
 Een webinterface voor de [PowerShell App Deployment Toolkit](https://psappdeploytoolkit.com/) (PSADT v4). Draait als Docker-container of als losse LXC-installatie; beide werken identiek.
 
-**Versie:** 0.0.83 (zie `VERSION`)
+**Versie:** 0.0.94 (zie `VERSION`)
 
 ## Status en roadmap
 
@@ -71,34 +71,34 @@ docker compose logs | grep admin-wachtwoord   # als PSADT_ADMIN_PASSWORD leeg wa
 
 Open `http://<host>:8000`. Zonder HTTPS lokaal testen: zet `PSADT_COOKIE_SECURE=false`.
 
-## Installeren in een LXC-container
+## Installeren in een LXC-container (Proxmox)
 
-In een Debian 12/13 LXC (bijv. Proxmox), als root:
+**Op de Proxmox-host** (maakt zelf een Debian 12-LXC aan en installeert de app erin):
 
 ```bash
-git clone https://github.com/Starf0x/PSADT-Frontend.git && cd PSADT-Frontend
-bash lxc/install.sh
+# Zolang de repo privé is: token met leesrechten op de repo
+export GITHUB_TOKEN=<token>
+bash -c "$(curl -fsSL -H "Authorization: token $GITHUB_TOKEN" https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/proxmox-create.sh)"
+
+# Als de repo publiek is:
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/proxmox-create.sh)"
+```
+
+Aanpasbaar met variabelen, bijv. `CTID=120 IP=192.168.1.50/24 GW=192.168.1.1 STORAGE=local-zfs MEMORY=4096`. Standaard: DHCP, `vmbr0`, 2 cores, 2 GB RAM, 16 GB disk, unprivileged met nesting. Aan het eind toont het script de URL en het admin-wachtwoord.
+
+Let op: gebruik de **raw**-link (`raw.githubusercontent.com`), niet de `github.com/.../blob/...`-link; die geeft HTML (of 404 bij een privé-repo).
+
+**In een bestaande Debian-LXC** (als root, niet op de host):
+
+```bash
+GITHUB_TOKEN=<token> PSADT_COOKIE_SECURE=false bash -c "$(curl -fsSL -H "Authorization: token <token>" https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/install.sh)"
 journalctl -u psadt-frontend | grep admin-wachtwoord
 ```
 
-Configuratie staat in `/etc/psadt-frontend.env`, data in `/var/lib/psadt-frontend`. Updaten: `git pull && bash lxc/install.sh`.
+Configuratie staat in `/etc/psadt-frontend.env`, data in `/var/lib/psadt-frontend`, broncode in `/opt/psadt-frontend-src`.
+Updaten: `GITHUB_TOKEN=<token> bash /opt/psadt-frontend-src/lxc/install.sh` (zonder token zodra de repo publiek is).
 
-## Package-editor (stap 2)
-
-- Pakket aanmaken: start met dezelfde stappen als het officiële v4-template (welkomstvenster + voortgang).
-- Per fase (Voor / Hoofdactie / Na) van Installatie, Deïnstallatie en Reparatie stappen toevoegen, ordenen en verwijderen.
-- Stap-types: MSI, EXE, applicatie verwijderen op naam, register zetten/verwijderen, bestand kopiëren, bestand/map verwijderen, welkomstvenster, voortgang, eigen PowerShell.
-- Bestanden uploaden naar de map `Files` van het pakket (`/data/packages/<id>/Files`), met een whitelist van extensies.
-- Tab *Script*: live preview, download (UTF-8 met BOM, CRLF) en syntaxcontrole via PowerShell 7 in de container.
-- Veiligheid: alle invoer komt als letterlijke string (enkele quotes) in het script; bestandsnamen zijn gevalideerd; het script wordt op de server nooit uitgevoerd.
-
-## Export (stap 3)
-
-- **ZIP:** het officiële `PSAppDeployToolkit_Template_v4.zip` (4.1.8, sha256 gecontroleerd) met het gegenereerde `Invoke-AppDeployToolkit.ps1` en de geüploade bestanden in `Files/`.
-- **.intunewin:** zelfde formaat als Microsofts IntuneWinAppUtil (AES-256-CBC + HMAC-SHA256, `Detection.xml`), gebouwd in Python, dus zonder Windows. Setup-bestand: `Invoke-AppDeployToolkit.exe`.
-- **Detectie:** regels (MSI ProductCode, bestand met minimale versie, registerwaarde) worden een Intune-detectiescript (alle regels moeten kloppen).
-- **Snippets:** ☆ op een stap slaat hem op; daarna kies je hem bij *Stap toevoegen*.
-- Tijdelijke exportbestanden staan in `$PSADT_DATA_DIR/tmp` en worden na de download verwijderd.
+`PSADT_COOKIE_SECURE=false` is nodig zolang je via `http://` werkt; zet hem op `true` zodra er een HTTPS-proxy voor staat.
 
 ## Configuratie
 
