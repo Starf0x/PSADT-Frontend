@@ -36,22 +36,23 @@ msg_ok "Fetched ${NEWEST:-main}"
 
 # Eén installatiepad voor LXC: lxc/install.sh (PowerShell 7, PSADT-toolkit met sha256-check,
 # venv, frontend-build, systemd-unit). Zo blijven Docker en LXC gelijk.
+# Het eerste admin-wachtwoord maken we hier zelf, zodat we het niet uit de logs hoeven te vissen.
+PW=$(python3 -c 'import secrets; print(secrets.token_urlsafe(16))')
+install -m 0600 /dev/null /root/psadt-frontend-admin.txt
+echo "$PW" >/root/psadt-frontend-admin.txt
+
 msg_info "Installing PSADT Frontend (PowerShell, PSADT toolkit, build)"
-PSADT_SKIP_FETCH=1 PSADT_COOKIE_SECURE=false $STD bash /opt/psadt-frontend-src/lxc/install.sh
+PSADT_SKIP_FETCH=1 PSADT_COOKIE_SECURE=false PSADT_ADMIN_PASSWORD="$PW" $STD bash /opt/psadt-frontend-src/lxc/install.sh
 msg_ok "Installed PSADT Frontend"
 
-msg_info "Reading initial admin password"
-PW=""
-for _ in $(seq 1 30); do
-  PW=$(journalctl -u psadt-frontend --no-pager 2>/dev/null | grep -o "admin-wachtwoord voor 'admin': .*" | tail -1 | sed "s/.*: //")
-  [[ -n "$PW" ]] && break
+msg_info "Waiting for PSADT Frontend to start"
+for _ in $(seq 1 60); do
+  curl -fs http://127.0.0.1:8000/api/health >/dev/null 2>&1 && break
   sleep 1
 done
-if [[ -n "$PW" ]]; then
-  install -m 0600 /dev/null /root/psadt-frontend-admin.txt
-  echo "$PW" >/root/psadt-frontend-admin.txt
-fi
-msg_ok "Admin password stored in /root/psadt-frontend-admin.txt"
+# Het wachtwoord is bij de eerste start in de database gezet; uit het env-bestand halen.
+sed -i 's|^PSADT_ADMIN_PASSWORD=.*|PSADT_ADMIN_PASSWORD=|' /etc/psadt-frontend.env
+msg_ok "Started; admin password stored in /root/psadt-frontend-admin.txt"
 
 motd_ssh
 customize
