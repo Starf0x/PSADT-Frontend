@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.2.88
+- The export counter counts each package once per version. Downloading it again, or as both ZIP and .intunewin, no longer adds to the count. A new version does count. The package goes to whoever downloaded it first.
+
 ## 0.2.77
 - Buttons and highlighted tabs have softer colours and dark text, so they stay easy to read whatever the colour of the day.
 
