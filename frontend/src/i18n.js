@@ -214,6 +214,12 @@ const ROWS = [
   ['1 day', '1 dag', '1 Tag'], ['7 days', '7 dagen', '7 Tage'], ['30 days', '30 dagen', '30 Tage'], ['90 days', '90 dagen', '90 Tage'],
   ['Saved; {n} old file(s) removed', 'Opgeslagen; {n} oud(e) bestand(en) verwijderd', 'Gespeichert; {n} alte Datei(en) entfernt'],
   ['Unknown retention choice', 'Onbekende keuze voor bewaartijd', 'Unbekannte Aufbewahrungsauswahl'],
+  // log folder
+  ['Default log folder', 'Standaard logmap', 'Standard-Logordner'],
+  ['Where PSADT writes its log on the client. Used for every package that does not set its own; empty = the PSADT default ({d}). PSADT variables such as $envWinDir and $envProgramData work.',
+    'Waar PSADT zijn log op de client schrijft. Geldt voor elk pakket zonder eigen logmap; leeg = de PSADT-standaard ({d}). PSADT-variabelen zoals $envWinDir en $envProgramData werken.',
+    'Wohin PSADT sein Log auf dem Client schreibt. Gilt für jedes Paket ohne eigenen Logordner; leer = PSADT-Standard ({d}). PSADT-Variablen wie $envWinDir und $envProgramData funktionieren.'],
+  ['Log folder (empty = default from the System page)', 'Logmap (leeg = standaard van de System-pagina)', 'Logordner (leer = Standard der Systemseite)'],
 ]
 
 const DICT = { nl: {}, de: {} }

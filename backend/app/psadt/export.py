@@ -3,6 +3,7 @@ import base64
 import hashlib
 import hmac
 import os
+import re
 import zipfile
 from pathlib import Path
 
@@ -19,12 +20,25 @@ def to_windows(text: str) -> bytes:
     return ("﻿" + text.replace("\r\n", "\n").replace("\n", "\r\n")).encode("utf-8")
 
 
-def build_zip(toolkit_zip: Path, script: str, files_dir: Path, out: Path) -> None:
+CONFIG_NAME = "Config/config.psd1"
+LOG_PATH_RE = re.compile(r"^(\s*LogPath = )'[^'\r\n]*'", re.M)  # Toolkit.LogPath; MSI.LogPath is $null
+
+
+def set_log_path(config: str, log_path: str) -> str:
+    """Puts the chosen log folder in the package's Config/config.psd1 (Toolkit.LogPath)."""
+    return LOG_PATH_RE.sub(lambda m: f"{m.group(1)}'{log_path}'", config, count=1)
+
+
+def build_zip(toolkit_zip: Path, script: str, files_dir: Path, out: Path, log_path: str = "") -> None:
     with zipfile.ZipFile(toolkit_zip) as src, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as dst:
         for info in src.infolist():
             name = info.filename
             # Template-script en placeholder-bestand in Files/ vervangen we
             if name == SCRIPT_NAME or (name.startswith("Files/") and not info.is_dir()):
+                continue
+            if name == CONFIG_NAME and log_path:
+                text = src.read(info).decode("utf-8-sig")
+                dst.writestr(info, set_log_path(text, log_path).encode("utf-8-sig"))
                 continue
             with src.open(info) as fsrc, dst.open(info, "w") as fdst:
                 while chunk := fsrc.read(CHUNK):

@@ -28,6 +28,29 @@ function Retention() {
   )
 }
 
+function LogPath() {
+  const [value, setValue] = useState(null)
+  const [def, setDef] = useState('')
+  const [msg, setMsg] = useState(null)
+  useEffect(() => { api('/api/system/settings').then(r => { setValue(r.log_path); setDef(r.log_path_default) }).catch(e => setMsg({ ok: false, text: e.message })) }, [])
+  async function save(e) {
+    e.preventDefault()
+    try { await api('/api/system/settings', { method: 'PUT', body: { log_path: value } }); setMsg({ ok: true, text: t('Saved') }) } catch (err) { setMsg({ ok: false, text: err.message }) }
+  }
+  if (value === null) return null
+  return (
+    <form className="panel" onSubmit={save}>
+      <h3 style={{ marginTop: 0 }}>{t('Default log folder')}</h3>
+      <p className="muted small">{t('Where PSADT writes its log on the client. Used for every package that does not set its own; empty = the PSADT default ({d}). PSADT variables such as $envWinDir and $envProgramData work.', { d: def })}</p>
+      <div className="row">
+        <input value={value} placeholder={def} onChange={e => { setValue(e.target.value); setMsg(null) }} maxLength={260} />
+        <button>{t('Save')}</button>
+        {msg && <span className={msg.ok ? 'ok' : 'error pre'}>{msg.text}</span>}
+      </div>
+    </form>
+  )
+}
+
 export default function System() {
   const [info, setInfo] = useState(null)
   const [error, setError] = useState('')
@@ -81,6 +104,7 @@ export default function System() {
       ) : info.newest && <p className="ok">{t('You are on the newest version.')}</p>}
       {p?.done && !running && !p.ok && <p className="error">{t('Last update failed')}: {p.said}</p>}
       {error && <p className="error">{error}</p>}
+      <LogPath />
       <Retention />
     </section>
   )

@@ -13,17 +13,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from .. import retention as ret
 from ..config import settings
-from ..db import get_db, set_setting
+from ..db import get_db, get_setting, set_setting
+from ..psadt.schema import LOG_PATH_PATTERN
 from ..security import require_admin
 
 router = APIRouter(prefix="/api/system", tags=["system"], dependencies=[Depends(require_admin)])
 
 REPO = "Starf0x/PSADT-Frontend"
+PSADT_LOG_PATH = r"$envWinDir\Logs\Software"  # PSADT 4 default (Toolkit.LogPath)
 SRC_DIR = Path("/opt/psadt-frontend-src")
 PATH_UNIT = Path("/etc/systemd/system/psadt-frontend-update.path")
 _cache: dict = {"at": 0.0, "ttl": 0, "tag": None, "error": None}
@@ -98,18 +100,28 @@ def request_update():
 
 
 class SettingsIn(BaseModel):
-    upload_retention: str
+    upload_retention: str | None = None
+    log_path: str | None = Field(default=None, pattern=LOG_PATH_PATTERN)
+
+
+def _settings(db: Session) -> dict:
+    return {"upload_retention": ret.retention(db), "choices": list(ret.CHOICES),
+            "log_path": get_setting(db, "log_path", ""), "log_path_default": PSADT_LOG_PATH}
 
 
 @router.get("/settings")
 def get_settings(db: Session = Depends(get_db)):
-    return {"upload_retention": ret.retention(db), "choices": list(ret.CHOICES)}
+    return _settings(db)
 
 
 @router.put("/settings")
 def put_settings(body: SettingsIn, db: Session = Depends(get_db)):
-    if body.upload_retention not in ret.CHOICES:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Unknown retention choice")
-    set_setting(db, ret.KEY, body.upload_retention)
-    removed = ret.purge_old_uploads(db)
-    return {"upload_retention": body.upload_retention, "choices": list(ret.CHOICES), "removed": removed}
+    removed = 0
+    if body.upload_retention is not None:
+        if body.upload_retention not in ret.CHOICES:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Unknown retention choice")
+        set_setting(db, ret.KEY, body.upload_retention)
+        removed = ret.purge_old_uploads(db)
+    if body.log_path is not None:
+        set_setting(db, "log_path", body.log_path.strip())
+    return {**_settings(db), "removed": removed}

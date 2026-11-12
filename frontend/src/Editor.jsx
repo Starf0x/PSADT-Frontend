@@ -96,13 +96,14 @@ const list = v => v.split(',').map(s => s.trim()).filter(Boolean)
 
 function AppInfo({ app, onChange }) {
   const f = (key, label, extra = {}) => (
-    <label>{t(label)}<input value={app[key]} onChange={e => onChange({ ...app, [key]: e.target.value })} {...extra} /></label>)
+    <label>{t(label)}<input value={app[key] ?? ''} onChange={e => onChange({ ...app, [key]: e.target.value })} {...extra} /></label>)
   return (
     <div className="grid">
       {f('name', 'Name *', { required: true })}{f('vendor', 'Vendor')}{f('version', 'Version')}
       <label>{t('Architecture')}<select value={app.arch} onChange={e => onChange({ ...app, arch: e.target.value })}>
         {['', 'x86', 'x64', 'arm64'].map(a => <option key={a} value={a}>{a || t('(not specified)')}</option>)}</select></label>
       {f('lang', 'Language')}{f('revision', 'Revision')}{f('author', 'Script author')}{f('script_version', 'Script version')}
+      {f('log_path', 'Log folder (empty = default from the System page)', { placeholder: '$envWinDir\\Logs\\Software' })}
       <label>{t('Processes to close (comma-separated, without .exe)')}
         <input defaultValue={app.processes_to_close.join(', ')} onBlur={e => onChange({ ...app, processes_to_close: list(e.target.value) })} /></label>
       <label>{t('Success exit codes')}<input defaultValue={app.success_exit_codes.join(', ')} onBlur={e => onChange({ ...app, success_exit_codes: list(e.target.value).map(Number) })} /></label>

@@ -13,7 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..config import settings
-from ..db import Package, User, get_db
+from ..db import Package, User, get_db, get_setting
 from ..psadt.detection import generate_detection
 from ..psadt.export import build_intunewin, build_zip, to_windows
 from ..psadt.generator import generate
@@ -140,7 +140,8 @@ def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get
     fd, name = tempfile.mkstemp(dir=tmp, suffix=".zip")
     os.close(fd)
     zip_path = Path(name)
-    build_zip(settings.toolkit_zip, script, files_dir(pid), zip_path)
+    log_path = pkg.data.get("app", {}).get("log_path") or get_setting(db, "log_path", "")
+    build_zip(settings.toolkit_zip, script, files_dir(pid), zip_path, log_path)
     if after_export:
         tasks.add_task(purge_package, files_dir(pid))
     if fmt == "zip":

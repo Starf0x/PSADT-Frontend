@@ -23,7 +23,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 4 | Open source: roles, user management, docs, GHCR image | ✅ v0.0.83 |
 | 5 | Proxmox helper script (community-scripts style) | ✅ v0.1.0 |
 | 6 | UI in English, Dutch and German (language picker), in-app updates for LXC (System page) | ✅ v0.1.22 |
-| 7 | Check before download, upload retention, new icon and design | ✅ v0.1.33 |
+| 7 | Check before download, upload retention, default log folder, new icon and design | ✅ v0.1.33 |
 
 ## Architecture
 
@@ -77,6 +77,10 @@ The Export tab checks the package before you can download it:
 ## Upload retention
 
 On the **System** page an administrator chooses how long uploaded files stay on the server: keep forever (the default), remove right after a download, or remove after 1, 7, 30 or 90 days. The package itself is kept; only its files are removed. The cleanup runs at start-up, every hour, and when the setting is changed.
+
+## Log folder
+
+PSADT writes its log on the client to `$envWinDir\Logs\Software` by default. On the **System** page an administrator can set another default folder, and each package can override it under **App info**. The export writes the chosen folder into `Toolkit.LogPath` in the package's `Config/config.psd1`; MSI logs follow it automatically. PSADT variables such as `$envWinDir` and `$envProgramData` can be used. `LogPathNoAdminRights`, for packages that do not require admin rights, is left at its default.
 
 ## Roles
 

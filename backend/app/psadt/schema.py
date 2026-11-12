@@ -127,6 +127,9 @@ class Phases(BaseModel):
     post: list[Step] = []
 
 
+LOG_PATH_PATTERN = r"^$|^[^'\r\n\"`]{3,260}$"
+
+
 class AppInfo(BaseModel):
     vendor: Annotated[str, Field(max_length=100)] = ""
     name: Annotated[str, Field(min_length=1, max_length=100)]
@@ -140,6 +143,8 @@ class AppInfo(BaseModel):
     reboot_exit_codes: list[Annotated[int, Field(ge=-2147483648, le=4294967295)]] = [1641, 3010]
     processes_to_close: list[Annotated[str, Field(pattern=PROC_RE.pattern)]] = []
     require_admin: bool = True
+    # Folder for the PSADT log on the client; empty = the default chosen on the System page.
+    log_path: Annotated[str, Field(pattern=LOG_PATH_PATTERN)] = ""
 
 
 class MsiDetection(BaseModel):
