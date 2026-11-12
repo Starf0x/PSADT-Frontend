@@ -35,3 +35,14 @@ def test_security_headers(client):
     h = client.get("/api/health").headers
     assert "default-src 'self'" in h["content-security-policy"]
     assert h["x-frame-options"] == "DENY"
+
+
+def test_language_per_user(authed):
+    assert authed.get("/api/auth/me").json()["language"] == "en"
+    assert authed.put("/api/auth/language", json={"language": "fr"}).status_code == 422
+    assert authed.put("/api/auth/language", json={"language": "de"}).status_code == 204
+    assert authed.get("/api/auth/me").json()["language"] == "de"
+    authed.post("/api/users", json={"username": "other", "password": "a-long-password-1"})
+    authed.post("/api/auth/logout")
+    other = authed.post("/api/auth/login", json={"username": "other", "password": "a-long-password-1"}).json()
+    assert other["language"] == "en"

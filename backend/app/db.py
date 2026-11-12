@@ -21,6 +21,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(16), default="admin")
+    language: Mapped[str] = mapped_column(String(8), default="en", server_default="en")
     failed_logins: Mapped[int] = mapped_column(Integer, default=0)
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
@@ -87,6 +88,17 @@ def init_db(url: str | None = None) -> None:
     engine = create_engine(url, connect_args={"check_same_thread": False})
     SessionLocal = sessionmaker(engine, expire_on_commit=False)
     Base.metadata.create_all(engine)
+    _add_missing_columns()
+
+
+def _add_missing_columns() -> None:
+    """create_all makes new tables but never new columns; add the few we added later."""
+    from sqlalchemy import inspect, text
+
+    have = {c["name"] for c in inspect(engine).get_columns("users")}
+    if "language" not in have:
+        with engine.begin() as con:
+            con.execute(text("ALTER TABLE users ADD COLUMN language VARCHAR(8) NOT NULL DEFAULT 'en'"))
 
 
 def get_db() -> Iterator[Session]:

@@ -85,14 +85,17 @@ export default function App() {
   const [version, setVersion] = useState('')
   const [, setLangState] = useState(getLang())
   const onLang = l => { setLang(l); setLangState(l) }
+  // Each user has their own language, stored on the server; the picker on the login page is only for that page.
+  const signedIn = u => { if (u?.language) onLang(u.language); setUser(u) }
+  const onUserLang = l => { onLang(l); api('/api/auth/language', { method: 'PUT', body: { language: l } }).catch(() => {}) }
 
   useEffect(() => {
     api('/api/health').then(h => setVersion(h.version)).catch(() => {})
-    api('/api/auth/me').then(setUser).catch(() => setUser(null))
+    api('/api/auth/me').then(signedIn).catch(() => setUser(null))
   }, [])
 
   if (user === undefined) return null
   return user
-    ? <Dashboard user={user} version={version} onLogout={() => setUser(null)} onLang={onLang} />
-    : <div className="center"><Login onLogin={setUser} /><LangPicker onLang={onLang} /></div>
+    ? <Dashboard user={user} version={version} onLogout={() => setUser(null)} onLang={onUserLang} />
+    : <div className="center"><Login onLogin={signedIn} /><LangPicker onLang={onLang} /></div>
 }
