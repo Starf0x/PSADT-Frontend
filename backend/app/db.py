@@ -22,6 +22,8 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(16), default="admin")
     language: Mapped[str] = mapped_column(String(8), default="en", server_default="en")
+    # Full name shown in the app and used as script author; username is only for signing in.
+    display_name: Mapped[str] = mapped_column(String(100), default="", server_default="")
     failed_logins: Mapped[int] = mapped_column(Integer, default=0)
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
@@ -96,9 +98,11 @@ def _add_missing_columns() -> None:
     from sqlalchemy import inspect, text
 
     have = {c["name"] for c in inspect(engine).get_columns("users")}
-    if "language" not in have:
-        with engine.begin() as con:
-            con.execute(text("ALTER TABLE users ADD COLUMN language VARCHAR(8) NOT NULL DEFAULT 'en'"))
+    added = {"language": "VARCHAR(8) NOT NULL DEFAULT 'en'", "display_name": "VARCHAR(100) NOT NULL DEFAULT ''"}
+    with engine.begin() as con:
+        for name, sql in added.items():
+            if name not in have:
+                con.execute(text(f"ALTER TABLE users ADD COLUMN {name} {sql}"))
 
 
 def get_db() -> Iterator[Session]:

@@ -222,6 +222,16 @@ const ROWS = [
   ['Log folder (empty = default from the System page)', 'Logmap (leeg = standaard van de System-pagina)', 'Logordner (leer = Standard der Systemseite)'],
   ['What the update brings', 'Wat de update brengt', 'Was das Update bringt'],
   ['What is new in this version', 'Wat is er nieuw in deze versie', 'Was ist neu in dieser Version'],
+  // names
+  ['Full name for {name}:', 'Volledige naam voor {name}:', 'Vollständiger Name für {name}:'],
+  ['Name changed', 'Naam gewijzigd', 'Name geändert'],
+  ['Full name (e.g. Jane Doe)', 'Volledige naam (bijv. Jan Jansen)', 'Vollständiger Name (z. B. Max Mustermann)'],
+  ['Login name', 'Loginnaam', 'Anmeldename'],
+  ['Change name', 'Naam wijzigen', 'Name ändern'],
+  ['Your name', 'Je naam', 'Ihr Name'],
+  ['Shown in the app and filled in as script author for new packages. You sign in with {login}.', 'Zichtbaar in de app en ingevuld als scriptauteur bij nieuwe pakketten. Je logt in met {login}.', 'Wird in der App angezeigt und bei neuen Paketen als Skriptautor eingetragen. Sie melden sich mit {login} an.'],
+  ['Full name', 'Volledige naam', 'Vollständiger Name'],
+  ['Upload failed: connection lost', 'Upload mislukt: verbinding verbroken', 'Hochladen fehlgeschlagen: Verbindung unterbrochen'],
 ]
 
 const DICT = { nl: {}, de: {} }

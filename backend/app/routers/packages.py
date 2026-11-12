@@ -58,7 +58,9 @@ def list_packages(db: Session = Depends(get_db)):
 
 @router.post("", status_code=201)
 def create_package(data: NewPackage, db: Session = Depends(get_db), user: User = Depends(current_user)):
-    pkg = Package(name=data.name, data=default_package(data.name).model_dump(), created_by=user.id)
+    content = default_package(data.name)
+    content.app.author = (user.display_name or user.username)[:100]  # the signed-in user, by full name
+    pkg = Package(name=data.name, data=content.model_dump(), created_by=user.id)
     db.add(pkg)
     db.commit()
     return {"id": pkg.id, "name": pkg.name, "data": pkg.data}

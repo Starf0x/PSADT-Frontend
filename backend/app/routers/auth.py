@@ -33,7 +33,7 @@ class PasswordIn(BaseModel):
 
 
 def _me(user: User, sess: UserSession) -> dict:
-    return {"username": user.username, "role": user.role, "language": user.language or "en", "csrf_token": sess.csrf_token}
+    return {"username": user.username, "display_name": user.display_name or user.username, "role": user.role, "language": user.language or "en", "csrf_token": sess.csrf_token}
 
 
 @router.post("/login")
@@ -99,4 +99,15 @@ class LanguageIn(BaseModel):
 def set_language(data: LanguageIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
     """Each user picks their own UI language; it follows them to every device."""
     user.language = data.language
+    db.commit()
+
+
+class ProfileIn(BaseModel):
+    display_name: str = Field(min_length=1, max_length=100)
+
+
+@router.put("/profile", status_code=204)
+def set_profile(data: ProfileIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Users change their own full name (shown in the app and used as script author)."""
+    user.display_name = data.display_name.strip()
     db.commit()

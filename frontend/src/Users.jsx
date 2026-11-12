@@ -6,7 +6,7 @@ const ROLES = { admin: 'Administrator', editor: 'Editor', viewer: 'Read only' }
 
 export function Users({ me }) {
   const [users, setUsers] = useState([])
-  const [form, setForm] = useState({ username: '', password: '', role: 'editor' })
+  const [form, setForm] = useState({ display_name: '', username: '', password: '', role: 'editor' })
   const [msg, setMsg] = useState(null)
   const load = () => api('/api/users').then(setUsers).catch(e => setMsg({ ok: false, text: e.message }))
   useEffect(() => { load() }, [])
@@ -14,12 +14,16 @@ export function Users({ me }) {
   async function run(fn, ok) {
     try { await fn(); setMsg({ ok: true, text: ok }); load() } catch (e) { setMsg({ ok: false, text: e.message }) }
   }
-  const create = e => { e.preventDefault(); run(async () => { await api('/api/users', { method: 'POST', body: form }); setForm({ username: '', password: '', role: 'editor' }) }, t('User created')) }
+  const create = e => { e.preventDefault(); run(async () => { await api('/api/users', { method: 'POST', body: form }); setForm({ display_name: '', username: '', password: '', role: 'editor' }) }, t('User created')) }
   const setRole = (u, role) => run(() => api(`/api/users/${u.id}`, { method: 'PUT', body: { role } }), t('Role changed'))
   const unlock = u => run(() => api(`/api/users/${u.id}`, { method: 'PUT', body: { unlock: true } }), t('Account unlocked'))
   const reset = u => {
     const password = window.prompt(t('New password for {name} (at least 12 characters):', { name: u.username }))
     if (password) run(() => api(`/api/users/${u.id}`, { method: 'PUT', body: { password } }), t('Password changed'))
+  }
+  const rename = u => {
+    const display_name = window.prompt(t('Full name for {name}:', { name: u.username }), u.display_name)
+    if (display_name?.trim()) run(() => api(`/api/users/${u.id}`, { method: 'PUT', body: { display_name } }), t('Name changed'))
   }
   const remove = u => window.confirm(t('Delete user {name}?', { name: u.username })) && run(() => api(`/api/users/${u.id}`, { method: 'DELETE' }), t('User deleted'))
 
@@ -27,17 +31,18 @@ export function Users({ me }) {
     <section>
       <h2>{t('Users')}</h2>
       <form className="row" onSubmit={create}>
-        <input placeholder={t('Username')} value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} required minLength={3} autoComplete="off" />
+        <input placeholder={t('Full name (e.g. Jane Doe)')} value={form.display_name} onChange={e => setForm({ ...form, display_name: e.target.value })} required maxLength={100} autoComplete="off" />
+        <input placeholder={t('Login name')} value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} required minLength={3} autoComplete="off" />
         <input type="password" placeholder={t('Password (min. 12 characters)')} value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required minLength={12} autoComplete="new-password" />
         <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>{Object.entries(ROLES).map(([k, v]) => <option key={k} value={k}>{t(v)}</option>)}</select>
         <button>{t('Add')}</button>
       </form>
       {msg && <p className={msg.ok ? 'ok' : 'error pre'}>{msg.text}</p>}
       <table>
-        <thead><tr><th>{t('User')}</th><th>{t('Role')}</th><th>{t('Status')}</th><th /></tr></thead>
+        <thead><tr><th>{t('Name')}</th><th>{t('Login name')}</th><th>{t('Role')}</th><th>{t('Status')}</th><th /></tr></thead>
         <tbody>{users.map(u => (
           <tr key={u.id}>
-            <td>{u.username}{u.username === me.username && ` (${t('you')})`}</td>
+            <td><button className="link" onClick={() => rename(u)} title={t('Change name')}>{u.display_name}</button>{u.username === me.username && ` (${t('you')})`}</td><td className="muted">{u.username}</td>
             <td><select value={u.role} onChange={e => setRole(u, e.target.value)}>{Object.entries(ROLES).map(([k, v]) => <option key={k} value={k}>{t(v)}</option>)}</select></td>
             <td>{u.locked ? <button className="link" onClick={() => unlock(u)}>{t('Locked, unlock')}</button> : t('Active')}</td>
             <td><span className="row">
@@ -51,7 +56,25 @@ export function Users({ me }) {
   )
 }
 
-export function Account() {
+function Profile({ me, onMe }) {
+  const [name, setName] = useState(me.display_name)
+  const [msg, setMsg] = useState(null)
+  async function submit(e) {
+    e.preventDefault()
+    try { await api('/api/auth/profile', { method: 'PUT', body: { display_name: name } }); onMe({ ...me, display_name: name.trim() }); setMsg({ ok: true, text: t('Saved') }) } catch (err) { setMsg({ ok: false, text: err.message }) }
+  }
+  return (
+    <form className="card" onSubmit={submit}>
+      <h2>{t('Your name')}</h2>
+      <p className="muted small">{t('Shown in the app and filled in as script author for new packages. You sign in with {login}.', { login: me.username })}</p>
+      <label>{t('Full name')}<input value={name} onChange={e => setName(e.target.value)} required maxLength={100} /></label>
+      {msg && <p className={msg.ok ? 'ok' : 'error pre'}>{msg.text}</p>}
+      <button>{t('Save')}</button>
+    </form>
+  )
+}
+
+export function Account({ me, onMe }) {
   const [form, setForm] = useState({ current_password: '', new_password: '', repeat: '' })
   const [msg, setMsg] = useState(null)
   async function submit(e) {
@@ -65,6 +88,8 @@ export function Account() {
   }
   const f = (k, label, ac) => <label>{t(label)}<input type="password" value={form[k]} onChange={e => setForm({ ...form, [k]: e.target.value })} required autoComplete={ac} /></label>
   return (
+    <div className="stack">
+    <Profile me={me} onMe={onMe} />
     <form className="card" onSubmit={submit}>
       <h2>{t('Change password')}</h2>
       {f('current_password', 'Current password', 'current-password')}
@@ -73,5 +98,6 @@ export function Account() {
       {msg && <p className={msg.ok ? 'ok' : 'error pre'}>{msg.text}</p>}
       <button>{t('Save')}</button>
     </form>
+    </div>
   )
 }

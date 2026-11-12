@@ -32,6 +32,8 @@ code { background: var(--accent-soft); padding: .1rem .35rem; border-radius: 5px
 .card { background: var(--card); padding: 2rem; border-radius: 16px; width: 100%; max-width: 380px; display: grid; gap: 1rem; box-shadow: var(--shadow); border: 1px solid var(--line); }
 .card.login p { margin: -.5rem 0 0; }
 .card.wide { max-width: none; }
+.stack { display: grid; gap: 1.25rem; max-width: 420px; }
+.stack .card { max-width: none; }
 
 /* Brand */
 .brand { display: flex; align-items: center; gap: .6rem; font-size: 1.05rem; letter-spacing: -.01em; }
@@ -115,5 +117,11 @@ progress { accent-color: var(--accent); height: 10px; }
   .nav-item { width: auto; }
   main { padding: 1.25rem 16px; }
 }
+.uploads { display: grid; gap: .6rem; }
+.upload .row { margin: 0 0 .3rem; }
+.bar { height: 8px; border-radius: 99px; background: var(--accent-soft); overflow: hidden; }
+.bar > div { height: 100%; background: var(--grad); border-radius: 99px; transition: width .2s; }
+.upload.done .bar > div { background: var(--ok); }
+.upload.error .bar > div { background: var(--err); }
 .notes { margin: .75rem 0 0; }
 .notes ul { margin: .4rem 0 0; padding-left: 1.2rem; display: grid; gap: .25rem; }

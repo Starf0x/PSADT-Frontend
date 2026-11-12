@@ -46,7 +46,7 @@ const ICONS = {
 }
 export const Icon = ({ name }) => <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><path d={ICONS[name]} /></svg>
 
-function Dashboard({ user, version, onLogout, onLang }) {
+function Dashboard({ user, version, onLogout, onLang, onMe }) {
   const [page, setPage] = useState('packages')
   async function logout() {
     await api('/api/auth/logout', { method: 'POST' }).catch(() => {})
@@ -65,7 +65,7 @@ function Dashboard({ user, version, onLogout, onLang }) {
           {user.role === 'admin' && item('system', t('System'))}
         </nav>
         <div className="side-foot">
-          {item('account', <span className="who">{user.username}<small>{t(user.role)}</small></span>)}
+          {item('account', <span className="who">{user.display_name || user.username}<small>{t(user.role)}</small></span>)}
           <button className="nav-item" onClick={logout}><Icon name="logout" />{t('Sign out')}</button>
           <div className="row between"><LangPicker onLang={onLang} /><span className="muted small">v{version}</span></div>
         </div>
@@ -73,7 +73,7 @@ function Dashboard({ user, version, onLogout, onLang }) {
       <main>
         {page === 'packages' && <Packages readOnly={user.role === 'viewer'} />}
         {page === 'users' && <Users me={user} />}
-        {page === 'account' && <Account />}
+        {page === 'account' && <Account me={user} onMe={onMe} />}
         {page === 'system' && <System />}
       </main>
     </div>
@@ -96,6 +96,6 @@ export default function App() {
 
   if (user === undefined) return null
   return user
-    ? <Dashboard user={user} version={version} onLogout={() => setUser(null)} onLang={onUserLang} />
+    ? <Dashboard user={user} version={version} onLogout={() => setUser(null)} onLang={onUserLang} onMe={setUser} />
     : <div className="center"><Login onLogin={signedIn} /><LangPicker onLang={onLang} /></div>
 }

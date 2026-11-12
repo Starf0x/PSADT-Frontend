@@ -116,13 +116,23 @@ function AppInfo({ app, onChange }) {
 function Files({ id, files, reload }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [queue, setQueue] = useState([])  // [{ name, size, progress 0..1, state: 'wait' | 'up' | 'done' | 'error' }]
+  const mb = n => (n / 1048576).toFixed(1)
   async function onPick(e) {
-    setBusy(true); setError('')
-    for (const f of e.target.files) {
-      try { await upload(`/api/packages/${id}/files`, f) } catch (err) { setError(`${f.name}: ${err.message}`) }
-    }
+    const picked = [...e.target.files]
     e.target.value = ''
+    setBusy(true); setError('')
+    setQueue(picked.map(f => ({ name: f.name, size: f.size, progress: 0, state: 'wait' })))
+    const set = (i, patch) => setQueue(q => q.map((x, j) => j === i ? { ...x, ...patch } : x))
+    for (const [i, f] of picked.entries()) {
+      set(i, { state: 'up' })
+      try {
+        await upload(`/api/packages/${id}/files`, f, p => set(i, { progress: p }))
+        set(i, { state: 'done', progress: 1 })
+      } catch (err) { set(i, { state: 'error' }); setError(`${f.name}: ${err.message}`) }
+    }
     setBusy(false); reload()
+    setTimeout(() => setQueue(q => q.filter(x => x.state === 'error')), 2500)
   }
   async function remove(name) {
     await api(`/api/packages/${id}/files/${encodeURIComponent(name)}`, { method: 'DELETE' }).catch(e => setError(e.message))
@@ -132,7 +142,15 @@ function Files({ id, files, reload }) {
     <section>
       <p className="muted">{t('Files go into the package folder')} <code>Files</code>.</p>
       <input type="file" multiple onChange={onPick} disabled={busy} />
-      {busy && <p>{t('Uploading…')}</p>}
+      {queue.length > 0 && <div className="panel uploads">
+        {busy && <strong>{t('Uploading…')}</strong>}
+        {queue.map((u, i) => (
+          <div key={i} className={`upload ${u.state}`}>
+            <div className="row between"><span>{u.name}</span>
+              <span className="muted small">{u.state === 'done' ? '✓' : u.state === 'error' ? '✕' : `${mb(u.size * u.progress)} / ${mb(u.size)} MB · ${Math.round(u.progress * 100)}%`}</span></div>
+            <div className="bar"><div style={{ width: `${Math.round(u.progress * 100)}%` }} /></div>
+          </div>))}
+      </div>}
       {error && <p className="error">{error}</p>}
       <table><tbody>{files.map(f => (
         <tr key={f.name}><td>{f.name}</td><td>{(f.size / 1048576).toFixed(1)} MB</td>
