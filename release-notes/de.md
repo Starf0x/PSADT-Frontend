@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.2.88
+- Der Exportzähler zählt jedes Paket einmal pro Version. Erneutes Herunterladen oder ZIP und .intunewin zählen nicht mehr doppelt. Eine neue Version zählt. Das Paket zählt für die Person, die es zuerst heruntergeladen hat.
+
 ## 0.2.77
 - Schaltflächen und ausgewählte Reiter haben sanftere Farben und dunkle Schrift, damit sie bei jeder Tagesfarbe gut lesbar bleiben.
 

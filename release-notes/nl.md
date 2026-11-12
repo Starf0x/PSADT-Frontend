@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.2.88
+- De exportteller telt elk pakket één keer per versie. Opnieuw downloaden, of zowel ZIP als .intunewin, telt niet meer dubbel. Een nieuwe versie telt wel. Het pakket telt mee voor degene die het als eerste downloadde.
+
 ## 0.2.77
 - Knoppen en geselecteerde tabbladen hebben zachtere kleuren en donkere tekst, zodat ze bij elke dagkleur goed leesbaar zijn.
 

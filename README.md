@@ -11,7 +11,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-**Version:** 0.2.77 (see `VERSION`)
+**Version:** 0.2.88 (see `VERSION`)
 
 ## Status and roadmap
 
@@ -38,6 +38,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 19 | Download with visible progress (building, downloading, done) and a hint when the buttons are locked | ✅ v0.2.55 |
 | 20 | Background and daily colour change as in My Audiobook Collection; anonymous daily usage check-in (off with PSADT_USAGE_OPTOUT=1) | ✅ v0.2.66 |
 | 21 | Softer button colours with dark, readable text on every day colour | ✅ v0.2.77 |
+| 22 | Export counter counts each package once per version (no double counts) | ✅ v0.2.88 |
 
 ## Architecture
 
