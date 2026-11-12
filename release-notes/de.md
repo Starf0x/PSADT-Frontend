@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.1.77
+- In den Argumenten eines Schritts können Sie {Files} für den Ordner Files des Pakets auf dem PC schreiben. Zum Beispiel: --msix-path "{Files}\app.msix".
+
 ## 0.1.66
 - Benutzer haben jetzt einen vollständigen Namen neben dem Anmeldenamen. Er wird beim Anlegen eingetragen; jeder kann seinen Namen im eigenen Konto ändern.
 - Neue Pakete tragen Ihren vollständigen Namen als Skriptautor ein.

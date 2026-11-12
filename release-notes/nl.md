@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.1.77
+- In de argumenten van een stap kun je {Files} schrijven voor de map Files van het pakket op de pc. Bijvoorbeeld: --msix-path "{Files}\app.msix".
+
 ## 0.1.66
 - Gebruikers hebben nu een volledige naam naast hun loginnaam. Vul die in bij het aanmaken van een gebruiker; iedereen kan zijn eigen naam wijzigen onder zijn account.
 - Bij nieuwe pakketten wordt jouw volledige naam ingevuld als scriptauteur.

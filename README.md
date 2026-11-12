@@ -11,7 +11,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-**Version:** 0.1.66 (see `VERSION`)
+**Version:** 0.1.77 (see `VERSION`)
 
 ## Status and roadmap
 
@@ -27,6 +27,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 8 | Language per user (stored on the account, follows the user to every device) | ✅ v0.1.44 |
 | 9 | Plain-language release notes on the System page (EN/NL/DE) | ✅ v0.1.55 |
 | 10 | Full name per user (used as script author), upload progress bars | ✅ v0.1.66 |
+| 11 | `{Files}` placeholder in step arguments | ✅ v0.1.77 |
 
 ## Architecture
 
@@ -70,6 +71,10 @@ Dockerfile, docker-compose.yml
 - Security headers: CSP, X-Frame-Options, nosniff and Referrer-Policy. There is no `/docs` in production.
 - The container runs as non-root on a read-only filesystem, with all capabilities dropped.
 - For use on the internet, put a reverse proxy with HTTPS in front (Caddy or Traefik).
+
+## Arguments and the Files folder
+
+In the arguments of a Run EXE, Run MSI or Uninstall step, `{Files}` stands for the package's `Files` folder on the PC (`$adtSession.DirFiles`). For example, `--msix-path "{Files}\app.msix"` gives an installer the full path to an uploaded MSIX. Without `{Files}` the arguments are passed exactly as typed.
 
 ## Check before download
 
