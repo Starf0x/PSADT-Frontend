@@ -36,6 +36,7 @@ RUN pip install --no-cache-dir -r requirements.txt \
  && useradd --system --uid 10001 --home /app psadt \
  && mkdir -p /data && chown psadt /data
 COPY VERSION /app/VERSION
+COPY release-notes /app/release-notes
 COPY backend/app ./app
 COPY --from=ui /ui/dist /app/frontend/dist
 USER psadt

@@ -10,7 +10,9 @@ from . import db as dbmod
 from .config import settings
 from .routers import auth, packages, snippets, system, users
 
-VERSION = (Path(__file__).resolve().parents[2] / "VERSION")
+# VERSION sits next to backend/ in the repo and LXC install, and in /app in the Docker image.
+_here = Path(__file__).resolve()
+VERSION = next((d / "VERSION" for d in (_here.parents[1], _here.parents[2]) if (d / "VERSION").is_file()), _here.parents[2] / "VERSION")
 APP_VERSION = VERSION.read_text().strip() if VERSION.exists() else "0.0.50"
 
 
