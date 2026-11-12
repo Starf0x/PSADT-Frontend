@@ -79,6 +79,9 @@ fieldset.plain { border: 0; padding: 0; margin: 0; min-width: 0; }
 .row.between { justify-content: space-between; }
 .row input { flex: 1; min-width: 200px; }
 label.wide { grid-column: 1 / -1; }
+.chips { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-top: .2rem; }
+button.chip { background: var(--accent-soft); color: var(--accent); padding: .15rem .55rem; border-radius: 99px; font-size: .78rem; font-weight: 500; font-family: ui-monospace, Consolas, monospace; box-shadow: none; }
+button.chip:hover:not(:disabled) { background: var(--accent); color: #fff; box-shadow: none; }
 label.wide input { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: .88rem; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .9rem; }
 .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); margin: 1rem 0; }

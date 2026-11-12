@@ -28,7 +28,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 9 | Plain-language release notes on the System page (EN/NL/DE) | ✅ v0.1.55 |
 | 10 | Full name per user (used as script author), upload progress bars | ✅ v0.1.66 |
 | 11 | `{Files}` placeholder in step arguments | ✅ v0.1.77 |
-| 12 | Full-width argument, path and code fields | ✅ v0.1.88 |
+| 12 | Full-width argument, path and code fields; one-click {Files} and file inserts | ✅ v0.1.88 |
 
 ## Architecture
 
@@ -75,7 +75,7 @@ Dockerfile, docker-compose.yml
 
 ## Arguments and the Files folder
 
-In the arguments of a Run EXE, Run MSI or Uninstall step, `{Files}` stands for the package's `Files` folder on the PC (`$adtSession.DirFiles`). For example, `--msix-path "{Files}\app.msix"` gives an installer the full path to an uploaded MSIX. Without `{Files}` the arguments are passed exactly as typed.
+In the arguments of a Run EXE, Run MSI or Uninstall step, `{Files}` stands for the package's `Files` folder on the PC (`$adtSession.DirFiles`). For example, `--msix-path "{Files}\app.msix"` gives an installer the full path to an uploaded MSIX. Under the arguments field there are buttons that insert `{Files}` or the quoted path of an uploaded file at the cursor. Without `{Files}` the arguments are passed exactly as typed.
 
 ## Check before download
 
