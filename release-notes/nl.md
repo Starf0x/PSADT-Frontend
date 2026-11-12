@@ -1,5 +1,12 @@
 # Wat is er nieuw
 
+## 0.2.33
+- De pagina Pakketten telt elke geslaagde download: in totaal, door jou en per gebruiker.
+- Nieuwe detectieregel "MSIX-pakket": vindt een app die voor alle gebruikers is geïnstalleerd, met Get-AppxProvisionedPackage of met DISM. Een deel van de naam is genoeg.
+- Registersleutels hebben knoppen om met één klik HKLM, HKCU, HKEY_CLASSES_ROOT of HKU te kiezen.
+- Bijwerken via de System-pagina toont nu een bewegende voortgangsbalk met percentage, en de pagina laadt zichzelf opnieuw als het klaar is.
+- Opgelost: na een update bleef de oude versie op de achtergrond draaien, waardoor sommige pagina's leeg bleven en nieuwe opties (zoals winget) werden geweigerd. De app wordt nu altijd herstart.
+
 ## 0.2.22
 - Detectieregel "MSI ProductCode": kies een MSI (al geüpload, of blader op je pc) en de ProductCode wordt voor je ingevuld. Ter controle zie je de productnaam en versie.
 - Na een update laadt de browser nu altijd meteen de nieuwe versie, in plaats van de oude pagina uit zijn cache te tonen.

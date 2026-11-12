@@ -23,3 +23,20 @@ def test_msi_endpoint_rejects_non_msi(authed):
     assert authed.get(f"/api/packages/{pid}/files/setup.msi/msi").status_code == 422
     assert authed.get(f"/api/packages/{pid}/files/missing.msi/msi").status_code == 404
     assert authed.get(f"/api/packages/{pid}/files/setup.exe/msi").status_code == 400
+
+
+def test_msix_detection():
+    from app.psadt.detection import generate_detection
+    from app.psadt.schema import PackageData, default_package
+    d = default_package("x").model_dump()
+    d["detection"] = [{"type": "msix", "name": "Claude", "min_version": "1.2"},
+                      {"type": "msix", "name": "Claude", "method": "DISM"}]
+    text = generate_detection(PackageData.model_validate(d))
+    assert "Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like '*Claude*'" in text
+    assert "[version]'1.2'" in text
+    assert "/get-provisionedappxpackages | Select-String -SimpleMatch -Pattern 'Claude'" in text
+
+
+def test_registry_hkcr_allowed():
+    from app.psadt.schema import RegistryStep
+    RegistryStep(type="registry", key="HKEY_CLASSES_ROOT\\.foo")

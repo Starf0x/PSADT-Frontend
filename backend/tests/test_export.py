@@ -144,3 +144,12 @@ def test_log_path_default_and_override(authed, toolkit):
     data["app"]["log_path"] = "$envProgramData\\MyLogs"
     assert authed.put(f"/api/packages/{pid}", json=data).status_code == 200
     assert "LogPath = '$envProgramData\\MyLogs'" in logpath()
+
+
+def test_export_counter(authed, toolkit):
+    pid = _pkg(authed)
+    assert authed.get("/api/stats").json() == {"total": 0, "mine": 0, "per_user": []}
+    authed.get(f"/api/packages/{pid}/export/zip")
+    authed.get(f"/api/packages/{pid}/export/intunewin")
+    s = authed.get("/api/stats").json()
+    assert s["total"] == 2 and s["mine"] == 2 and s["per_user"][0]["count"] == 2 and s["per_user"][0]["me"]
