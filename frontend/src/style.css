@@ -78,6 +78,8 @@ fieldset.plain { border: 0; padding: 0; margin: 0; min-width: 0; }
 .row { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin: .6rem 0; }
 .row.between { justify-content: space-between; }
 .row input { flex: 1; min-width: 200px; }
+label.wide { grid-column: 1 / -1; }
+label.wide input { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: .88rem; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .9rem; }
 .panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow); margin: 1rem 0; }
 

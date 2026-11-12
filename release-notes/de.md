@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.1.88
+- Argumente, Pfade und Code in einem Schritt nutzen jetzt die volle Breite, damit lange Befehle gut lesbar sind.
+
 ## 0.1.77
 - In den Argumenten eines Schritts können Sie {Files} für den Ordner Files des Pakets auf dem PC schreiben. Zum Beispiel: --msix-path "{Files}\app.msix".
 

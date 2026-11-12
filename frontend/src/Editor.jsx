@@ -5,7 +5,10 @@ import { t } from './i18n.js'
 
 const TABS = [['app', 'App info'], ['install', 'Install'], ['uninstall', 'Uninstall'], ['repair', 'Repair'], ['files', 'Files'], ['detection', 'Detection'], ['preview', 'Script'], ['export', 'Export']]
 
-function Field({ label, type, value, onChange, files }) {
+// Fields that hold long text get the full width of the step, so arguments and code stay readable.
+const WIDE = new Set(['args', 'code', 'message', 'key', 'path', 'destination'])
+
+function Field({ label, type, value, onChange, files, wide }) {
   if (type === 'bool') return <label className="check"><input type="checkbox" checked={!!value} onChange={e => onChange(e.target.checked)} />{t(label)}</label>
   let input
   if (Array.isArray(type)) input = <select value={value} onChange={e => onChange(e.target.value)}>{type.map(o => <option key={o}>{o}</option>)}</select>
@@ -18,7 +21,7 @@ function Field({ label, type, value, onChange, files }) {
       {value && !files.some(f => f.name === value) && <option>{value}</option>}
     </select>)
   else input = <input value={value ?? ''} onChange={e => onChange(e.target.value)} />
-  return <label>{t(label)}{input}</label>
+  return <label className={wide ? 'wide' : undefined}>{t(label)}{input}</label>
 }
 
 function StepCard({ step, index, count, files, onChange, onMove, onRemove, onSnippet }) {
@@ -36,7 +39,7 @@ function StepCard({ step, index, count, files, onChange, onMove, onRemove, onSni
       </div>
       <div className="grid">
         {def.fields.map(([key, label, type]) => (
-          <Field key={key} label={label} type={type} value={step[key]} files={files} onChange={v => onChange({ ...step, [key]: v })} />
+          <Field key={key} label={label} type={type} value={step[key]} files={files} wide={WIDE.has(key)} onChange={v => onChange({ ...step, [key]: v })} />
         ))}
         <Field label="Comment" type="text" value={step.comment || ''} onChange={v => onChange({ ...step, comment: v })} />
       </div>

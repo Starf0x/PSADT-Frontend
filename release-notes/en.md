@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.1.88
+- Arguments, paths and code in a step now use the full width, so long commands are easy to read.
+
 ## 0.1.77
 - In the arguments of a step you can write {Files} for the package's Files folder on the PC. For example: --msix-path "{Files}\app.msix".
 
