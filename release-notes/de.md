@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.3.11
+- Ein hängender Upload bricht jetzt nach einer Minute ohne Fortschritt ab und nennt den Grund (oft ein Reverse Proxy oder Tunnel mit Größenlimit oder eine volle Festplatte), statt endlos zu warten.
+
 ## 0.3.0
 - Nur Administratoren können jetzt Pakete löschen. Bearbeiter können sie weiterhin anlegen und ändern.
 

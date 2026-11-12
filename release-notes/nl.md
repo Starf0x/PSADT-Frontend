@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.3.11
+- Een upload die vastloopt, stopt nu na een minuut zonder voortgang en zegt waarom (vaak een reverse proxy of tunnel met een groottelimiet, of een volle schijf), in plaats van eindeloos te wachten.
+
 ## 0.3.0
 - Alleen beheerders kunnen nu pakketten verwijderen. Bewerkers kunnen ze nog wel maken en aanpassen.
 

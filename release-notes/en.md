@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.3.11
+- An upload that gets stuck now stops after a minute without progress and says why (often a reverse proxy or tunnel with a size limit, or a full disk), instead of waiting forever.
+
 ## 0.3.0
 - Only administrators can delete packages now. Editors can still create and change them.
 
