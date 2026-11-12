@@ -1,15 +1,21 @@
+import os
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, status
+import re
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response, UploadFile, status
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..config import settings
 from ..db import Package, User, get_db
+from ..psadt.detection import generate_detection
+from ..psadt.export import build_intunewin, build_zip, to_windows
 from ..psadt.generator import generate
 from ..psadt.schema import FILE_RE, PackageData, default_package
 from ..security import current_user
@@ -78,11 +84,64 @@ def delete_package(pid: int, db: Session = Depends(get_db)):
     shutil.rmtree(files_dir(pid).parent, ignore_errors=True)
 
 
+def _data(pkg: Package) -> PackageData:
+    try:
+        return PackageData.model_validate(pkg.data)
+    except ValidationError as e:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e))
+
+
 def _script(pkg: Package) -> str:
     try:
-        return generate(PackageData.model_validate(pkg.data))
-    except (ValidationError, ValueError) as e:
+        return generate(_data(pkg))
+    except ValueError as e:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e))
+
+
+def _slug(pkg: Package) -> str:
+    a = pkg.data.get("app", {})
+    raw = "_".join(x for x in (a.get("vendor"), a.get("name"), a.get("version")) if x) or f"package{pkg.id}"
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", raw).strip("_")[:100] or f"package{pkg.id}"
+
+
+def _cleanup(*paths: Path) -> None:
+    for p in paths:
+        p.unlink(missing_ok=True)
+
+
+@router.get("/{pid}/detection")
+def get_detection(pid: int, download: bool = False, db: Session = Depends(get_db)):
+    pkg = _get(db, pid)
+    text = generate_detection(_data(pkg))
+    if not download:
+        return Response(text, media_type="text/plain; charset=utf-8")
+    return Response(to_windows(text), media_type="application/octet-stream",
+                    headers={"Content-Disposition": f'attachment; filename="Detect_{_slug(pkg)}.ps1"'})
+
+
+@router.get("/{pid}/export/{fmt}")
+def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    if fmt not in ("zip", "intunewin"):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Onbekend formaat")
+    pkg = _get(db, pid)
+    script = _script(pkg)
+    if not settings.toolkit_zip.is_file():
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE,
+                            f"PSADT-toolkit niet gevonden op {settings.toolkit_zip}; zie README")
+    tmp = settings.data_dir / "tmp"
+    tmp.mkdir(parents=True, exist_ok=True)
+    fd, name = tempfile.mkstemp(dir=tmp, suffix=".zip")
+    os.close(fd)
+    zip_path = Path(name)
+    build_zip(settings.toolkit_zip, script, files_dir(pid), zip_path)
+    if fmt == "zip":
+        tasks.add_task(_cleanup, zip_path)
+        return FileResponse(zip_path, filename=f"{_slug(pkg)}.zip", media_type="application/zip")
+    out = zip_path.with_suffix(".intunewin")
+    build_intunewin(zip_path, out)
+    zip_path.unlink()
+    tasks.add_task(_cleanup, out)
+    return FileResponse(out, filename=f"{_slug(pkg)}.intunewin", media_type="application/octet-stream")
 
 
 @router.get("/{pid}/script")
@@ -90,9 +149,7 @@ def get_script(pid: int, download: bool = False, db: Session = Depends(get_db)):
     text = _script(_get(db, pid))
     if not download:
         return Response(text, media_type="text/plain; charset=utf-8")
-    # Windows PowerShell 5.1 heeft een BOM nodig voor UTF-8; regeleinden CRLF
-    body = "\ufeff" + text.replace("\n", "\r\n")
-    return Response(body.encode("utf-8"), media_type="application/octet-stream",
+    return Response(to_windows(text), media_type="application/octet-stream",
                     headers={"Content-Disposition": 'attachment; filename="Invoke-AppDeployToolkit.ps1"'})
 
 

@@ -142,11 +142,48 @@ class AppInfo(BaseModel):
     require_admin: bool = True
 
 
+class MsiDetection(BaseModel):
+    type: Literal["msi"]
+    product_code: str
+    min_version: Annotated[str, Field(pattern=r"^$|^\d+(\.\d+){0,3}$")] = ""
+
+    @field_validator("product_code")
+    @classmethod
+    def _guid(cls, v):
+        if not GUID_RE.match(v):
+            raise ValueError("ProductCode moet een GUID zijn, bijv. {xxxxxxxx-...}")
+        return v
+
+
+class FileDetection(BaseModel):
+    type: Literal["file"]
+    path: Annotated[str, Field(min_length=3, max_length=500)]
+    min_version: Annotated[str, Field(pattern=r"^$|^\d+(\.\d+){0,3}$")] = ""
+
+
+class RegistryDetection(BaseModel):
+    type: Literal["registry"]
+    key: Annotated[str, Field(max_length=500)]
+    name: Annotated[str, Field(max_length=200)] = ""
+    value: Annotated[str, Field(max_length=500)] = ""
+
+    @field_validator("key")
+    @classmethod
+    def _key(cls, v):
+        if not REG_RE.match(v):
+            raise ValueError("Registersleutel moet beginnen met HKLM\\, HKCU\\, ...")
+        return v
+
+
+Detection = Annotated[MsiDetection | FileDetection | RegistryDetection, Field(discriminator="type")]
+
+
 class PackageData(BaseModel):
     app: AppInfo
     install: Phases = Phases()
     uninstall: Phases = Phases()
     repair: Phases = Phases()
+    detection: list[Detection] = []
 
 
 def default_package(name: str) -> PackageData:

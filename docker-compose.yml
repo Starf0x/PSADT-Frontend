@@ -1,7 +1,7 @@
 services:
   psadt-frontend:
     build: .
-    image: psadt-frontend:0.0.61
+    image: psadt-frontend:0.0.72
     restart: unless-stopped
     ports:
       - "8000:8000"
