@@ -39,3 +39,7 @@ label.check { display: flex; align-items: center; gap: .5rem; }
 .mono, pre { font-family: ui-monospace, Consolas, monospace; font-size: .85rem; }
 pre.code { background: var(--card); padding: 1rem; border-radius: 8px; overflow: auto; max-height: 70vh; }
 h2 button.link { font-size: inherit; }
+fieldset.plain { border: 0; padding: 0; margin: 0; min-width: 0; }
+header nav.row, header .row { margin: 0; }
+button.link.current { font-weight: 700; text-decoration: underline; }
+header { flex-wrap: wrap; gap: .5rem; }
