@@ -1,18 +1,47 @@
 #!/usr/bin/env bash
 # Installeert PSADT Frontend in een Debian 12/13 LXC-container (bijv. Proxmox).
-# Gebruik (als root, vanuit de repo-map):  bash lxc/install.sh
+# Gebruik (als root, ín de LXC, niet op de Proxmox-host):
+#   vanuit een clone:   bash lxc/install.sh
+#   los (one-liner):    bash -c "$(curl -fsSL https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/lxc/install.sh)"
+#   privé-repo:         GITHUB_TOKEN=<token> bash -c "$(curl -fsSL -H "Authorization: token <token>" https://raw.githubusercontent.com/...)"
+# Wil je vanaf de Proxmox-host meteen een LXC laten aanmaken? Gebruik lxc/proxmox-create.sh.
 # Draait dezelfde app als de Docker-image: zelfde code, zelfde env-variabelen, poort 8000.
+# Optioneel: PSADT_COOKIE_SECURE=false (alleen bij eerste installatie) als je zonder HTTPS test.
 set -euo pipefail
+
+REPO="${PSADT_REPO:-Starf0x/PSADT-Frontend}"
+BRANCH="${PSADT_BRANCH:-main}"
 
 APP_DIR=/opt/psadt-frontend
 DATA_DIR=/var/lib/psadt-frontend
 ENV_FILE=/etc/psadt-frontend.env
-SRC_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." 2>/dev/null && pwd || true)"
 
 [ "$(id -u)" -eq 0 ] || { echo "Draai dit script als root."; exit 1; }
+if command -v pveversion >/dev/null 2>&1; then
+  echo "Dit is een Proxmox-host. Draai dit script ín een LXC, of gebruik lxc/proxmox-create.sh op de host."
+  exit 1
+fi
 
 apt-get update -qq
-apt-get install -y -qq python3 python3-venv curl ca-certificates rsync
+apt-get install -y -qq python3 python3-venv curl ca-certificates rsync git
+
+# Los gedraaid (bijv. via curl)? Dan eerst de broncode ophalen.
+if [ -z "$SRC_DIR" ] || [ ! -f "$SRC_DIR/backend/requirements.txt" ] || [ "$SRC_DIR" = /opt/psadt-frontend-src ]; then
+  SRC_DIR=/opt/psadt-frontend-src
+  URL="https://github.com/$REPO.git"
+  [ -n "${GITHUB_TOKEN:-}" ] && URL="https://x-access-token:${GITHUB_TOKEN}@github.com/$REPO.git"
+  if [ -d "$SRC_DIR/.git" ]; then
+    if git -C "$SRC_DIR" fetch -q "$URL" "$BRANCH"; then
+      git -C "$SRC_DIR" reset -q --hard FETCH_HEAD
+    else
+      echo "Let op: kon $REPO niet ophalen (privé-repo? zet GITHUB_TOKEN). Bestaande code wordt gebruikt."
+    fi
+  else
+    rm -rf "$SRC_DIR" && git clone -q --depth 1 -b "$BRANCH" "$URL" "$SRC_DIR"
+    git -C "$SRC_DIR" remote set-url origin "https://github.com/$REPO.git"  # token niet bewaren
+  fi
+fi
 if ! command -v node >/dev/null || [ "$(node -v | cut -c2- | cut -d. -f1)" -lt 20 ]; then
   curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
   apt-get install -y -qq nodejs
@@ -39,7 +68,7 @@ fi
 
 id psadt >/dev/null 2>&1 || useradd --system --home "$APP_DIR" --shell /usr/sbin/nologin psadt
 mkdir -p "$APP_DIR" "$DATA_DIR"
-rsync -a --delete --exclude node_modules --exclude .git --exclude data "$SRC_DIR"/ "$APP_DIR"/
+rsync -a --delete --exclude node_modules --exclude .git --exclude data --exclude .venv "$SRC_DIR"/ "$APP_DIR"/
 
 (cd "$APP_DIR/frontend" && npm ci --silent && npm run build)
 python3 -m venv "$APP_DIR/.venv"
@@ -48,6 +77,9 @@ python3 -m venv "$APP_DIR/.venv"
 
 if [ ! -f "$ENV_FILE" ]; then
   cp "$APP_DIR/.env.example" "$ENV_FILE"
+  if [ -n "${PSADT_COOKIE_SECURE:-}" ]; then
+    sed -i "s/^PSADT_COOKIE_SECURE=.*/PSADT_COOKIE_SECURE=${PSADT_COOKIE_SECURE}/" "$ENV_FILE"
+  fi
   cat >> "$ENV_FILE" <<ENVX
 PSADT_DATA_DIR=$DATA_DIR
 PSADT_PWSH_PATH=/opt/pwsh/pwsh
