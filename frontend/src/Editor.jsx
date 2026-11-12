@@ -306,20 +306,38 @@ export default function Editor({ id, readOnly, onClose }) {
   const loadFiles = () => api(`/api/packages/${id}/files`).then(setFiles).catch(() => {})
   useEffect(() => { api(`/api/packages/${id}`).then(setPkg); loadFiles() }, [id])
 
-  const update = data => { setPkg({ ...pkg, data }); setDirty(true); setMsg(null) }
+  // Every change is saved automatically a moment after the last edit, so nothing is lost when the
+  // page reloads or the server restarts (e.g. during an update). `rev` counts local edits, so a
+  // save that finishes while the user kept typing does not mark the newer edits as saved.
+  const rev = useRef(0)
+  const latest = useRef(null)
+  const update = data => { rev.current += 1; latest.current = data; setPkg(p => ({ ...p, data })); setDirty(true); setMsg(null) }
   async function save() {
+    if (readOnly || latest.current === null) return true
+    const sent = rev.current
+    setMsg({ ok: true, text: t('Saving…') })
     try {
-      setPkg(await api(`/api/packages/${id}`, { method: 'PUT', body: pkg.data }))
-      setDirty(false); setMsg({ ok: true, text: t('Saved') })
+      await api(`/api/packages/${id}`, { method: 'PUT', body: latest.current })
+      if (rev.current === sent) { setDirty(false); setMsg({ ok: true, text: t('All changes saved') }) }
       return true
     } catch (e) { setMsg({ ok: false, text: e.message }); return false }
   }
-  async function switchTab(t) {
-    if (['preview', 'export'].includes(t) && dirty && !(await save())) return
-    setTab(t)
+  useEffect(() => {
+    if (!dirty || readOnly) return
+    const timer = setTimeout(save, 1200)
+    return () => clearTimeout(timer)
+  }, [pkg, dirty])
+  useEffect(() => {
+    const warn = e => { if (dirty) { e.preventDefault(); e.returnValue = '' } }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
+  async function switchTab(next) {
+    if (dirty && !(await save()) && ['preview', 'export'].includes(next)) return
+    setTab(next)
   }
-  function close() {
-    if (dirty && !window.confirm(t('There are unsaved changes. Close anyway?'))) return
+  async function close() {
+    if (dirty && !(await save()) && !window.confirm(t('There are unsaved changes. Close anyway?'))) return
     onClose()
   }
 
@@ -331,7 +349,7 @@ export default function Editor({ id, readOnly, onClose }) {
         <h2><button className="link" onClick={close}>{t('Packages')}</button> › {d.app.name}</h2>
         <span className="row">
           {msg && <span className={msg.ok ? 'ok' : 'error pre'}>{msg.text}</span>}
-          {readOnly ? <span className="muted">{t('Read only')}</span> : <button onClick={save} disabled={!dirty}>{t('Save')}</button>}
+          {readOnly ? <span className="muted">{t('Read only')}</span> : <button onClick={save} disabled={!dirty}>{t('Save now')}</button>}
         </span>
       </div>
       <nav className="tabs">{TABS.map(([k, l]) => <button key={k} className={tab === k ? 'active' : ''} onClick={() => switchTab(k)}>{t(l)}</button>)}</nav>

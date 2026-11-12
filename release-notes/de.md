@@ -1,5 +1,9 @@
 # Was ist neu
 
+## 0.2.0
+- Änderungen an einem Paket werden jetzt kurz nach der Eingabe automatisch gespeichert. Beim Neuladen der Seite oder einem Neustart für ein Update geht nichts mehr verloren.
+- Wenn Sie die Seite verlassen, während noch gespeichert wird, warnt Ihr Browser zuerst.
+
 ## 0.1.99
 - Wenn eine neuere Version verfügbar ist, sehen Administratoren einen orangen Punkt bei System und einen Hinweis oben auf jeder Seite.
 - Auf der Systemseite gibt es die Schaltfläche „Jetzt prüfen“, und die App sucht alle 15 Minuten statt stündlich nach neuen Versionen.
