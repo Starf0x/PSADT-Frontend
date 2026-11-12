@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.2.99
+- Die GitHub-Seite hat eine neue README mit Screenshots, und das Wiki enthält jetzt eine ausführliche Anleitung mit einer Seite für jeden Bildschirm.
+
 ## 0.2.88
 - Der Exportzähler zählt jedes Paket einmal pro Version. Erneutes Herunterladen oder ZIP und .intunewin zählen nicht mehr doppelt. Eine neue Version zählt. Das Paket zählt für die Person, die es zuerst heruntergeladen hat.
 

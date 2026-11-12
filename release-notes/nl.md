@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.2.99
+- De GitHub-pagina heeft een nieuwe README met screenshots, en de wiki heeft nu een uitgebreide handleiding met een pagina voor elk scherm.
+
 ## 0.2.88
 - De exportteller telt elk pakket één keer per versie. Opnieuw downloaden, of zowel ZIP als .intunewin, telt niet meer dubbel. Een nieuwe versie telt wel. Het pakket telt mee voor degene die het als eerste downloadde.
 
