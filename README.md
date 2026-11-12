@@ -61,7 +61,7 @@ docker compose logs | grep 'admin password'
 
 Then open `http://<host>:8000` and sign in as `admin`. Full instructions are in [Installation](https://github.com/Starf0x/PSADT-Frontend/wiki/Installation) and in the sections below.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). The wiki pages live in [`docs/wiki/`](docs/wiki) and are published to the wiki automatically.
 
 <details>
 <summary><b>Release history</b></summary>
