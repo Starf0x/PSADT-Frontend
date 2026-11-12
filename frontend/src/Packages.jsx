@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from './api.js'
 import Editor from './Editor.jsx'
 
-export default function Packages() {
+export default function Packages({ readOnly }) {
   const [list, setList] = useState([])
   const [openId, setOpenId] = useState(null)
   const [name, setName] = useState('')
@@ -26,15 +26,15 @@ export default function Packages() {
     load()
   }
 
-  if (openId !== null) return <Editor id={openId} onClose={() => setOpenId(null)} />
+  if (openId !== null) return <Editor id={openId} readOnly={readOnly} onClose={() => setOpenId(null)} />
 
   return (
     <section>
       <h2>Pakketten</h2>
-      <form className="row" onSubmit={create}>
+      {!readOnly && <form className="row" onSubmit={create}>
         <input placeholder="Naam van de applicatie" value={name} onChange={e => setName(e.target.value)} required maxLength={100} />
         <button>Nieuw pakket</button>
-      </form>
+      </form>}
       {error && <p className="error">{error}</p>}
       {list.length === 0 ? <p className="muted">Nog geen pakketten.</p> : (
         <table>
@@ -43,7 +43,7 @@ export default function Packages() {
             <tr key={p.id}>
               <td><button className="link" onClick={() => setOpenId(p.id)}>{p.name}</button></td>
               <td>{p.vendor}</td><td>{p.version}</td><td>{new Date(p.updated_at).toLocaleString()}</td>
-              <td><button className="link danger" onClick={() => remove(p)}>Verwijderen</button></td>
+              <td>{!readOnly && <button className="link danger" onClick={() => remove(p)}>Verwijderen</button>}</td>
             </tr>))}
           </tbody>
         </table>

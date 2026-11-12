@@ -70,6 +70,23 @@ def current_user(sess: UserSession = Depends(current_session), db: Session = Dep
     return user
 
 
+ROLES = ("admin", "editor", "viewer")
+WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+def require_admin(user: User = Depends(current_user)) -> User:
+    if user.role != "admin":
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Alleen voor beheerders")
+    return user
+
+
+def editor_for_writes(request: Request, user: User = Depends(current_user)) -> User:
+    """Viewers mogen alles lezen, exporteren en de syntax controleren, maar niets wijzigen."""
+    if user.role == "viewer" and request.method in WRITE_METHODS and not request.url.path.endswith("/check"):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Je hebt alleen leesrechten")
+    return user
+
+
 def ensure_admin(db: Session) -> None:
     if db.scalar(select(User).limit(1)) is not None:
         return

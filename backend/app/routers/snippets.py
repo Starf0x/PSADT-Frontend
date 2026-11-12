@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 
 from ..db import Snippet, User, get_db
 from ..psadt.schema import Step
-from ..security import current_user
+from ..security import current_user, editor_for_writes
 
-router = APIRouter(prefix="/api/snippets", tags=["snippets"], dependencies=[Depends(current_user)])
+router = APIRouter(prefix="/api/snippets", tags=["snippets"], dependencies=[Depends(editor_for_writes)])
 
 
 class SnippetIn(BaseModel):

@@ -1,8 +1,10 @@
 # PSADT Frontend
 
+> **English:** A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolkit.com/) v4 packages: edit install/uninstall/repair steps in a browser, upload installers, preview the generated `Invoke-AppDeployToolkit.ps1`, and export a ready-to-deploy ZIP or Intune `.intunewin` — no Windows build machine needed. Runs as a Docker container or in a Debian LXC. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+
 Een webinterface voor de [PowerShell App Deployment Toolkit](https://psappdeploytoolkit.com/) (PSADT v4). Draait als Docker-container of als losse LXC-installatie; beide werken identiek.
 
-**Versie:** 0.0.72 (zie `VERSION`)
+**Versie:** 0.0.83 (zie `VERSION`)
 
 ## Status en roadmap
 
@@ -11,7 +13,7 @@ Een webinterface voor de [PowerShell App Deployment Toolkit](https://psappdeploy
 | 1 | Fundament: FastAPI + React, cookie-login, Docker, LXC | ✅ v0.0.50 |
 | 2 | Package-editor op basis van het PSADT v4-template, uploads, live scriptpreview | ✅ v0.0.61 |
 | 3 | Bouwen/exporteren: ZIP, `.intunewin`, detectieregels, snippetbibliotheek | ✅ v0.0.72 |
-| 4 | Open source klaarmaken: rollen, CI, docs | gepland |
+| 4 | Open source klaarmaken: rollen, gebruikersbeheer, docs, GHCR-image | ✅ v0.0.83 |
 
 ## Architectuur
 
@@ -29,6 +31,7 @@ backend/   FastAPI (Python 3.12+), SQLAlchemy + SQLite, argon2
   app/psadt/export.py      ZIP (officieel PSADT-pakket + script + Files) en .intunewin
   app/psadt/detection.py   Intune-detectiescript uit detectieregels
   app/routers/snippets.py  /api/snippets (herbruikbare stappen)
+  app/routers/users.py     /api/users (alleen beheerders)
   app/main.py        app, security headers, serveert frontend/dist
   tests/             pytest
 frontend/  React 18 + Vite (build -> frontend/dist); src/Packages.jsx, Editor.jsx, steps.js
@@ -46,7 +49,19 @@ Dockerfile, docker-compose.yml
 - Container draait als niet-root, read-only filesystem, alle capabilities gedropt.
 - Voor online gebruik: zet er een reverse proxy met HTTPS voor (Caddy/Traefik).
 
+## Rollen
+
+| Rol | Mag |
+|-----|-----|
+| Beheerder | alles, plus gebruikers beheren (aanmaken, rol, wachtwoord, ontgrendelen, verwijderen) |
+| Bewerker | pakketten en snippets maken, wijzigen en verwijderen |
+| Alleen lezen | alles bekijken, scripts controleren en exporteren |
+
+Bij een rol- of wachtwoordwijziging worden de sessies van die gebruiker ingetrokken. De laatste beheerder kan niet worden gedegradeerd of verwijderd.
+
 ## Starten met Docker
+
+Kant-en-klare image (na elke release): `ghcr.io/starf0x/psadt-frontend:latest` (zet in `docker-compose.yml` `image:` in plaats van `build:`).
 
 ```bash
 cp .env.example .env        # pas aan
@@ -119,9 +134,10 @@ Start op 0.0.50 en verhoogt per release met 11 (0.0.61, 0.0.72, ...). Bij 100 of
 - Nieuwe PSADT-versie: `PSADT_VERSION` + `PSADT_SHA256` in Dockerfile én `lxc/install.sh`, plus kop/staart van het template en `PSADT_VERSION` in `schema.py`.
 - De .intunewin is cryptografisch getest (roundtrip), maar nog niet daadwerkelijk in Intune geüpload: eerste keer controleren.
 - Lokaal ontwikkelen zonder `/opt/psadt`: download de template-zip en zet `PSADT_TOOLKIT_ZIP`.
-- Stap 4: rollen/gebruikersbeheer, docs, open source klaarmaken.
+- Open source maken: repo op *Public* zetten, en het GHCR-package op *Public* (Package settings). Alle docs (CONTRIBUTING, SECURITY, NOTICE, issue templates, Dependabot) staan klaar.
+- Mogelijke vervolgstappen: 2FA (TOTP), audit-log, Alembic-migraties, Engelstalige UI.
 - Nieuwe tabellen worden nu via `create_all` gemaakt; bij de eerste schemawijziging Alembic toevoegen.
 
 ## Licentie
 
-MIT, zie `LICENSE`.
+MIT, zie `LICENSE`. PSADT-onderdelen: LGPL-3.0, zie `NOTICE.md`.

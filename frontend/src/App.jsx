@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, clearCsrf } from './api.js'
 import Packages from './Packages.jsx'
+import { Account, Users } from './Users.jsx'
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('')
@@ -29,6 +30,7 @@ function Login({ onLogin }) {
 }
 
 function Dashboard({ user, version, onLogout }) {
+  const [page, setPage] = useState('packages')
   async function logout() {
     await api('/api/auth/logout', { method: 'POST' }).catch(() => {})
     clearCsrf()
@@ -37,10 +39,21 @@ function Dashboard({ user, version, onLogout }) {
   return (
     <div className="layout">
       <header>
-        <strong>PSADT Frontend</strong>
-        <span>{user.username} · <button className="link" onClick={logout}>Uitloggen</button></span>
+        <nav className="row">
+          <strong>PSADT Frontend</strong>
+          <button className={`link ${page === 'packages' ? 'current' : ''}`} onClick={() => setPage('packages')}>Pakketten</button>
+          {user.role === 'admin' && <button className={`link ${page === 'users' ? 'current' : ''}`} onClick={() => setPage('users')}>Gebruikers</button>}
+        </nav>
+        <span className="row">
+          <button className="link" onClick={() => setPage('account')}>{user.username} ({user.role})</button> ·
+          <button className="link" onClick={logout}>Uitloggen</button>
+        </span>
       </header>
-      <main><Packages /></main>
+      <main>
+        {page === 'packages' && <Packages readOnly={user.role === 'viewer'} />}
+        {page === 'users' && <Users me={user} />}
+        {page === 'account' && <Account />}
+      </main>
       <footer>v{version}</footer>
     </div>
   )
