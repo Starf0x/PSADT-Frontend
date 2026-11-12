@@ -68,6 +68,22 @@ function LogPath() {
   )
 }
 
+// Anonymous daily check-in (as in My Audiobook Collection), disclosed here and switchable.
+function Usage() {
+  const [s, setS] = useState(null)
+  useEffect(() => { api('/api/system/settings').then(setS).catch(() => {}) }, [])
+  if (!s) return null
+  const set = async on => { try { setS(await api('/api/system/settings', { method: 'PUT', body: { usage: on } })) } catch { /* keep as is */ } }
+  return (
+    <div className="panel">
+      <h3 style={{ marginTop: 0 }}>{t('Anonymous usage')}</h3>
+      <p className="muted small">{t('Once a day, and right after an update, the app tells its author it is running: the version, where it runs (Docker, LXC or other), how many days it has been running and a random id for this install. Nothing about packages, files or users is ever sent. It helps decide whether to keep developing the app.')}</p>
+      <label className="check"><input type="checkbox" checked={s.usage} disabled={s.usage_env_off} onChange={e => set(e.target.checked)} />{t('Send the anonymous daily check-in')}</label>
+      {s.usage_env_off && <p className="muted small">{t('Switched off on the server with PSADT_USAGE_OPTOUT=1.')}</p>}
+    </div>
+  )
+}
+
 export default function System() {
   const [info, setInfo] = useState(null)
   const [error, setError] = useState('')
@@ -129,6 +145,7 @@ export default function System() {
       {error && <p className="error">{error}</p>}
       <LogPath />
       <Retention />
+      <Usage />
     </section>
   )
 }

@@ -11,7 +11,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 No Windows build machine is needed. It runs as a Docker container or in a Debian LXC, and both behave identically. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
-**Version:** 0.2.55 (see `VERSION`)
+**Version:** 0.2.66 (see `VERSION`)
 
 ## Status and roadmap
 
@@ -36,6 +36,7 @@ No Windows build machine is needed. It runs as a Docker container or in a Debian
 | 17 | Export counters (total, yours, per user), MSIX detection rule, hive buttons incl. HKEY_CLASSES_ROOT, update progress bar, service restart on update | ✅ v0.2.33 |
 | 18 | Download buttons check the package once more first; a refused download names the problems | ✅ v0.2.44 |
 | 19 | Download with visible progress (building, downloading, done) and a hint when the buttons are locked | ✅ v0.2.55 |
+| 20 | Background and daily colour change as in My Audiobook Collection; anonymous daily usage check-in (switchable) | ✅ v0.2.66 |
 
 ## Architecture
 
@@ -185,6 +186,7 @@ Containers installed before v0.1.22 do not have the updater yet. Update them onc
 | `PSADT_MAX_UPLOAD_MB` | `4096` | Maximum upload size |
 | `PSADT_TOOLKIT_ZIP` | `/opt/psadt/PSAppDeployToolkit_Template_v4.zip` | Official PSADT package used for export |
 | `PSADT_PWSH_PATH` | `pwsh` (`/opt/pwsh/pwsh` in Docker/LXC) | PowerShell 7 for the syntax check |
+| `PSADT_USAGE_OPTOUT` | empty | **Anonymous usage.** Once a day, and right after an update, the app tells its author it is running: version, Docker/LXC/other, days running and a random per-install id (never your server name, nothing about packages, files or users). Shown on the System page and switchable there, or off with `PSADT_USAGE_OPTOUT=1`. Set `PSADT_USAGE_URL` (and `PSADT_USAGE_TOKEN`) to send your own numbers to your own server instead |
 
 ## Development
 

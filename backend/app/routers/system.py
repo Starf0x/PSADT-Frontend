@@ -6,6 +6,7 @@ and runs /usr/local/bin/psadt-frontend-update, which only ever does that one fix
 Docker installs update by pulling a newer image.
 """
 import json
+import os
 import re
 import time
 import urllib.request
@@ -17,6 +18,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from .. import retention as ret
+from .. import usage
 from ..config import settings
 from ..db import get_db, get_setting, set_setting
 from ..psadt.schema import LOG_PATH_PATTERN
@@ -107,11 +109,13 @@ def request_update():
 class SettingsIn(BaseModel):
     upload_retention: str | None = None
     log_path: str | None = Field(default=None, pattern=LOG_PATH_PATTERN)
+    usage: bool | None = None
 
 
 def _settings(db: Session) -> dict:
     return {"upload_retention": ret.retention(db), "choices": list(ret.CHOICES),
-            "log_path": get_setting(db, "log_path", ""), "log_path_default": PSADT_LOG_PATH}
+            "log_path": get_setting(db, "log_path", ""), "log_path_default": PSADT_LOG_PATH,
+            "usage": not usage.opted_out(db), "usage_env_off": os.environ.get("PSADT_USAGE_OPTOUT") == "1"}
 
 
 @router.get("/settings")
@@ -129,6 +133,8 @@ def put_settings(body: SettingsIn, db: Session = Depends(get_db)):
         removed = ret.purge_old_uploads(db)
     if body.log_path is not None:
         set_setting(db, "log_path", body.log_path.strip())
+    if body.usage is not None:
+        set_setting(db, usage.OPT_OUT, "" if body.usage else "1")
     return {**_settings(db), "removed": removed}
 
 
