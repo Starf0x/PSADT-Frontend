@@ -151,5 +151,11 @@ def test_export_counter(authed, toolkit):
     assert authed.get("/api/stats").json() == {"total": 0, "mine": 0, "per_user": []}
     authed.get(f"/api/packages/{pid}/export/zip")
     authed.get(f"/api/packages/{pid}/export/intunewin")
-    s = authed.get("/api/stats").json()
-    assert s["total"] == 2 and s["mine"] == 2 and s["per_user"][0]["count"] == 2 and s["per_user"][0]["me"]
+    authed.get(f"/api/packages/{pid}/export/zip")
+    s = authed.get("/api/stats").json()  # the same build downloaded three times is one package
+    assert s["total"] == 1 and s["mine"] == 1 and s["per_user"][0]["count"] == 1 and s["per_user"][0]["me"]
+    data = authed.get(f"/api/packages/{pid}").json()["data"]
+    data["app"]["version"] = "2.0"
+    authed.put(f"/api/packages/{pid}", json=data)
+    authed.get(f"/api/packages/{pid}/export/intunewin")
+    assert authed.get("/api/stats").json()["total"] == 2  # a new version is a new package

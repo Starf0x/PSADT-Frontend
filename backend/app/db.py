@@ -65,6 +65,7 @@ class Export(Base):
     package_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     package_name: Mapped[str] = mapped_column(String(100))
     fmt: Mapped[str] = mapped_column(String(16))
+    app_version: Mapped[str] = mapped_column(String(50), default="")  # a package counts once per version
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -108,12 +109,16 @@ def _add_missing_columns() -> None:
     """create_all makes new tables but never new columns; add the few we added later."""
     from sqlalchemy import inspect, text
 
-    have = {c["name"] for c in inspect(engine).get_columns("users")}
-    added = {"language": "VARCHAR(8) NOT NULL DEFAULT 'en'", "display_name": "VARCHAR(100) NOT NULL DEFAULT ''"}
+    added = {
+        "users": {"language": "VARCHAR(8) NOT NULL DEFAULT 'en'", "display_name": "VARCHAR(100) NOT NULL DEFAULT ''"},
+        "exports": {"app_version": "VARCHAR(50) NOT NULL DEFAULT ''"},
+    }
     with engine.begin() as con:
-        for name, sql in added.items():
-            if name not in have:
-                con.execute(text(f"ALTER TABLE users ADD COLUMN {name} {sql}"))
+        for table, cols in added.items():
+            have = {c["name"] for c in inspect(con).get_columns(table)}
+            for name, sql in cols.items():
+                if name not in have:
+                    con.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {sql}"))
 
 
 def get_db() -> Iterator[Session]:

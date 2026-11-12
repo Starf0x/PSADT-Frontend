@@ -164,7 +164,8 @@ def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get
 
 
 def _count(db: Session, pkg: Package, user: User, fmt: str) -> None:
-    db.add(Export(user_id=user.id, package_id=pkg.id, package_name=pkg.name[:100], fmt=fmt))
+    version = str(pkg.data.get("app", {}).get("version") or "")[:50]
+    db.add(Export(user_id=user.id, package_id=pkg.id, package_name=pkg.name[:100], fmt=fmt, app_version=version))
     db.commit()
 
 
