@@ -3,6 +3,12 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.1.66
+- Users now have a full name next to their login name. Add it when you create a user; everyone can change their own name under their account.
+- New packages fill in your full name as script author.
+- While files upload you see a progress bar for each file.
+- The "Check syntax" button works again on Proxmox containers. If the check cannot run, the message now explains that it is a server problem and not a mistake in your package.
+
 ## 0.1.55
 - When an update is available, the System page now shows what is new before you install it.
 - These notes are written in plain language, in English, Dutch and German.

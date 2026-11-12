@@ -94,5 +94,5 @@ def ensure_admin(db: Session) -> None:
     if not password:
         password = secrets.token_urlsafe(16)
         print(f"[psadt-frontend] First start: admin password for '{settings.admin_username}': {password}", flush=True)
-    db.add(User(username=settings.admin_username, password_hash=hash_password(password), role="admin"))
+    db.add(User(username=settings.admin_username, display_name="Administrator", password_hash=hash_password(password), role="admin"))
     db.commit()

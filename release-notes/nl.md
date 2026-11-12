@@ -1,5 +1,11 @@
 # Wat is er nieuw
 
+## 0.1.66
+- Gebruikers hebben nu een volledige naam naast hun loginnaam. Vul die in bij het aanmaken van een gebruiker; iedereen kan zijn eigen naam wijzigen onder zijn account.
+- Bij nieuwe pakketten wordt jouw volledige naam ingevuld als scriptauteur.
+- Tijdens het uploaden zie je per bestand een voortgangsbalk.
+- De knop "Syntax controleren" werkt weer op Proxmox-containers. Kan de controle niet draaien, dan legt de melding nu uit dat het een serverprobleem is en geen fout in je pakket.
+
 ## 0.1.55
 - Als er een update klaarstaat, laat de Systeem-pagina nu eerst zien wat er nieuw is.
 - Deze notities zijn in gewone taal geschreven, in het Engels, Nederlands en Duits.

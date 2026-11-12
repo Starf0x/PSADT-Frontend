@@ -14,20 +14,25 @@ Role = Literal["admin", "editor", "viewer"]
 Username = Field(min_length=3, max_length=64, pattern=r"^[A-Za-z0-9._@-]+$")
 
 
+Name = Field(min_length=1, max_length=100)
+
+
 class UserIn(BaseModel):
     username: str = Username
+    display_name: str = Name
     password: str = Field(min_length=12, max_length=256)
     role: Role = "editor"
 
 
 class UserUpdate(BaseModel):
     role: Role | None = None
+    display_name: str | None = Field(default=None, min_length=1, max_length=100)
     password: str | None = Field(default=None, min_length=12, max_length=256)
     unlock: bool = False
 
 
 def _out(u: User) -> dict:
-    return {"id": u.id, "username": u.username, "role": u.role,
+    return {"id": u.id, "username": u.username, "display_name": u.display_name or u.username, "role": u.role,
             "locked": u.locked_until is not None, "created_at": u.created_at.isoformat()}
 
 
@@ -55,7 +60,7 @@ def list_users(db: Session = Depends(get_db)):
 def create_user(data: UserIn, db: Session = Depends(get_db)):
     if db.scalar(select(User).where(User.username == data.username)):
         raise HTTPException(status.HTTP_409_CONFLICT, "Username already exists")
-    u = User(username=data.username, password_hash=hash_password(data.password), role=data.role)
+    u = User(username=data.username, display_name=data.display_name.strip(), password_hash=hash_password(data.password), role=data.role)
     db.add(u)
     db.commit()
     return _out(u)
@@ -72,6 +77,8 @@ def update_user(uid: int, data: UserUpdate, db: Session = Depends(get_db)):
     if data.password:
         u.password_hash = hash_password(data.password)
         _revoke(db, u.id)
+    if data.display_name:
+        u.display_name = data.display_name.strip()
     if data.unlock:
         u.locked_until = None
         u.failed_logins = 0

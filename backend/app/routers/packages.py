@@ -27,6 +27,7 @@ router = APIRouter(prefix="/api/packages", tags=["packages"], dependencies=[Depe
 ALLOWED_EXT = {".msi", ".msp", ".mst", ".exe", ".zip", ".cab", ".ps1", ".psm1", ".reg", ".xml", ".ini", ".cfg",
                ".json", ".txt", ".bat", ".cmd", ".vbs", ".ico", ".png", ".lnk", ".config",
                ".msix", ".msixbundle", ".appx", ".appxbundle", ".cer"}
+CHECK_LINE = re.compile(r"^\d+:\d+ ")
 CHECK_PS1 = Path(__file__).resolve().parents[1] / "psadt" / "check.ps1"
 
 
@@ -58,7 +59,9 @@ def list_packages(db: Session = Depends(get_db)):
 
 @router.post("", status_code=201)
 def create_package(data: NewPackage, db: Session = Depends(get_db), user: User = Depends(current_user)):
-    pkg = Package(name=data.name, data=default_package(data.name).model_dump(), created_by=user.id)
+    content = default_package(data.name)
+    content.app.author = (user.display_name or user.username)[:100]  # the signed-in user, by full name
+    pkg = Package(name=data.name, data=content.model_dump(), created_by=user.id)
     db.add(pkg)
     db.commit()
     return {"id": pkg.id, "name": pkg.name, "data": pkg.data}
@@ -176,6 +179,9 @@ def validate(pid: int, db: Session = Depends(get_db)):
     syntax = _syntax(script) if script else {"available": False, "errors": []}
     for err in syntax["errors"]:
         items.append({"level": "error", "text": "PowerShell syntax error: {msg}", "vars": {"msg": err}})
+    if syntax.get("failed"):
+        items.append({"level": "warning", "vars": {},
+                      "text": "The script could not be checked, because PowerShell did not start on the server. This is a server problem, not a mistake in your package."})
     return {"ok": not any(i["level"] == "error" for i in items), "items": items,
             "syntax_checked": syntax["available"], "retention": retention(db)}
 
@@ -191,13 +197,22 @@ def _syntax(text: str) -> dict:
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "script.ps1"
         path.write_text(text, encoding="utf-8")
-        res = subprocess.run(
-            [settings.pwsh_path, "-NoProfile", "-NonInteractive", "-File", str(CHECK_PS1), "-Path", str(path)],
-            capture_output=True, text=True, timeout=60,
-        )
-    errors = [line for line in res.stdout.splitlines() if line.strip()]
-    if res.returncode != 0 and not errors:
-        errors = [res.stderr.strip()[:500] or "Unknown error during check"]
+        # PowerShell writes a cache in $HOME on start; the app's home (/opt/psadt-frontend on LXC)
+        # is read-only, so give it a throwaway home.
+        env = {**os.environ, "HOME": tmp, "XDG_CACHE_HOME": tmp, "XDG_DATA_HOME": tmp, "XDG_CONFIG_HOME": tmp,
+               "DOTNET_CLI_HOME": tmp, "POWERSHELL_TELEMETRY_OPTOUT": "1", "POWERSHELL_UPDATECHECK": "Off"}
+        try:
+            res = subprocess.run(
+                [settings.pwsh_path, "-NoProfile", "-NonInteractive", "-File", str(CHECK_PS1), "-Path", str(path)],
+                capture_output=True, text=True, timeout=60, env=env,
+            )
+        except (OSError, subprocess.TimeoutExpired) as e:
+            return {"available": True, "errors": [], "failed": str(e)[:2000]}
+    lines = [line for line in res.stdout.splitlines() if line.strip()]
+    errors = [line for line in lines if CHECK_LINE.match(line)]
+    if res.returncode != 0 or len(errors) != len(lines):
+        # PowerShell itself did not run properly: a server problem, not an error in the package.
+        return {"available": True, "errors": [], "failed": (res.stderr or res.stdout).strip()[:2000] or f"exit code {res.returncode}"}
     return {"available": True, "errors": errors}
 
 

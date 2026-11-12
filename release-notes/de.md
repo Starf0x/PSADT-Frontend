@@ -1,5 +1,11 @@
 # Was ist neu
 
+## 0.1.66
+- Benutzer haben jetzt einen vollständigen Namen neben dem Anmeldenamen. Er wird beim Anlegen eingetragen; jeder kann seinen Namen im eigenen Konto ändern.
+- Neue Pakete tragen Ihren vollständigen Namen als Skriptautor ein.
+- Beim Hochladen sehen Sie für jede Datei einen Fortschrittsbalken.
+- Die Schaltfläche „Syntax prüfen“ funktioniert wieder auf Proxmox-Containern. Kann die Prüfung nicht laufen, erklärt die Meldung jetzt, dass es ein Serverproblem ist und kein Fehler in Ihrem Paket.
+
 ## 0.1.55
 - Wenn ein Update bereitsteht, zeigt die Systemseite jetzt zuerst, was neu ist.
 - Diese Hinweise sind in einfacher Sprache geschrieben, auf Englisch, Niederländisch und Deutsch.

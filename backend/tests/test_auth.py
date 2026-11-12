@@ -42,7 +42,7 @@ def test_language_per_user(authed):
     assert authed.put("/api/auth/language", json={"language": "fr"}).status_code == 422
     assert authed.put("/api/auth/language", json={"language": "de"}).status_code == 204
     assert authed.get("/api/auth/me").json()["language"] == "de"
-    authed.post("/api/users", json={"username": "other", "password": "a-long-password-1"})
+    authed.post("/api/users", json={"username": "other", "display_name": "Other Test", "password": "a-long-password-1"})
     authed.post("/api/auth/logout")
     other = authed.post("/api/auth/login", json={"username": "other", "password": "a-long-password-1"}).json()
     assert other["language"] == "en"
