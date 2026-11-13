@@ -2,6 +2,7 @@
 
 ## 0.3.44
 - ↑ op de eerste stap van een fase zet die stap aan het eind van de fase erboven (bijvoorbeeld van Main naar Pre), en ↓ op de laatste stap zet hem aan het begin van de fase eronder. De pijltjes zijn alleen nog grijs helemaal bovenaan Pre en helemaal onderaan Post.
+- De knoppen ☆ ↑ ↓ ✕ bij elke stap zijn groter en duidelijker.
 
 ## 0.3.33
 - Pre, Main en Post zijn nu elk een eigen blok, met de knop om een stap toe te voegen in het blok waar hij bij hoort ("Stap toevoegen aan Main").
