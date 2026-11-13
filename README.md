@@ -19,7 +19,7 @@ A self-hosted web UI for building [PSAppDeployToolkit](https://psappdeploytoolki
 
 📖 **New here? Read the [user guide in the wiki](https://github.com/Starf0x/PSADT-Frontend/wiki).**
 
-**Version:** 0.3.33 (see `VERSION`)
+**Version:** 0.3.44 (see `VERSION`)
 
 ## Features
 
@@ -95,6 +95,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). The wiki 
 | 25 | A stuck upload stops after a minute with a clear message | ✅ v0.3.11 |
 | 26 | Uploads in 5 MB pieces, so large installers pass reverse proxies with a size limit (Zoraxy, Cloudflare, nginx) | ✅ v0.3.22 |
 | 27 | Each phase (Pre, Main, Post) is its own block with its own "Add step" button; a moved step stays under the mouse; undo for a removed step | ✅ v0.3.33 |
+| 28 | Move a step to the phase above or below with ↑ and ↓ | ✅ v0.3.44 |
 
 </details>
 

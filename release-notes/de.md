@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.3.44
+- ↑ beim ersten Schritt einer Phase verschiebt ihn ans Ende der Phase darüber (zum Beispiel von Main nach Pre), und ↓ beim letzten Schritt an den Anfang der Phase darunter. Die Pfeile sind nur noch ganz oben in Pre und ganz unten in Post grau.
+
 ## 0.3.33
 - Pre, Main und Post sind jetzt jeweils ein eigener Block, mit der Schaltfläche zum Hinzufügen im zugehörigen Block ("Schritt zu Main hinzufügen").
 - Wenn du einen Schritt mit ↑ oder ↓ verschiebst, scrollt die Seite mit. Der Schritt bleibt unter der Maus und leuchtet kurz auf, sodass du direkt weiterklicken kannst.
