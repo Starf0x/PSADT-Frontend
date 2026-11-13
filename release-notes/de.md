@@ -1,5 +1,10 @@
 # Was ist neu
 
+## 0.3.33
+- Pre, Main und Post sind jetzt jeweils ein eigener Block, mit der Schaltfläche zum Hinzufügen im zugehörigen Block ("Schritt zu Main hinzufügen").
+- Wenn du einen Schritt mit ↑ oder ↓ verschiebst, scrollt die Seite mit. Der Schritt bleibt unter der Maus und leuchtet kurz auf, sodass du direkt weiterklicken kannst.
+- Versehentlich einen Schritt mit ✕ entfernt? Zehn Sekunden lang holt "Rückgängig" ihn an dieselbe Stelle zurück.
+
 ## 0.3.22
 - Große Dateien werden jetzt in Stücken von 5 MB hochgeladen. Uploads über einen Reverse Proxy oder Tunnel mit Größenlimit (etwa Zoraxy oder Cloudflare) bleiben nicht mehr hängen. Ein fehlgeschlagenes Stück wird automatisch erneut gesendet.
 

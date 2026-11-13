@@ -253,6 +253,9 @@ const ROWS = [
   ['Full name', 'Volledige naam', 'Vollständiger Name'],
   ['Upload failed: connection lost', 'Upload mislukt: verbinding verbroken', 'Hochladen fehlgeschlagen: Verbindung unterbrochen'],
   ['Upload stopped: the server received nothing for a minute. A reverse proxy or tunnel may limit the size, or the server disk may be full.', 'Upload gestopt: de server ontving een minuut lang niets. Mogelijk beperkt een reverse proxy of tunnel de grootte, of is de schijf van de server vol.', 'Hochladen abgebrochen: Der Server hat eine Minute lang nichts empfangen. Möglicherweise begrenzt ein Reverse Proxy oder Tunnel die Größe, oder die Festplatte des Servers ist voll.'],
+  ['Step removed: {name}', 'Stap verwijderd: {name}', 'Schritt entfernt: {name}'],
+  ['Undo', 'Ongedaan maken', 'Rückgängig'],
+  ['Add step to {phase}', 'Stap toevoegen aan {phase}', 'Schritt zu {phase} hinzufügen'],
   ['Upload cancelled', 'Upload geannuleerd', 'Hochladen abgebrochen'],
   ['Upload refused: the file is too large for the server or a proxy in between.', 'Upload geweigerd: het bestand is te groot voor de server of voor een proxy ertussen.', 'Hochladen abgelehnt: Die Datei ist zu groß für den Server oder einen Proxy dazwischen.'],
   // syntax check

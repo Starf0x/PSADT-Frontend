@@ -105,7 +105,12 @@ h2 button.link { font-size: inherit; font-weight: inherit; }
 .tabs button { background: none; color: var(--muted); white-space: nowrap; padding: .45rem .85rem; font-weight: 500; box-shadow: none; }
 .tabs button:hover { color: var(--fg); box-shadow: none; }
 .tabs button.active { background: var(--grad); color: var(--on-grad); }
-.phase { margin-bottom: 1.75rem; }
+.phase { margin-bottom: 1.75rem; border: 1px solid var(--line); border-radius: var(--radius); padding: .9rem 1rem 1rem; background: hsl(var(--hue1) 30% 50% / .04); }
+.phase > h3 { margin-top: 0; }
+@keyframes moved { from { box-shadow: 0 0 0 2px hsl(var(--hue1) 100% 72% / .7), var(--glow); } to { box-shadow: var(--shadow); } }
+.step.moved { animation: moved 1.2s ease-out; }
+.undo { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem .9rem; margin: .6rem 0; border: 1px solid hsl(var(--hue1) 100% 72% / .35); border-radius: 10px; background: hsl(var(--hue1) 60% 50% / .08); }
+.phase-add { border-top: 1px dashed var(--line); padding-top: .8rem; margin-top: .4rem; }
 .step { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: var(--radius); padding: .9rem 1.1rem; margin: .6rem 0; box-shadow: var(--shadow); }
 .step-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
 .mono, pre { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: .84rem; }

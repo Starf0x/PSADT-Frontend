@@ -95,16 +95,16 @@ function Field({ name, label, type, value, onChange, files, wide, accept, onUplo
   return <label className={wide ? 'wide' : undefined}>{t(label)}{input}</label>
 }
 
-function StepCard({ step, index, count, files, onUpload, onChange, onMove, onRemove, onSnippet }) {
+function StepCard({ id, step, index, count, files, onUpload, onChange, onMove, onRemove, onSnippet }) {
   const def = STEP_TYPES[step.type]
   return (
-    <div className="step">
+    <div className="step" data-step={id}>
       <div className="step-head">
         <strong>{index + 1}. {t(def.label)}</strong>
         <span>
           <button className="icon" onClick={onSnippet} title={t('Save as snippet')}>☆</button>
-          <button className="icon" disabled={index === 0} onClick={() => onMove(-1)} title={t('Move up')}>↑</button>
-          <button className="icon" disabled={index === count - 1} onClick={() => onMove(1)} title={t('Move down')}>↓</button>
+          <button className="icon" disabled={index === 0} onClick={e => onMove(-1, e)} title={t('Move up')}>↑</button>
+          <button className="icon" disabled={index === count - 1} onClick={e => onMove(1, e)} title={t('Move down')}>↓</button>
           <button className="icon danger" onClick={onRemove} title={t('Delete')}>✕</button>
         </span>
       </div>
@@ -120,6 +120,10 @@ function StepCard({ step, index, count, files, onUpload, onChange, onMove, onRem
 
 function PhaseEditor({ phases, files, onUpload, onChange }) {
   const [adding, setAdding] = useState({})
+  const [removed, setRemoved] = useState(null) // last removed step, can be put back for 10 seconds
+  useEffect(() => { if (!removed) return; const id = setTimeout(() => setRemoved(null), 10000); return () => clearTimeout(id) }, [removed])
+  function remove(key, steps, i) { setRemoved({ key, i, step: steps[i] }); set(key, steps.filter((_, j) => j !== i)) }
+  function undo() { const a = [...phases[removed.key]]; a.splice(Math.min(removed.i, a.length), 0, removed.step); set(removed.key, a); setRemoved(null) }
   const [snippets, setSnippets] = useState([])
   const loadSnippets = () => api('/api/snippets').then(setSnippets).catch(() => {})
   useEffect(() => { loadSnippets() }, [])
@@ -140,6 +144,18 @@ function PhaseEditor({ phases, files, onUpload, onChange }) {
       : { type: v, comment: '', ...STEP_TYPES[v].defaults }
     set(key, [...phases[key], step])
   }
+  // After ↑/↓ the page scrolls along, so the moved step (and its arrow) stays under the mouse.
+  function move(key, steps, i, d, e) {
+    const before = e.currentTarget.getBoundingClientRect().top
+    const a = [...steps]; [a[i], a[i + d]] = [a[i + d], a[i]]; set(key, a)
+    requestAnimationFrame(() => {
+      const card = document.querySelector(`[data-step="${key}-${i + d}"]`)
+      const arrow = card?.querySelectorAll('.step-head button.icon')[d < 0 ? 1 : 2]
+      if (!arrow) return
+      window.scrollBy(0, arrow.getBoundingClientRect().top - before)
+      card.classList.remove('moved'); void card.offsetWidth; card.classList.add('moved')
+    })
+  }
   return PHASES.map(([key, label]) => {
     const steps = phases[key]
     return (
@@ -147,18 +163,20 @@ function PhaseEditor({ phases, files, onUpload, onChange }) {
         <h3>{t(label)}</h3>
         {steps.length === 0 && <p className="muted">{t('No steps.')}</p>}
         {steps.map((s, i) => (
-          <StepCard key={i} step={s} index={i} count={steps.length} files={files} onUpload={onUpload}
+          <StepCard key={i} id={`${key}-${i}`} step={s} index={i} count={steps.length} files={files} onUpload={onUpload}
             onChange={ns => set(key, steps.map((x, j) => j === i ? ns : x))}
-            onRemove={() => set(key, steps.filter((_, j) => j !== i))}
-            onMove={d => { const a = [...steps]; [a[i], a[i + d]] = [a[i + d], a[i]]; set(key, a) }}
+            onRemove={() => remove(key, steps, i)}
+            onMove={(d, e) => move(key, steps, i, d, e)}
             onSnippet={() => saveSnippet(s)} />
         ))}
-        <div className="row">
+        {removed?.key === key && <div className="undo">{t('Step removed: {name}', { name: t(STEP_TYPES[removed.step.type].label) })}
+          <button className="secondary" onClick={undo}>{t('Undo')}</button></div>}
+        <div className="row phase-add">
           <select value={adding[key] || 'msi'} onChange={e => setAdding({ ...adding, [key]: e.target.value })}>
             <optgroup label={t('Steps')}>{Object.entries(STEP_TYPES).map(([k, d]) => <option key={k} value={k}>{t(d.label)}</option>)}</optgroup>
             {snippets.length > 0 && <optgroup label="Snippets">{snippets.map(x => <option key={x.id} value={`snippet:${x.id}`}>★ {x.name}</option>)}</optgroup>}
           </select>
-          <button className="secondary" onClick={() => add(key)}>{t('Add step')}</button>
+          <button className="secondary" onClick={() => add(key)}>{t('Add step to {phase}', { phase: t(label) })}</button>
           {(adding[key] || '').startsWith('snippet:') && <button className="link danger" onClick={() => { deleteSnippet(Number(adding[key].slice(8))); setAdding({ ...adding, [key]: 'msi' }) }}>{t('Delete snippet')}</button>}
         </div>
       </section>

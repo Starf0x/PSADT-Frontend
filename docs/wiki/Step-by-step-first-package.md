@@ -75,7 +75,7 @@ This page walks you through making one complete package, from an empty screen to
 1. **Welcome dialog / close apps**: asks the user to close 7-Zip (the processes from step 6) and lets them postpone the install 3 times. You can leave the settings as they are.
 2. **Progress message**: shows "installation in progress". Leave it.
 
-**Step 13.** Go to the **Main** phase. In the list at the bottom of that phase choose **Run MSI** and click **Add step**.
+**Step 13.** Go to the **Main** phase. In the list at the bottom of the Main block choose **Run MSI** and click **Add step to Main**.
 
 **Step 14.** Fill in the new *Run MSI* step:
 
@@ -94,7 +94,7 @@ This page walks you through making one complete package, from an empty screen to
 
 **Step 16.** Click the **Uninstall** tab. **Pre** already has a welcome dialog (with a 60-second countdown, no postponing) and a progress message.
 
-**Step 17.** In **Main** choose **Run MSI** and click **Add step**.
+**Step 17.** At the bottom of the **Main** block choose **Run MSI** and click **Add step to Main**.
 
 **Step 18.** Fill it in:
 
