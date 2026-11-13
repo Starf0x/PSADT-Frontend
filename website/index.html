@@ -220,7 +220,7 @@ footer { padding: 50px 0 40px; color: var(--muted); font-size: .9rem; text-align
 <section id="faq" class="faq"><div class="wrap">
   <h2>Questions</h2>
   <details><summary>Do I need a Windows machine to build packages?</summary><p>No. PSADT Frontend runs on Linux and builds both the ZIP and the .intunewin itself. You only need Windows to test the package, and of course on the PCs you deploy to.</p></details>
-  <details><summary>Is it really free?</summary><p>Yes. It's open source on GitHub. There's no account, no cloud and no licence key. It only sends an anonymous daily "I'm running" check-in (version and a random id), which you can switch off with <code>PSADT_USAGE_OPTOUT=1</code>.</p></details>
+  <details><summary>Is it really free?</summary><p>Yes. It's open source on GitHub. There's no account, no cloud and no licence key. </p></details>
   <details><summary>Which PSADT version does it use?</summary><p>The official PSAppDeployToolkit 4.1.8 template (v4). The generated script follows that template exactly.</p></details>
   <details><summary>Can I still write my own PowerShell?</summary><p>Of course. The Custom PowerShell step inserts your code as is, and the syntax check catches typos before you download.</p></details>
   <details><summary>Does it work behind a reverse proxy?</summary><p>Yes: Nginx Proxy Manager, Traefik, Caddy, Zoraxy or Cloudflare. Uploads are sent in 5 MB pieces, so proxy size limits don't get in the way.</p></details>
