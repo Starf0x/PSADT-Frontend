@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>PSADT-Frontend-Website</Name>
+  <Repository>ghcr.io/starf0x/psadt-frontend-website:latest</Repository>
+  <Registry>https://github.com/Starf0x/PSADT-Frontend/pkgs/container/psadt-frontend-website</Registry>
+  <Network>bridge</Network>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/Starf0x/PSADT-Frontend/issues</Support>
+  <Project>https://github.com/Starf0x/PSADT-Frontend</Project>
+  <Overview>Promotional website for PSADT Frontend, the self-hosted web app that builds PSAppDeployToolkit v4 packages and Intune .intunewin files in your browser. A static page served by nginx; no data, no settings.</Overview>
+  <Category>Productivity: Tools:Utilities</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/unraid/psadt-frontend-website.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/Starf0x/PSADT-Frontend/main/assets/icon.png</Icon>
+  <ReadOnly>true</ReadOnly>
+  <Config Name="Web port" Target="8080" Default="8080" Mode="tcp" Description="Port for the website." Type="Port" Display="always" Required="true" Mask="false">8080</Config>
+</Container>
