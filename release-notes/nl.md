@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.3.33
+- Pre, Main en Post zijn nu elk een eigen blok, met de knop om een stap toe te voegen in het blok waar hij bij hoort ("Stap toevoegen aan Main").
+
 ## 0.3.22
 - Grote bestanden worden nu in stukken van 5 MB geüpload. Uploads via een reverse proxy of tunnel met een groottelimiet (zoals Zoraxy of Cloudflare) blijven niet meer hangen. Een stuk dat mislukt, wordt vanzelf opnieuw geprobeerd.
 

@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.3.33
+- Pre, Main and Post are now each a block of their own, with the "Add step" button inside the block it adds to ("Add step to Main").
+
 ## 0.3.22
 - Large files now upload in 5 MB pieces. Uploads through a reverse proxy or tunnel with a size limit (such as Zoraxy or Cloudflare) no longer get stuck. A piece that fails is retried automatically.
 

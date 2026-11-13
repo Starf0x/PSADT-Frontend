@@ -153,12 +153,12 @@ function PhaseEditor({ phases, files, onUpload, onChange }) {
             onMove={d => { const a = [...steps]; [a[i], a[i + d]] = [a[i + d], a[i]]; set(key, a) }}
             onSnippet={() => saveSnippet(s)} />
         ))}
-        <div className="row">
+        <div className="row phase-add">
           <select value={adding[key] || 'msi'} onChange={e => setAdding({ ...adding, [key]: e.target.value })}>
             <optgroup label={t('Steps')}>{Object.entries(STEP_TYPES).map(([k, d]) => <option key={k} value={k}>{t(d.label)}</option>)}</optgroup>
             {snippets.length > 0 && <optgroup label="Snippets">{snippets.map(x => <option key={x.id} value={`snippet:${x.id}`}>★ {x.name}</option>)}</optgroup>}
           </select>
-          <button className="secondary" onClick={() => add(key)}>{t('Add step')}</button>
+          <button className="secondary" onClick={() => add(key)}>{t('Add step to {phase}', { phase: t(label) })}</button>
           {(adding[key] || '').startsWith('snippet:') && <button className="link danger" onClick={() => { deleteSnippet(Number(adding[key].slice(8))); setAdding({ ...adding, [key]: 'msi' }) }}>{t('Delete snippet')}</button>}
         </div>
       </section>
