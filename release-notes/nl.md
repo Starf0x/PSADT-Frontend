@@ -3,6 +3,7 @@
 ## 0.3.33
 - Pre, Main en Post zijn nu elk een eigen blok, met de knop om een stap toe te voegen in het blok waar hij bij hoort ("Stap toevoegen aan Main").
 - Als je een stap met ↑ of ↓ verplaatst, schuift de pagina mee. De stap blijft onder je muis staan en licht even op, zodat je meteen verder kunt klikken.
+- Per ongeluk een stap verwijderd met ✕? Tien seconden lang zet de knop "Ongedaan maken" hem terug op dezelfde plek.
 
 ## 0.3.22
 - Grote bestanden worden nu in stukken van 5 MB geüpload. Uploads via een reverse proxy of tunnel met een groottelimiet (zoals Zoraxy of Cloudflare) blijven niet meer hangen. Een stuk dat mislukt, wordt vanzelf opnieuw geprobeerd.

@@ -120,6 +120,10 @@ function StepCard({ id, step, index, count, files, onUpload, onChange, onMove, o
 
 function PhaseEditor({ phases, files, onUpload, onChange }) {
   const [adding, setAdding] = useState({})
+  const [removed, setRemoved] = useState(null) // last removed step, can be put back for 10 seconds
+  useEffect(() => { if (!removed) return; const id = setTimeout(() => setRemoved(null), 10000); return () => clearTimeout(id) }, [removed])
+  function remove(key, steps, i) { setRemoved({ key, i, step: steps[i] }); set(key, steps.filter((_, j) => j !== i)) }
+  function undo() { const a = [...phases[removed.key]]; a.splice(Math.min(removed.i, a.length), 0, removed.step); set(removed.key, a); setRemoved(null) }
   const [snippets, setSnippets] = useState([])
   const loadSnippets = () => api('/api/snippets').then(setSnippets).catch(() => {})
   useEffect(() => { loadSnippets() }, [])
@@ -161,10 +165,12 @@ function PhaseEditor({ phases, files, onUpload, onChange }) {
         {steps.map((s, i) => (
           <StepCard key={i} id={`${key}-${i}`} step={s} index={i} count={steps.length} files={files} onUpload={onUpload}
             onChange={ns => set(key, steps.map((x, j) => j === i ? ns : x))}
-            onRemove={() => set(key, steps.filter((_, j) => j !== i))}
+            onRemove={() => remove(key, steps, i)}
             onMove={(d, e) => move(key, steps, i, d, e)}
             onSnippet={() => saveSnippet(s)} />
         ))}
+        {removed?.key === key && <div className="undo">{t('Step removed: {name}', { name: t(STEP_TYPES[removed.step.type].label) })}
+          <button className="secondary" onClick={undo}>{t('Undo')}</button></div>}
         <div className="row phase-add">
           <select value={adding[key] || 'msi'} onChange={e => setAdding({ ...adding, [key]: e.target.value })}>
             <optgroup label={t('Steps')}>{Object.entries(STEP_TYPES).map(([k, d]) => <option key={k} value={k}>{t(d.label)}</option>)}</optgroup>
