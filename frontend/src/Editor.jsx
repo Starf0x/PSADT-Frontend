@@ -95,16 +95,16 @@ function Field({ name, label, type, value, onChange, files, wide, accept, onUplo
   return <label className={wide ? 'wide' : undefined}>{t(label)}{input}</label>
 }
 
-function StepCard({ step, index, count, files, onUpload, onChange, onMove, onRemove, onSnippet }) {
+function StepCard({ id, step, index, count, files, onUpload, onChange, onMove, onRemove, onSnippet }) {
   const def = STEP_TYPES[step.type]
   return (
-    <div className="step">
+    <div className="step" data-step={id}>
       <div className="step-head">
         <strong>{index + 1}. {t(def.label)}</strong>
         <span>
           <button className="icon" onClick={onSnippet} title={t('Save as snippet')}>☆</button>
-          <button className="icon" disabled={index === 0} onClick={() => onMove(-1)} title={t('Move up')}>↑</button>
-          <button className="icon" disabled={index === count - 1} onClick={() => onMove(1)} title={t('Move down')}>↓</button>
+          <button className="icon" disabled={index === 0} onClick={e => onMove(-1, e)} title={t('Move up')}>↑</button>
+          <button className="icon" disabled={index === count - 1} onClick={e => onMove(1, e)} title={t('Move down')}>↓</button>
           <button className="icon danger" onClick={onRemove} title={t('Delete')}>✕</button>
         </span>
       </div>
@@ -140,6 +140,18 @@ function PhaseEditor({ phases, files, onUpload, onChange }) {
       : { type: v, comment: '', ...STEP_TYPES[v].defaults }
     set(key, [...phases[key], step])
   }
+  // After ↑/↓ the page scrolls along, so the moved step (and its arrow) stays under the mouse.
+  function move(key, steps, i, d, e) {
+    const before = e.currentTarget.getBoundingClientRect().top
+    const a = [...steps]; [a[i], a[i + d]] = [a[i + d], a[i]]; set(key, a)
+    requestAnimationFrame(() => {
+      const card = document.querySelector(`[data-step="${key}-${i + d}"]`)
+      const arrow = card?.querySelectorAll('.step-head button.icon')[d < 0 ? 1 : 2]
+      if (!arrow) return
+      window.scrollBy(0, arrow.getBoundingClientRect().top - before)
+      card.classList.remove('moved'); void card.offsetWidth; card.classList.add('moved')
+    })
+  }
   return PHASES.map(([key, label]) => {
     const steps = phases[key]
     return (
@@ -147,10 +159,10 @@ function PhaseEditor({ phases, files, onUpload, onChange }) {
         <h3>{t(label)}</h3>
         {steps.length === 0 && <p className="muted">{t('No steps.')}</p>}
         {steps.map((s, i) => (
-          <StepCard key={i} step={s} index={i} count={steps.length} files={files} onUpload={onUpload}
+          <StepCard key={i} id={`${key}-${i}`} step={s} index={i} count={steps.length} files={files} onUpload={onUpload}
             onChange={ns => set(key, steps.map((x, j) => j === i ? ns : x))}
             onRemove={() => set(key, steps.filter((_, j) => j !== i))}
-            onMove={d => { const a = [...steps]; [a[i], a[i + d]] = [a[i + d], a[i]]; set(key, a) }}
+            onMove={(d, e) => move(key, steps, i, d, e)}
             onSnippet={() => saveSnippet(s)} />
         ))}
         <div className="row phase-add">

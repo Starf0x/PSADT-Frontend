@@ -8,7 +8,7 @@ The **Install**, **Uninstall** and **Repair** tabs each have three phases:
 - **Main**: the actual install or uninstall.
 - **Post**: clean-up afterwards, such as removing a desktop shortcut or setting a registry value.
 
-Each phase is a block of its own. Pick a step type at the bottom of that block and click **Add step to Pre**, **Add step to Main** or **Add step to Post**. Every step can be moved up or down, removed, given a comment (which appears in the script), and saved as a **snippet** so you can reuse it in other packages. Snippets appear in the same list under *Snippets*.
+Each phase is a block of its own. Pick a step type at the bottom of that block and click **Add step to Pre**, **Add step to Main** or **Add step to Post**. Every step can be moved up or down with ↑ and ↓ (the page scrolls along, so the step stays under your mouse), removed, given a comment (which appears in the script), and saved as a **snippet** so you can reuse it in other packages. Snippets appear in the same list under *Snippets*.
 
 ## Step types
 
