@@ -74,6 +74,9 @@ button:disabled, a.button.disabled { opacity: .45; cursor: not-allowed; pointer-
 button.secondary, a.button.secondary { background: var(--card); color: var(--accent); border: 1px solid var(--line); }
 button.link { background: none; color: var(--accent); padding: 0; font-weight: 500; box-shadow: none; }
 button.icon { background: none; color: var(--muted); padding: .25rem .45rem; font-weight: 400; box-shadow: none; }
+.step-head button.icon { font-size: 1.3rem; font-weight: 800; line-height: 1; min-width: 2.2rem; min-height: 2.2rem; padding: .3rem .5rem; color: var(--fg); border: 1px solid var(--line); border-radius: 8px; margin-left: .3rem; }
+.step-head button.icon.danger { color: var(--err); }
+.step-head button.icon:disabled { opacity: .3; }
 button.icon:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent); box-shadow: none; }
 label.check { display: flex; align-items: center; gap: .5rem; color: var(--fg); }
 label.check input { width: 16px; height: 16px; accent-color: var(--accent); }
