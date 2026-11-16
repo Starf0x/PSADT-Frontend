@@ -4,6 +4,8 @@ export const LANGS = [['en', 'English'], ['nl', 'Nederlands'], ['de', 'Deutsch']
 // [English, Dutch, German]
 const ROWS = [
   ['Templates', 'Templates', 'Vorlagen'],
+  ['Arguments for {file} filled in from an earlier package', 'Argumenten voor {file} ingevuld uit een eerder pakket', 'Argumente für {file} aus einem früheren Paket übernommen'],
+  ['{file} is recognised as {kind}: silent arguments filled in', '{file} is herkend als {kind}: stille argumenten ingevuld', '{file} wurde als {kind} erkannt: stille Argumente eingetragen'],
   ['Enter a new version for the package', 'Vul een nieuwe versie in voor het pakket', 'Gib eine neue Version für das Paket ein'],
   ['This version already exists. Choose a new version.', 'Deze versie bestaat al. Kies een nieuwe versie.', 'Diese Version gibt es schon. Wähle eine neue Version.'],
   ['New version (template: {v})', 'Nieuwe versie (template: {v})', 'Neue Version (Vorlage: {v})'],

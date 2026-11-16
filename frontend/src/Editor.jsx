@@ -424,6 +424,9 @@ function Preview({ id }) {
 // All MSI file names used by the MSI steps of one action (install, uninstall or repair).
 const msiFiles = phases => PHASES.flatMap(([k]) => phases[k] || []).filter(x => x.type === 'msi' && /\.msi$/i.test(x.file || '')).map(x => x.file)
 
+// Uploaded .exe files used by the Run EXE steps of one action.
+const exeFiles = phases => PHASES.flatMap(([k]) => phases[k] || []).filter(x => x.type === 'exe' && /\.exe$/i.test(x.file || '') && !x.file.startsWith('windows:')).map(x => x.file)
+
 // A new MSI was chosen: put its ProductCode everywhere the old one was used (uninstall by ProductCode,
 // MSI detection rules) and take over its version, so a package made from a template fits the new MSI.
 function applyMsi(data, info) {
@@ -444,6 +447,8 @@ export default function Editor({ id, readOnly, onClose }) {
   const [note, setNote] = useState('') // what was read from a newly chosen MSI; stays until the editor closes
 
   const loadFiles = () => api(`/api/packages/${id}/files`).then(setFiles).catch(() => {})
+  const pkgRef = useRef(null)
+  pkgRef.current = pkg?.data
   const uploadFile = async (f, onProgress) => {
     const r = await upload(`/api/packages/${id}/files`, f, onProgress)
     await loadFiles(); return r
@@ -499,8 +504,11 @@ export default function Editor({ id, readOnly, onClose }) {
   // Changes in an Install/Uninstall/Repair tab; picking another MSI reads its ProductCode right away.
   async function updatePhases(action, phases) {
     const before = msiFiles(pkg.data[action])
+    const exesBefore = exeFiles(pkg.data[action])
     let data = { ...pkg.data, [action]: phases }
     update(data)
+    const exe = exeFiles(phases).find(f => !exesBefore.includes(f))
+    if (exe) fillExeArgs(action, exe)
     const picked = msiFiles(phases).find(f => !before.includes(f))
     if (!picked) return
     try {
@@ -511,6 +519,36 @@ export default function Editor({ id, readOnly, onClose }) {
       setNote(t('ProductCode {code} and version {v} read from {file}', { code: info.ProductCode, v: info.ProductVersion || '?', file: picked }))
     } catch (e) { setMsg({ ok: false, text: `${picked}: ${e.message}` }) }
   }
+
+  // A setup .exe was chosen: fill in its arguments when the step has none yet (used before, or silent switches).
+  async function fillExeArgs(action, file) {
+    try {
+      const r = await api(`/api/packages/${id}/files/${encodeURIComponent(file)}/exe`)
+      if (!r.args) return
+      const cur = latest.current ?? pkgRef.current
+      const phases = Object.fromEntries(PHASES.map(([k]) => [k, (cur[action][k] || []).map(x =>
+        x.type === 'exe' && x.file === file && !(x.args || '').trim() ? { ...x, args: r.args } : x)]))
+      update({ ...cur, [action]: phases })
+      setNote(r.source === 'earlier'
+        ? t('Arguments for {file} filled in from an earlier package', { file })
+        : t('{file} is recognised as {kind}: silent arguments filled in', { file, kind: r.installer }))
+    } catch { /* not an exe we can read: leave the arguments alone */ }
+  }
+
+  // A Run EXE step whose file is uploaded but has no arguments yet (e.g. from a template, file uploaded
+  // later): fill them in once per file.
+  const tried = useRef(new Set())
+  useEffect(() => {
+    if (readOnly || !pkg) return
+    for (const action of ['install', 'uninstall', 'repair']) {
+      for (const [k] of PHASES) for (const x of pkg.data[action][k] || []) {
+        const key = `${action}:${x.file}`
+        if (x.type === 'exe' && !(x.args || '').trim() && files.some(f => f.name === x.file) && !tried.current.has(key)) {
+          tried.current.add(key); fillExeArgs(action, x.file)
+        }
+      }
+    }
+  }, [files, pkg])
 
   if (!pkg) return null
   const d = pkg.data
