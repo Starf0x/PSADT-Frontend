@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.3.77
+- **Check now** on the System page now shows straight away what the newest version brings. Before, it kept showing the notes of the installed version for up to an hour.
+
 ## 0.3.66
 - Starting from a template no longer asks for a name. Leave the name empty and the package gets the template's application name. **Use** in the template list makes the new package and opens it straight away.
 

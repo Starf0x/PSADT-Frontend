@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.3.77
+- **Jetzt prüfen** auf der Seite System zeigt jetzt sofort, was die neueste Version bringt. Vorher wurden bis zu eine Stunde lang die Notizen der installierten Version angezeigt.
+
 ## 0.3.66
 - Beim Start aus einer Vorlage wird kein Name mehr abgefragt. Lass den Namen leer, dann bekommt das Paket den Anwendungsnamen aus der Vorlage. **Verwenden** in der Vorlagenliste erstellt das neue Paket und öffnet es sofort.
 

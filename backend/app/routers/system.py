@@ -144,11 +144,11 @@ def parse_notes(text: str) -> list[dict]:
     return out
 
 
-def _notes_text(lang: str) -> str:
+def _notes_text(lang: str, fresh: bool = False) -> str:
     """Notes from GitHub (they know about versions newer than this one), cached for an hour;
-    the copy shipped with this version when GitHub cannot be reached."""
+    the copy shipped with this version when GitHub cannot be reached. fresh=True asks GitHub now."""
     hit = _notes_cache.get(lang)
-    if hit and time.time() - hit[0] < 3600:
+    if hit and not fresh and time.time() - hit[0] < 3600:
         return hit[1]
     try:
         req = urllib.request.Request(NOTES_URL.format(lang=lang), headers={"User-Agent": "psadt-frontend"})
@@ -162,12 +162,12 @@ def _notes_text(lang: str) -> str:
 
 
 @router.get("/release-notes")
-def release_notes(lang: str = "en"):
+def release_notes(lang: str = "en", refresh: bool = False):
     """What changed between the installed version and the newest release, in plain language.
-    When nothing is newer, the notes of the installed version."""
+    When nothing is newer, the notes of the installed version. refresh=True (Check now) skips the caches."""
     lang = lang if lang in ("en", "nl", "de") else "en"
-    notes = parse_notes(_notes_text(lang)) or (parse_notes(_notes_text("en")) if lang != "en" else [])
-    newest, _ = newest_release()
+    notes = parse_notes(_notes_text(lang, refresh)) or (parse_notes(_notes_text("en", refresh)) if lang != "en" else [])
+    newest, _ = newest_release(fresh=refresh)
     cur = _version_tuple(current_version())
     top = _version_tuple(newest) if newest else cur
     newer = [n for n in notes if cur < _version_tuple(n["version"]) <= top]

@@ -46,7 +46,8 @@ def test_retention_setting_and_purge(authed, tmp_path):
 
 def test_release_notes(authed, monkeypatch):
     text = "# x\n\n## 0.9.0\n- Not released yet\n\n## 0.5.0\n- Big thing\n- Small thing\n\n## 0.1.0\n- Old\n"
-    monkeypatch.setattr(system, "_notes_text", lambda lang: text)
+    seen = []
+    monkeypatch.setattr(system, "_notes_text", lambda lang, fresh=False: seen.append(fresh) or text)
     monkeypatch.setattr(system, "current_version", lambda: "0.1.0")
     monkeypatch.setattr(system, "newest_release", lambda fresh=False: ("v0.5.0", None))
     r = authed.get("/api/system/release-notes?lang=nl").json()
@@ -54,6 +55,9 @@ def test_release_notes(authed, monkeypatch):
     monkeypatch.setattr(system, "newest_release", lambda fresh=False: ("v0.1.0", None))
     r = authed.get("/api/system/release-notes").json()
     assert r["newer"] is False and r["notes"][0]["items"] == ["Old"]
+    # Check now passes refresh=1, which must skip the notes cache.
+    authed.get("/api/system/release-notes?refresh=1")
+    assert seen[-1] is True and seen[0] is False
 
 
 def test_shipped_release_notes_cover_current_version():

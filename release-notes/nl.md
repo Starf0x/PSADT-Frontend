@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.3.77
+- **Nu controleren** op de pagina Systeem laat nu meteen zien wat de nieuwste versie brengt. Eerst bleef hij tot een uur lang de notities van de geïnstalleerde versie tonen.
+
 ## 0.3.66
 - Beginnen vanuit een template vraagt niet meer om een naam. Laat de naam leeg en het pakket krijgt de applicatienaam uit de template. **Gebruiken** in de templatelijst maakt het nieuwe pakket en opent het meteen.
 

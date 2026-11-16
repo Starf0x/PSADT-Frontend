@@ -28,10 +28,11 @@ function Retention() {
   )
 }
 
-function ReleaseNotes() {
+// checked counts the Check now clicks; each one fetches the notes again, past the server caches.
+function ReleaseNotes({ checked }) {
   const [res, setRes] = useState(null)
   const lang = getLang()
-  useEffect(() => { api(`/api/system/release-notes?lang=${lang}`).then(setRes).catch(() => setRes(null)) }, [lang])
+  useEffect(() => { api(`/api/system/release-notes?lang=${lang}${checked ? '&refresh=1' : ''}`).then(setRes).catch(() => setRes(null)) }, [lang, checked])
   if (!res || res.notes.length === 0) return null
   return (
     <div className="panel">
@@ -74,7 +75,8 @@ export default function System() {
   const [asked, setAsked] = useState(false)
 
   const [checking, setChecking] = useState(false)
-  const checkNow = () => { setChecking(true); api('/api/system/update?refresh=1').then(i => { setInfo(i); setError('') }).catch(e => setError(e.message)).finally(() => setChecking(false)) }
+  const [checked, setChecked] = useState(0)
+  const checkNow = () => { setChecking(true); api('/api/system/update?refresh=1').then(i => { setInfo(i); setError(''); setChecked(c => c + 1) }).catch(e => setError(e.message)).finally(() => setChecking(false)) }
   const load = () => api('/api/system/update').then(i => { setInfo(i); setError('') }).catch(e => setError(e.message))
   useEffect(() => { load() }, [])
 
@@ -125,7 +127,7 @@ export default function System() {
             : <p>{t('A newer version is available.')} {t('Update this install by hand (git pull, then reinstall).')}</p>
       ) : info.newest && <p className="ok">{t('You are on the newest version.')}</p>}
       {p?.done && !running && !p.ok && <p className="error">{t('Last update failed')}: {p.said}</p>}
-      <ReleaseNotes />
+      <ReleaseNotes checked={checked} />
       {error && <p className="error">{error}</p>}
       <LogPath />
       <Retention />
