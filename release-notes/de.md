@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.4.11
+- Bekommt ein Schritt „Run EXE“ eine setup.exe und sind die Argumente noch leer, werden sie für dich ausgefüllt. Wurde der Dateiname schon in einem anderen Paket oder einer Vorlage verwendet, werden dessen Argumente übernommen. Sonst schaut die App in die .exe, erkennt Inno Setup, NSIS, InstallShield, WiX Burn, Advanced Installer und Squirrel und trägt deren stille Installationsoptionen ein. Das funktioniert auch, wenn du die Datei später in einem Paket aus einer Vorlage hochlädst. Oben im Editor steht, was eingetragen wurde; du kannst es jederzeit ändern.
+
 ## 0.4.0
 - Beim Start aus einer Vorlage wird jetzt eine neue Version verlangt. Dieselbe Anwendung kann nicht zweimal dieselbe Version bekommen: Ist es die Version der Vorlage oder gibt es schon ein Paket mit dieser Version, meldet die App das und erstellt das Paket nicht. **Verwenden** in der Vorlagenliste wählt die Vorlage und setzt den Cursor ins Versionsfeld.
 

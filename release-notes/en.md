@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.4.11
+- When a Run EXE step gets a setup .exe and its arguments are still empty, they are filled in for you. If that file name was used before in another package or template, its arguments are taken over. Otherwise the app looks inside the .exe and recognises Inno Setup, NSIS, InstallShield, WiX Burn, Advanced Installer and Squirrel installers, and fills in their silent install switches. This also works when you upload the file later in a package made from a template. A note at the top of the editor says what was filled in; you can always change it.
+
 ## 0.4.0
 - Starting from a template now asks for a new version. The same application can't get the same version twice: if the version is the template's own or already exists as a package, the app says so and doesn't create the package. **Use** in the template list picks the template and puts the cursor in the version field.
 

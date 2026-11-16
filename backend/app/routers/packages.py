@@ -19,6 +19,7 @@ from ..db import Export, Package, Template, User, get_db, get_setting
 from ..psadt.detection import generate_detection
 from ..psadt.export import build_intunewin, build_zip, to_windows
 from ..psadt.generator import generate
+from ..psadt.installer import detect as detect_installer
 from ..psadt.msi import read_properties
 from ..psadt.schema import FILE_RE, PackageData, default_package
 from ..psadt.validate import validate_package
@@ -313,6 +314,28 @@ async def upload_chunk(pid: int, name: str, offset: int, total: int, request: Re
     if done:
         filestore.add(pid, name, tmp)
     return {"name": name, "size": size, "done": done}
+
+
+@router.get("/{pid}/files/{name}/exe")
+def exe_arguments(pid: int, name: str, db: Session = Depends(get_db)):
+    """Arguments to fill in when this setup .exe is chosen: the ones used for the same file name before
+    (other packages or templates), otherwise the silent switches of the installer kind found in the file."""
+    _get(db, pid)
+    if not FILE_RE.match(name) or not name.lower().endswith(".exe"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid file name")
+    rows = [(p.updated_at, p.data) for p in db.scalars(select(Package).where(Package.id != pid))]
+    rows += [(t.updated_at, t.data) for t in db.scalars(select(Template))]
+    for _, data in sorted(rows, key=lambda r: r[0], reverse=True):
+        for action in ("install", "repair", "uninstall"):
+            for phase in ("pre", "main", "post"):
+                for step in data.get(action, {}).get(phase, []):
+                    if step.get("type") == "exe" and (step.get("file") or "").lower() == name.lower() and step.get("args"):
+                        return {"args": step["args"], "source": "earlier", "installer": ""}
+    path = filestore.path(pid, name)
+    found = detect_installer(path) if path else None
+    if found:
+        return {**found, "source": "detected"}
+    return {"args": "", "source": "", "installer": ""}
 
 
 @router.get("/{pid}/files/{name}/msi")

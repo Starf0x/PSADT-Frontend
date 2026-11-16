@@ -75,3 +75,21 @@ def test_old_files_folder_is_migrated(authed, tmp_path):
     (old / "app.msi").write_bytes(b"abc")
     assert authed.get(f"/api/packages/{pid}/files").json() == [{"name": "app.msi", "size": 3}]
     assert not old.exists() and filestore.path(pid, "app.msi").name != "app.msi"
+
+
+def test_exe_arguments(authed):
+    pid = authed.post("/api/packages", json={"name": "Inno"}).json()["id"]
+    up = lambda p, n, body: authed.put(f"/api/packages/{p}/files/{n}/chunk?total={len(body)}&offset=0", content=body)  # noqa: E731
+    up(pid, "setup.exe", b"MZ....Inno Setup Setup Data (6.2.0)....")
+    up(pid, "nsis.exe", b"MZ..NullsoftInst..")
+    up(pid, "plain.exe", b"MZ nothing")
+    r = authed.get(f"/api/packages/{pid}/files/setup.exe/exe").json()
+    assert r["installer"] == "Inno Setup" and "/VERYSILENT" in r["args"] and r["source"] == "detected"
+    assert authed.get(f"/api/packages/{pid}/files/nsis.exe/exe").json()["args"] == "/S"
+    assert authed.get(f"/api/packages/{pid}/files/plain.exe/exe").json()["args"] == ""
+    # Arguments used for the same file name in another package win over detection.
+    other = authed.post("/api/packages", json={"name": "Other"}).json()
+    other["data"]["install"]["main"] = [{"type": "exe", "file": "Setup.EXE", "args": "/custom", "ignore_exit_codes": ""}]
+    authed.put(f"/api/packages/{other['id']}", json=other["data"])
+    r = authed.get(f"/api/packages/{pid}/files/setup.exe/exe").json()
+    assert r == {"args": "/custom", "source": "earlier", "installer": ""}
