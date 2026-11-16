@@ -1,5 +1,9 @@
 # Was ist neu
 
+## 0.3.99
+- Uploads fragen nicht mehr, ob eine Datei ersetzt werden soll. Auf dem Server bekommt jede hochgeladene Datei einen zufälligen Namen, und die App verknüpft ihn mit dem echten Namen. Du siehst nur den echten Namen, und der Download (ZIP oder .intunewin) legt jede Datei wieder mit ihrem echten Namen in Files. So kann kein Upload eine andere Datei überschreiben. Lädst du eine Datei mit einem Namen hoch, der schon im Paket ist, verwendet dieser Name ab jetzt die neue Datei.
+- Früher hochgeladene Dateien werden automatisch übernommen, sobald das Paket geöffnet wird.
+
 ## 0.3.88
 - Vorlagen: Klicke in der Liste auf den Namen einer Vorlage, um zu sehen, was sie tut: für Installation, Deinstallation und Reparatur die Schritte mit Datei und vollständiger Befehlszeile (Install- und Uninstall-String) sowie die Erkennungsregeln.
 - Wählst du in einem Schritt „Run MSI“ eine andere MSI-Datei, wird ihr ProductCode sofort ausgelesen. Die neue GUID ersetzt die alte in Deinstallationsschritten mit ProductCode und in den MSI-Erkennungsregeln, und die App-Version wird aus der MSI übernommen. Praktisch, wenn du mit einer neueren MSI aus einer Vorlage startest.

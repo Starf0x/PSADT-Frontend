@@ -36,10 +36,6 @@ function ArgsInput({ value, onChange, files }) {
   )
 }
 
-// A file with this name is already in the package: replace it, or keep both (the new one gets another name)?
-const keepBoth = (files, name) => files.some(f => f.name === name)
-  && !window.confirm(t('"{name}" is already in this package. Replace it? Cancel keeps both; the new file gets a number in its name.', { name }))
-
 // Choose an uploaded file, or browse the PC: the chosen file is uploaded and selected right away.
 function FilePicker({ value, onChange, files, accept, onUpload }) {
   const pick = useRef(null)
@@ -241,8 +237,7 @@ function Files({ id, files, reload }) {
     for (const [i, f] of picked.entries()) {
       set(i, { state: 'up' })
       try {
-        const r = await upload(`/api/packages/${id}/files`, f, p => set(i, { progress: p }), keepBoth(files, f.name))
-        if (r?.name && r.name !== f.name) set(i, { name: `${f.name} → ${r.name}` })
+        await upload(`/api/packages/${id}/files`, f, p => set(i, { progress: p }))
         set(i, { state: 'done', progress: 1 })
       } catch (err) { set(i, { state: 'error' }); setError(`${f.name}: ${err.message}`) }
     }
@@ -450,7 +445,7 @@ export default function Editor({ id, readOnly, onClose }) {
 
   const loadFiles = () => api(`/api/packages/${id}/files`).then(setFiles).catch(() => {})
   const uploadFile = async (f, onProgress) => {
-    const r = await upload(`/api/packages/${id}/files`, f, onProgress, keepBoth(files, f.name))
+    const r = await upload(`/api/packages/${id}/files`, f, onProgress)
     await loadFiles(); return r
   }
   useEffect(() => { api(`/api/packages/${id}`).then(setPkg); loadFiles() }, [id])

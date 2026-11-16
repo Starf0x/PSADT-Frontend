@@ -1,5 +1,9 @@
 # Wat is er nieuw
 
+## 0.3.99
+- Uploads vragen niet meer of een bestand vervangen moet worden. Op de server krijgt elk geüpload bestand een willekeurige naam, en de app koppelt die aan de echte naam. Je ziet alleen de echte naam, en de download (ZIP of .intunewin) zet elk bestand weer met de echte naam in Files. Zo kan geen enkele upload een ander bestand overschrijven. Upload je een bestand met een naam die al in het pakket staat, dan gebruikt die naam voortaan het nieuwe bestand.
+- Eerder geüploade bestanden worden automatisch overgezet zodra het pakket wordt geopend.
+
 ## 0.3.88
 - Templates: klik op de naam van een template in de lijst om te zien wat hij doet: per Installatie, Deïnstallatie en Reparatie de stappen met hun bestand en volledige opdrachtregel (de install- en uninstall-string), en de detectieregels.
 - Kies je in een stap Run MSI een ander MSI-bestand, dan wordt de ProductCode meteen uitgelezen. De nieuwe GUID komt in de plaats van de oude in deïnstallatiestappen met een ProductCode en in de MSI-detectieregels, en de versie van de app wordt uit de MSI overgenomen. Handig als je vanuit een template begint met een nieuwere MSI.
