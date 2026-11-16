@@ -34,7 +34,7 @@ CHECK_PS1 = Path(__file__).resolve().parents[1] / "psadt" / "check.ps1"
 
 
 class NewPackage(BaseModel):
-    name: str = Field(min_length=1, max_length=100)
+    name: str = Field(default="", max_length=100)  # may be empty with a template: then the template's app name
     template_id: int | None = None  # start from a saved template instead of the empty default
 
 
@@ -62,16 +62,19 @@ def list_packages(db: Session = Depends(get_db)):
 
 @router.post("", status_code=201)
 def create_package(data: NewPackage, db: Session = Depends(get_db), user: User = Depends(current_user)):
+    name = data.name.strip()
     if data.template_id is None:
-        content = default_package(data.name)
+        if not name:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Enter a name for the package")
+        content = default_package(name)
     else:
         tpl = db.get(Template, data.template_id)
         if tpl is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Template not found")
         content = PackageData.model_validate(tpl.data)
-        content.app.name = data.name
+        content.app.name = name or content.app.name or tpl.name
     content.app.author = (user.display_name or user.username)[:100]  # the signed-in user, by full name
-    pkg = Package(name=data.name, data=content.model_dump(), created_by=user.id)
+    pkg = Package(name=content.app.name, data=content.model_dump(), created_by=user.id)
     db.add(pkg)
     db.commit()
     return {"id": pkg.id, "name": pkg.name, "data": pkg.data}

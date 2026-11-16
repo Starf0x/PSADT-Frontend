@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.3.66
+- Starting from a template no longer asks for a name. Leave the name empty and the package gets the template's application name. **Use** in the template list makes the new package and opens it straight away.
+
 ## 0.3.55
 - Templates: in a package, click **Save as template** to keep its app info, steps and detection rules. Under *New package*, pick the template to start a new package from it. Files are not part of a template, so upload them in the new package.
 - The Packages page lists your templates. You can rename or delete them there; packages made from a template stay.

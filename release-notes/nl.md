@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.3.66
+- Beginnen vanuit een template vraagt niet meer om een naam. Laat de naam leeg en het pakket krijgt de applicatienaam uit de template. **Gebruiken** in de templatelijst maakt het nieuwe pakket en opent het meteen.
+
 ## 0.3.55
 - Templates: klik in een pakket op **Opslaan als template** om de app-info, stappen en detectieregels te bewaren. Kies bij *Nieuw pakket* de template om er een nieuw pakket mee te beginnen. Bestanden horen niet bij een template; upload die in het nieuwe pakket.
 - Op de pagina Pakketten staan je templates. Daar kun je ze hernoemen of verwijderen; pakketten die ermee gemaakt zijn blijven bestaan.
