@@ -104,11 +104,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). The wiki 
 ```
 backend/   FastAPI (Python 3.12+), SQLAlchemy + SQLite, argon2
   app/config.py            settings via PSADT_* environment variables
-  app/db.py                models: users, sessions, packages, snippets
+  app/db.py                models: users, sessions, packages, snippets, templates
   app/security.py          passwords, sessions, CSRF, first admin
   app/routers/auth.py      /api/auth/login | logout | me | password
   app/routers/packages.py  /api/packages CRUD, /script, /check, /files, /detection, /export
   app/routers/snippets.py  /api/snippets (reusable steps)
+  app/routers/templates.py /api/templates (saved package configurations to start new packages from)
   app/routers/users.py     /api/users (admins only)
   app/routers/system.py    /api/system/update and /settings (admins only): version check, in-app update, upload retention
   app/retention.py         removes uploads after the chosen retention (hourly, and right after export if chosen)
@@ -166,7 +167,7 @@ PSADT writes its log on the client to `$envWinDir\Logs\Software` by default. On 
 | Role | Can |
 |------|-----|
 | Administrator | everything, including deleting packages, plus managing users (create, role, password, unlock, delete) and updates |
-| Editor | create and change packages, create, change and delete snippets (only administrators delete packages) |
+| Editor | create and change packages, create, change and delete snippets and templates (only administrators delete packages) |
 | Read only | view everything, check scripts and export |
 
 Every user has a **login name** (to sign in) and a **full name** (shown in the app and filled in as script author for new packages). Users change their own full name under their account; admins can change anyone's.

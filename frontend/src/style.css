@@ -200,3 +200,5 @@ code { color: #c9c3ff; }
 .bar.busy > div { background-image: linear-gradient(45deg, #ffffff26 25%, transparent 25%, transparent 50%, #ffffff26 50%, #ffffff26 75%, transparent 75%), var(--grad); background-size: 28px 28px, auto; animation: stripes 1s linear infinite; }
 .bar.failed > div { background: var(--err); }
 @keyframes stripes { to { background-position: 28px 0, 0 0; } }
+td.nowrap { white-space: nowrap; }
+td.nowrap button + button { margin-left: .6rem; }

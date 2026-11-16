@@ -3,6 +3,10 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.3.55
+- Templates: in a package, click **Save as template** to keep its app info, steps and detection rules. Under *New package*, pick the template to start a new package from it. Files are not part of a template, so upload them in the new package.
+- The Packages page lists your templates. You can rename or delete them there; packages made from a template stay.
+
 ## 0.3.44
 - ↑ on the first step of a phase moves it to the end of the phase above (for example from Main to Pre), and ↓ on the last step moves it to the start of the phase below. The arrows are only grey at the very top of Pre and the very bottom of Post.
 - The ☆ ↑ ↓ ✕ buttons on each step are bigger and bolder.
