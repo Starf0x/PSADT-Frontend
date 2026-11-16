@@ -3,6 +3,9 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.4.0
+- Starting from a template now asks for a new version. The same application can't get the same version twice: if the version is the template's own or already exists as a package, the app says so and doesn't create the package. **Use** in the template list picks the template and puts the cursor in the version field.
+
 ## 0.3.99
 - Uploads no longer ask whether to replace a file. On the server every uploaded file is stored under a random name, and the app links it to the real name; you only ever see the real name, and the download (ZIP or .intunewin) puts every file in Files with its real name again. So no upload can overwrite another file. Uploading a file with a name that is already in the package makes that name use the new file.
 - Files you uploaded earlier are moved over automatically the first time the package is opened.

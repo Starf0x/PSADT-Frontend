@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.4.0
+- Beim Start aus einer Vorlage wird jetzt eine neue Version verlangt. Dieselbe Anwendung kann nicht zweimal dieselbe Version bekommen: Ist es die Version der Vorlage oder gibt es schon ein Paket mit dieser Version, meldet die App das und erstellt das Paket nicht. **Verwenden** in der Vorlagenliste wählt die Vorlage und setzt den Cursor ins Versionsfeld.
+
 ## 0.3.99
 - Uploads fragen nicht mehr, ob eine Datei ersetzt werden soll. Auf dem Server bekommt jede hochgeladene Datei einen zufälligen Namen, und die App verknüpft ihn mit dem echten Namen. Du siehst nur den echten Namen, und der Download (ZIP oder .intunewin) legt jede Datei wieder mit ihrem echten Namen in Files. So kann kein Upload eine andere Datei überschreiben. Lädst du eine Datei mit einem Namen hoch, der schon im Paket ist, verwendet dieser Name ab jetzt die neue Datei.
 - Früher hochgeladene Dateien werden automatisch übernommen, sobald das Paket geöffnet wird.

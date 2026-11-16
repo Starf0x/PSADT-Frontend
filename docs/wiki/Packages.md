@@ -22,7 +22,7 @@ Click **New package**, give it a name, and the [editor](App-info) opens. Editors
 
 To reuse a package, open it and click **Save as template** at the top of the editor. A template keeps the app info, all install/uninstall steps and the detection rules. Files are not included.
 
-To start from a template, pick it next to **New package**. You don't have to type a name: leave it empty and the template's application name is used. You can also click **Use** in the template list below the packages; the new package is created and opens straight away. In that list you can also **rename** or **delete** a template.
+To start from a template, pick it next to **New package** and fill in a **new version**. That field is required: the same application can't get the same version twice, so the template's own version or a version that already exists as a package is refused with a message. You don't have to type a name: leave it empty and the template's application name is used. **Use** in the template list below the packages picks the template and puts the cursor in the version field. In that list you can also **rename** or **delete** a template.
 
 Click a template's name to see what it does without opening it: for Install, Uninstall and Repair every step with its file and full command line (the install and uninstall strings, including the arguments of *Run EXE* steps), plus the detection rules.
 

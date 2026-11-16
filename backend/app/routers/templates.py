@@ -32,7 +32,7 @@ def _out(t: Template) -> dict:
     app = t.data.get("app", {})
     steps = sum(len(t.data.get(k, {}).get(p, [])) for k in ("install", "uninstall", "repair") for p in ("pre", "main", "post"))
     return {"id": t.id, "name": t.name, "description": t.description, "app": app.get("name", ""),
-            "vendor": app.get("vendor", ""), "steps": steps, "updated_at": t.updated_at.isoformat()}
+            "vendor": app.get("vendor", ""), "version": app.get("version", ""), "steps": steps, "updated_at": t.updated_at.isoformat()}
 
 
 @router.get("")
