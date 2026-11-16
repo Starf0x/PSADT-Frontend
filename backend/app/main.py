@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import db as dbmod
 from .config import settings
-from .routers import auth, packages, snippets, stats, system, users
+from .routers import auth, packages, snippets, stats, system, templates, users
 
 # VERSION sits next to backend/ in the repo and LXC install, and in /app in the Docker image.
 _here = Path(__file__).resolve()
@@ -76,6 +76,7 @@ async def security_headers(request: Request, call_next):
 app.include_router(auth.router)
 app.include_router(packages.router)
 app.include_router(snippets.router)
+app.include_router(templates.router)
 app.include_router(users.router)
 app.include_router(system.router)
 app.include_router(stats.router)

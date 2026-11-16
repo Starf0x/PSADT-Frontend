@@ -1,5 +1,9 @@
 # Was ist neu
 
+## 0.3.55
+- Vorlagen: Klicke in einem Paket auf **Als Vorlage speichern**, um App-Info, Schritte und Erkennungsregeln zu behalten. Wähle bei *Neues Paket* die Vorlage, um damit ein neues Paket zu beginnen. Dateien gehören nicht zur Vorlage; lade sie im neuen Paket hoch.
+- Auf der Seite Pakete stehen deine Vorlagen. Dort kannst du sie umbenennen oder löschen; damit erstellte Pakete bleiben erhalten.
+
 ## 0.3.44
 - ↑ beim ersten Schritt einer Phase verschiebt ihn ans Ende der Phase darüber (zum Beispiel von Main nach Pre), und ↓ beim letzten Schritt an den Anfang der Phase darunter. Die Pfeile sind nur noch ganz oben in Pre und ganz unten in Post grau.
 - Die Schaltflächen ☆ ↑ ↓ ✕ bei jedem Schritt sind größer und deutlicher.

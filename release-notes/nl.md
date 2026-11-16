@@ -1,5 +1,9 @@
 # Wat is er nieuw
 
+## 0.3.55
+- Templates: klik in een pakket op **Opslaan als template** om de app-info, stappen en detectieregels te bewaren. Kies bij *Nieuw pakket* de template om er een nieuw pakket mee te beginnen. Bestanden horen niet bij een template; upload die in het nieuwe pakket.
+- Op de pagina Pakketten staan je templates. Daar kun je ze hernoemen of verwijderen; pakketten die ermee gemaakt zijn blijven bestaan.
+
 ## 0.3.44
 - ↑ op de eerste stap van een fase zet die stap aan het eind van de fase erboven (bijvoorbeeld van Main naar Pre), en ↓ op de laatste stap zet hem aan het begin van de fase eronder. De pijltjes zijn alleen nog grijs helemaal bovenaan Pre en helemaal onderaan Post.
 - De knoppen ☆ ↑ ↓ ✕ bij elke stap zijn groter en duidelijker.

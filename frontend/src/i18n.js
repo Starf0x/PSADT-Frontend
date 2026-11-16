@@ -3,6 +3,22 @@ export const LANGS = [['en', 'English'], ['nl', 'Nederlands'], ['de', 'Deutsch']
 
 // [English, Dutch, German]
 const ROWS = [
+  ['Templates', 'Templates', 'Vorlagen'],
+  ['Template not found', 'Template niet gevonden', 'Vorlage nicht gefunden'],
+  ['Name for this template:', 'Naam voor deze template:', 'Name für diese Vorlage:'],
+  ['Description (optional):', 'Omschrijving (optioneel):', 'Beschreibung (optional):'],
+  ['Delete template "{name}"? Packages made from it stay.', 'Template "{name}" verwijderen? Pakketten die ermee gemaakt zijn blijven bestaan.', 'Vorlage "{name}" löschen? Damit erstellte Pakete bleiben erhalten.'],
+  ['No templates yet. Open a package and choose "Save as template".', 'Nog geen templates. Open een pakket en kies "Opslaan als template".', 'Noch keine Vorlagen. Öffne ein Paket und wähle "Als Vorlage speichern".'],
+  ['Description', 'Omschrijving', 'Beschreibung'],
+  ['Application', 'Applicatie', 'Anwendung'],
+  ['Use', 'Gebruiken', 'Verwenden'],
+  ['Rename', 'Hernoemen', 'Umbenennen'],
+  ['Start from', 'Beginnen met', 'Beginnen mit'],
+  ['Empty package', 'Leeg pakket', 'Leeres Paket'],
+  ['Template: {name}', 'Template: {name}', 'Vorlage: {name}'],
+  ['Save as template', 'Opslaan als template', 'Als Vorlage speichern'],
+  ['Saved as template "{name}"', 'Opgeslagen als template "{name}"', 'Als Vorlage "{name}" gespeichert'],
+  ['Save app info, steps and detection to start new packages from. Files are not included.', 'Sla app-info, stappen en detectie op om nieuwe pakketten mee te starten. Bestanden gaan niet mee.', 'Speichert App-Info, Schritte und Erkennung als Startpunkt für neue Pakete. Dateien werden nicht übernommen.'],
   ['(none)', '(geen)', '(keine)'],
   ['Browse…', 'Bladeren…', 'Durchsuchen…'],
   ['The download buttons work once the problems in the check above are fixed.', 'De downloadknoppen werken zodra de problemen in de controle hierboven zijn opgelost.', 'Die Download-Schaltflächen funktionieren, sobald die Probleme in der Prüfung oben behoben sind.'],

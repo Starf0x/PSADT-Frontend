@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..config import settings
-from ..db import Export, Package, User, get_db, get_setting
+from ..db import Export, Package, Template, User, get_db, get_setting
 from ..psadt.detection import generate_detection
 from ..psadt.export import build_intunewin, build_zip, to_windows
 from ..psadt.generator import generate
@@ -35,6 +35,7 @@ CHECK_PS1 = Path(__file__).resolve().parents[1] / "psadt" / "check.ps1"
 
 class NewPackage(BaseModel):
     name: str = Field(min_length=1, max_length=100)
+    template_id: int | None = None  # start from a saved template instead of the empty default
 
 
 def _get(db: Session, pid: int) -> Package:
@@ -61,7 +62,14 @@ def list_packages(db: Session = Depends(get_db)):
 
 @router.post("", status_code=201)
 def create_package(data: NewPackage, db: Session = Depends(get_db), user: User = Depends(current_user)):
-    content = default_package(data.name)
+    if data.template_id is None:
+        content = default_package(data.name)
+    else:
+        tpl = db.get(Template, data.template_id)
+        if tpl is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Template not found")
+        content = PackageData.model_validate(tpl.data)
+        content.app.name = data.name
     content.app.author = (user.display_name or user.username)[:100]  # the signed-in user, by full name
     pkg = Package(name=data.name, data=content.model_dump(), created_by=user.id)
     db.add(pkg)

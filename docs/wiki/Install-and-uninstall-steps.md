@@ -10,6 +10,8 @@ The **Install**, **Uninstall** and **Repair** tabs each have three phases:
 
 Each phase is a block of its own. Pick a step type at the bottom of that block and click **Add step to Pre**, **Add step to Main** or **Add step to Post**. Every step can be moved up or down with ↑ and ↓ (the page scrolls along, so the step stays under your mouse; ↑ on the first step of a phase moves it into the phase above, ↓ on the last step into the phase below), removed with ✕ (an **Undo** button puts it back for 10 seconds), given a comment (which appears in the script), and saved as a **snippet** so you can reuse it in other packages. Snippets appear in the same list under *Snippets*.
 
+To reuse a whole package instead of one step, click **Save as template** at the top of the editor. It keeps the app info, all steps and the detection rules (not the files). On the Packages page, pick the template next to *New package* to start from it; the templates are listed below the packages, where you can rename or delete them.
+
 ## Step types
 
 | Step | What it does |

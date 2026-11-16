@@ -467,6 +467,17 @@ export default function Editor({ id, readOnly, onClose }) {
     onClose()
   }
 
+  async function saveTemplate() {
+    if (dirty && !(await save())) return
+    const name = window.prompt(t('Name for this template:'), pkg.data.app.name)
+    if (!name) return
+    const description = window.prompt(t('Description (optional):'), '') ?? ''
+    try {
+      await api('/api/templates', { method: 'POST', body: { name, description, package_id: id } })
+      setMsg({ ok: true, text: t('Saved as template "{name}"', { name }) })
+    } catch (e) { setMsg({ ok: false, text: e.message }) }
+  }
+
   if (!pkg) return null
   const d = pkg.data
   return (
@@ -475,7 +486,9 @@ export default function Editor({ id, readOnly, onClose }) {
         <h2><button className="link" onClick={close}>{t('Packages')}</button> › {d.app.name}</h2>
         <span className="row">
           {msg && <span className={msg.ok ? 'ok' : 'error pre'}>{msg.text}</span>}
-          {readOnly ? <span className="muted">{t('Read only')}</span> : <button onClick={save} disabled={!dirty}>{t('Save now')}</button>}
+          {readOnly ? <span className="muted">{t('Read only')}</span> : <>
+            <button className="secondary" onClick={saveTemplate} title={t('Save app info, steps and detection to start new packages from. Files are not included.')}>{t('Save as template')}</button>
+            <button onClick={save} disabled={!dirty}>{t('Save now')}</button></>}
         </span>
       </div>
       <nav className="tabs">{TABS.map(([k, l]) => <button key={k} className={tab === k ? 'active' : ''} onClick={() => switchTab(k)}>{t(l)}</button>)}</nav>
