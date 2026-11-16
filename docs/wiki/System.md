@@ -6,7 +6,7 @@ The **System** page is only for administrators.
 
 ## Updates
 
-The page shows the installed version and the newest release on GitHub. A dot in the menu and a banner tell administrators when an update is available; **Check now** checks straight away.
+The page shows the installed version and the newest release on GitHub. A dot in the menu and a banner tell administrators when an update is available; **Check now** checks straight away and also loads the release notes of the newest version immediately, so *What's new* is up to date right after a release.
 
 - **LXC install**: click **Update**. A progress bar shows the steps. When it's done the service restarts and the page reloads with the new version.
 - **Docker**: run `docker compose pull && docker compose up -d` on the host.

@@ -17,3 +17,9 @@ A package counts **once per version**. Downloading the same version again, or do
 ## Creating a package
 
 Click **New package**, give it a name, and the [editor](App-info) opens. Editors and administrators can create packages. Only administrators can delete a package (the **Delete** link in the list). Read-only users can view and export them.
+
+## Templates
+
+To reuse a package, open it and click **Save as template** at the top of the editor. A template keeps the app info, all install/uninstall steps and the detection rules. Files are not included.
+
+To start from a template, pick it next to **New package**. You don't have to type a name: leave it empty and the template's application name is used. You can also click **Use** in the template list below the packages; the new package is created and opens straight away. In that list you can also **rename** or **delete** a template.
