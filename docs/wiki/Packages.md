@@ -23,3 +23,7 @@ Click **New package**, give it a name, and the [editor](App-info) opens. Editors
 To reuse a package, open it and click **Save as template** at the top of the editor. A template keeps the app info, all install/uninstall steps and the detection rules. Files are not included.
 
 To start from a template, pick it next to **New package**. You don't have to type a name: leave it empty and the template's application name is used. You can also click **Use** in the template list below the packages; the new package is created and opens straight away. In that list you can also **rename** or **delete** a template.
+
+Click a template's name to see what it does without opening it: for Install, Uninstall and Repair every step with its file and full command line (the install and uninstall strings, including the arguments of *Run EXE* steps), plus the detection rules.
+
+A template usually gets a newer installer later. When you choose another `.msi` in a *Run MSI* step (from the list or with **Browse…**), its ProductCode is read right away: the new GUID replaces the old one in uninstall steps that use a ProductCode and in the MSI detection rules, and the app version is taken from the MSI. A message at the top of the editor shows what was read.

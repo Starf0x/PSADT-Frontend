@@ -77,6 +77,8 @@ def create_package(data: NewPackage, db: Session = Depends(get_db), user: User =
     pkg = Package(name=content.app.name, data=content.model_dump(), created_by=user.id)
     db.add(pkg)
     db.commit()
+    # SQLite can hand out the id of a deleted package again; never let the new one see its old files.
+    shutil.rmtree(files_dir(pkg.id).parent, ignore_errors=True)
     return {"id": pkg.id, "name": pkg.name, "data": pkg.data}
 
 
@@ -276,10 +278,12 @@ CHUNK_MAX = 16 * 1024 * 1024
 
 
 @router.put("/{pid}/files/{name}/chunk")
-async def upload_chunk(pid: int, name: str, offset: int, total: int, request: Request, db: Session = Depends(get_db)):
+async def upload_chunk(pid: int, name: str, offset: int, total: int, request: Request, keep: bool = False,
+                       db: Session = Depends(get_db)):
     """Upload a file in pieces, so a reverse proxy with a body-size limit (Zoraxy, Cloudflare...) never sees a big request.
 
     Pieces must arrive in order: offset is where this piece starts. The file appears once offset + piece = total.
+    keep=true never replaces a file with the same name: the new one is stored as "name (2).ext" and the answer says so.
     """
     _get(db, pid)
     if not FILE_RE.match(name) or name in (".", "..") or Path(name).suffix.lower() not in ALLOWED_EXT:
@@ -302,8 +306,20 @@ async def upload_chunk(pid: int, name: str, offset: int, total: int, request: Re
             out.write(chunk)
     done = size == total
     if done:
+        if keep:
+            name = _free_name(d, name)
         tmp.replace(d / name)
     return {"name": name, "size": size, "done": done}
+
+
+def _free_name(d: Path, name: str) -> str:
+    """First of name, "stem (2).ext", "stem (3).ext"... that is not taken yet."""
+    stem, ext = Path(name).stem[:110], Path(name).suffix
+    n = 1
+    while (d / name).exists():
+        n += 1
+        name = f"{stem} ({n}){ext}"
+    return name
 
 
 @router.get("/{pid}/files/{name}/msi")

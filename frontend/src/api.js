@@ -50,9 +50,10 @@ function sendPiece(url, blob, onSent) {
   })
 }
 
-export async function upload(path, file, onProgress = () => {}) {
+// keep = true: never replace a file with the same name; the server picks "name (2).ext" and returns that name.
+export async function upload(path, file, onProgress = () => {}, keep = false) {
   const total = file.size
-  const base = `${path}/${encodeURIComponent(file.name)}/chunk?total=${total}&offset=`
+  const base = `${path}/${encodeURIComponent(file.name)}/chunk?total=${total}${keep ? '&keep=true' : ''}&offset=`
   let offset = 0
   let data = {}
   do {

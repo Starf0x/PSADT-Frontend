@@ -40,6 +40,12 @@ def list_templates(db: Session = Depends(get_db)):
     return [_out(t) for t in db.scalars(select(Template).order_by(Template.name))]
 
 
+@router.get("/{tid}")
+def get_template(tid: int, db: Session = Depends(get_db)):
+    tpl = _get(db, tid)
+    return {**_out(tpl), "data": tpl.data}
+
+
 @router.post("", status_code=201)
 def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User = Depends(current_user)):
     pkg = db.get(Package, data.package_id)

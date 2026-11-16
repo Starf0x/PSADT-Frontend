@@ -1,10 +1,37 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { api } from './api.js'
 import Editor from './Editor.jsx'
 import { t } from './i18n.js'
 
+// What a template does: per action the steps, with the file and the command line (install/uninstall string).
+const ACTIONS = [['install', 'Install'], ['uninstall', 'Uninstall'], ['repair', 'Repair']]
+function stepLine(x) {
+  if (x.type === 'msi') return `MSI ${x.action}: ${x.file || x.product_code || ''} ${x.transforms ? `TRANSFORMS=${x.transforms} ` : ''}${x.args || ''}`
+  if (x.type === 'exe') return `EXE: ${(x.file || '').replace(/^windows:/, '')} ${x.args || ''}`
+  if (x.type === 'uninstall_app') return `${t('Uninstall application by name')}: ${x.name} ${x.args || ''}`
+  if (x.type === 'custom') return `PowerShell: ${(x.code || '').split('\n')[0]}`
+  return null
+}
+function TemplateDetails({ id }) {
+  const [data, setData] = useState(null)
+  useEffect(() => { api(`/api/templates/${id}`).then(r => setData(r.data)).catch(() => setData({})) }, [id])
+  if (!data) return <p className="muted small">{t('Loading…')}</p>
+  return (
+    <div className="tpl-details">
+      {ACTIONS.map(([a, label]) => {
+        const lines = ['pre', 'main', 'post'].flatMap(p => data[a]?.[p] || []).map(stepLine).filter(Boolean)
+        return <div key={a}><b>{t(label)}</b>{lines.length === 0 ? <span className="muted small"> {t('(none)')}</span>
+          : <ul>{lines.map((l, i) => <li key={i}><code>{l.trim()}</code></li>)}</ul>}</div>
+      })}
+      {(data.detection || []).length > 0 && <div><b>{t('Detection')}</b><ul>{data.detection.map((r, i) =>
+        <li key={i}><code>{r.type}: {r.product_code || r.path || r.key || r.name}</code></li>)}</ul></div>}
+    </div>
+  )
+}
+
 // Saved package configurations to start new packages from.
 function Templates({ list, readOnly, onUse, reload, onError }) {
+  const [open, setOpen] = useState(null)
   async function edit(tp) {
     const name = window.prompt(t('Name for this template:'), tp.name)
     if (!name) return
@@ -23,16 +50,18 @@ function Templates({ list, readOnly, onUse, reload, onError }) {
       {list.length === 0 ? <p className="muted">{t('No templates yet. Open a package and choose "Save as template".')}</p> : (
         <table>
           <thead><tr><th>{t('Name')}</th><th>{t('Description')}</th><th>{t('Application')}</th><th>{t('Steps')}</th><th>{t('Modified')}</th><th /></tr></thead>
-          <tbody>{list.map(tp => (
-            <tr key={tp.id}>
-              <td><b>{tp.name}</b></td><td className="muted">{tp.description}</td>
+          <tbody>{list.map(tp => (<Fragment key={tp.id}>
+            <tr>
+              <td><button className="link" onClick={() => setOpen(open === tp.id ? null : tp.id)} title={t('Show the steps and command lines')}>{open === tp.id ? '▾' : '▸'} <b>{tp.name}</b></button></td><td className="muted">{tp.description}</td>
               <td>{[tp.vendor, tp.app].filter(Boolean).join(' ')}</td><td>{tp.steps}</td>
               <td>{new Date(tp.updated_at).toLocaleString()}</td>
               <td className="nowrap">{!readOnly && <>
                 <button className="link" onClick={() => onUse(tp)}>{t('Use')}</button>{' '}
                 <button className="link" onClick={() => edit(tp)}>{t('Rename')}</button>{' '}
                 <button className="link danger" onClick={() => remove(tp)}>{t('Delete')}</button></>}</td>
-            </tr>))}
+            </tr>
+            {open === tp.id && <tr><td colSpan={6}><TemplateDetails id={tp.id} /></td></tr>}
+          </Fragment>))}
           </tbody>
         </table>
       )}
