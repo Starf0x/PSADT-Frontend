@@ -70,10 +70,11 @@ export default function Packages({ readOnly, canDelete }) {
   const loadTemplates = () => api('/api/templates').then(setTemplates).catch(() => {})
   useEffect(() => { if (openId === null) { load(); loadTemplates(); api('/api/stats').then(setStats).catch(() => {}) } }, [openId])
 
-  async function create(e) {
-    e.preventDefault()
+  // With a template the name is optional: empty means the template's application name.
+  async function create(e, tid = templateId) {
+    e?.preventDefault()
     try {
-      const p = await api('/api/packages', { method: 'POST', body: { name, template_id: templateId ? Number(templateId) : null } })
+      const p = await api('/api/packages', { method: 'POST', body: { name, template_id: tid ? Number(tid) : null } })
       setName(''); setTemplateId('')
       setOpenId(p.id)
     } catch (err) { setError(err.message) }
@@ -85,6 +86,8 @@ export default function Packages({ readOnly, canDelete }) {
     load()
   }
 
+  const chosen = templates.find(tp => String(tp.id) === templateId)
+
   if (openId !== null) return <Editor id={openId} readOnly={readOnly} onClose={() => setOpenId(null)} />
 
   return (
@@ -92,7 +95,7 @@ export default function Packages({ readOnly, canDelete }) {
       <h2>{t('Packages')}</h2>
       <Stats stats={stats} />
       {!readOnly && <form className="row" onSubmit={create}>
-        <input placeholder={t('Application name')} value={name} onChange={e => setName(e.target.value)} required maxLength={100} />
+        <input placeholder={chosen ? t('Name (empty = {name})', { name: chosen.app || chosen.name }) : t('Application name')} value={name} onChange={e => setName(e.target.value)} required={!chosen} maxLength={100} />
         {templates.length > 0 && <select value={templateId} onChange={e => setTemplateId(e.target.value)} aria-label={t('Start from')}>
           <option value="">{t('Empty package')}</option>
           {templates.map(tp => <option key={tp.id} value={tp.id}>{t('Template: {name}', { name: tp.name })}</option>)}
@@ -113,7 +116,7 @@ export default function Packages({ readOnly, canDelete }) {
         </table>
       )}
       <Templates list={templates} readOnly={readOnly} reload={loadTemplates} onError={setError}
-        onUse={tp => { setTemplateId(String(tp.id)); window.scrollTo({ top: 0, behavior: 'smooth' }); document.querySelector('form.row input')?.focus() }} />
+        onUse={tp => create(null, String(tp.id))} />
     </section>
   )
 }

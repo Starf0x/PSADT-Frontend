@@ -15,6 +15,11 @@ def test_template_roundtrip(authed):
     assert new["data"]["app"]["vendor"] == "Google"
     assert new["data"]["install"]["main"][0]["file"] == "chrome.msi"
 
+    # Without a name the package takes the template's app name.
+    same = authed.post("/api/packages", json={"template_id": tid}).json()
+    assert same["name"] == "Chrome" and same["data"]["app"]["vendor"] == "Google"
+    assert authed.post("/api/packages", json={"name": " "}).status_code == 422
+
     # Changing the new package leaves the template alone.
     new["data"]["app"]["vendor"] = "Microsoft"
     authed.put(f"/api/packages/{new['id']}", json=new["data"])

@@ -4,6 +4,8 @@ export const LANGS = [['en', 'English'], ['nl', 'Nederlands'], ['de', 'Deutsch']
 // [English, Dutch, German]
 const ROWS = [
   ['Templates', 'Templates', 'Vorlagen'],
+  ['Name (empty = {name})', 'Naam (leeg = {name})', 'Name (leer = {name})'],
+  ['Enter a name for the package', 'Geef het pakket een naam', 'Gib dem Paket einen Namen'],
   ['Template not found', 'Template niet gevonden', 'Vorlage nicht gefunden'],
   ['Name for this template:', 'Naam voor deze template:', 'Name für diese Vorlage:'],
   ['Description (optional):', 'Omschrijving (optioneel):', 'Beschreibung (optional):'],

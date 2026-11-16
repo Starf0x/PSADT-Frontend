@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.3.66
+- Beim Start aus einer Vorlage wird kein Name mehr abgefragt. Lass den Namen leer, dann bekommt das Paket den Anwendungsnamen aus der Vorlage. **Verwenden** in der Vorlagenliste erstellt das neue Paket und öffnet es sofort.
+
 ## 0.3.55
 - Vorlagen: Klicke in einem Paket auf **Als Vorlage speichern**, um App-Info, Schritte und Erkennungsregeln zu behalten. Wähle bei *Neues Paket* die Vorlage, um damit ein neues Paket zu beginnen. Dateien gehören nicht zur Vorlage; lade sie im neuen Paket hoch.
 - Auf der Seite Pakete stehen deine Vorlagen. Dort kannst du sie umbenennen oder löschen; damit erstellte Pakete bleiben erhalten.
