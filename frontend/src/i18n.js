@@ -4,6 +4,11 @@ export const LANGS = [['en', 'English'], ['nl', 'Nederlands'], ['de', 'Deutsch']
 // [English, Dutch, German]
 const ROWS = [
   ['Templates', 'Templates', 'Vorlagen'],
+  ['Enter a new version for the package', 'Vul een nieuwe versie in voor het pakket', 'Gib eine neue Version für das Paket ein'],
+  ['This version already exists. Choose a new version.', 'Deze versie bestaat al. Kies een nieuwe versie.', 'Diese Version gibt es schon. Wähle eine neue Version.'],
+  ['New version (template: {v})', 'Nieuwe versie (template: {v})', 'Neue Version (Vorlage: {v})'],
+  ['New version', 'Nieuwe versie', 'Neue Version'],
+  ['A package from a template needs a version that does not exist yet.', 'Een pakket vanuit een template heeft een versie nodig die nog niet bestaat.', 'Ein Paket aus einer Vorlage braucht eine Version, die es noch nicht gibt.'],
   ['ProductCode {code} and version {v} read from {file}', 'ProductCode {code} en versie {v} uitgelezen uit {file}', 'ProductCode {code} und Version {v} aus {file} gelesen'],
   ['Show the steps and command lines', 'Toon de stappen en opdrachtregels', 'Schritte und Befehlszeilen anzeigen'],
   ['Name (empty = {name})', 'Naam (leeg = {name})', 'Name (leer = {name})'],

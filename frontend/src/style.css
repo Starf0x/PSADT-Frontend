@@ -205,3 +205,4 @@ td.nowrap button + button { margin-left: .6rem; }
 .tpl-details { display: grid; gap: .5rem; }
 .tpl-details ul { margin: .25rem 0 0; padding-left: 1.2rem; }
 .tpl-details code { white-space: pre-wrap; word-break: break-all; }
+form.row input.version { flex: 0 1 220px; min-width: 160px; }

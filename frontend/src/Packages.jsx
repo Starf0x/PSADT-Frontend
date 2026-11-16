@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { api } from './api.js'
 import Editor from './Editor.jsx'
 import { t } from './i18n.js'
@@ -93,18 +93,28 @@ export default function Packages({ readOnly, canDelete }) {
   const [name, setName] = useState('')
   const [templates, setTemplates] = useState([])
   const [templateId, setTemplateId] = useState('')
+  const [version, setVersion] = useState('')
+  const versionRef = useRef(null)
   const [error, setError] = useState('')
 
   const load = () => api('/api/packages').then(setList).catch(e => setError(e.message))
   const loadTemplates = () => api('/api/templates').then(setTemplates).catch(() => {})
   useEffect(() => { if (openId === null) { load(); loadTemplates(); api('/api/stats').then(setStats).catch(() => {}) } }, [openId])
 
-  // With a template the name is optional: empty means the template's application name.
-  async function create(e, tid = templateId) {
+  // With a template the name is optional (empty = the template's application name), but a new
+  // version is required: the same application never gets the same version twice.
+  async function create(e) {
     e?.preventDefault()
+    setError('')
+    if (chosen) {
+      const app = (name.trim() || chosen.app || chosen.name).toLowerCase(), v = version.trim().toLowerCase()
+      if (v === (chosen.version || '').trim().toLowerCase() || list.some(p => p.name.trim().toLowerCase() === app && (p.version || '').trim().toLowerCase() === v)) {
+        setError(t('This version already exists. Choose a new version.')); versionRef.current?.focus(); return
+      }
+    }
     try {
-      const p = await api('/api/packages', { method: 'POST', body: { name, template_id: tid ? Number(tid) : null } })
-      setName(''); setTemplateId('')
+      const p = await api('/api/packages', { method: 'POST', body: { name, template_id: chosen ? chosen.id : null, version: chosen ? version : '' } })
+      setName(''); setTemplateId(''); setVersion('')
       setOpenId(p.id)
     } catch (err) { setError(err.message) }
   }
@@ -129,8 +139,11 @@ export default function Packages({ readOnly, canDelete }) {
           <option value="">{t('Empty package')}</option>
           {templates.map(tp => <option key={tp.id} value={tp.id}>{t('Template: {name}', { name: tp.name })}</option>)}
         </select>}
+        {chosen && <input ref={versionRef} className="version" placeholder={chosen.version ? t('New version (template: {v})', { v: chosen.version }) : t('New version')}
+          value={version} onChange={e => setVersion(e.target.value)} required maxLength={50} aria-label={t('New version')} />}
         <button>{t('New package')}</button>
       </form>}
+      {chosen && <p className="muted small">{t('A package from a template needs a version that does not exist yet.')}</p>}
       {error && <p className="error">{error}</p>}
       {list.length === 0 ? <p className="muted">{t('No packages yet.')}</p> : (
         <table>
@@ -145,7 +158,7 @@ export default function Packages({ readOnly, canDelete }) {
         </table>
       )}
       <Templates list={templates} readOnly={readOnly} reload={loadTemplates} onError={setError}
-        onUse={tp => create(null, String(tp.id))} />
+        onUse={tp => { setTemplateId(String(tp.id)); setError(''); window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => versionRef.current?.focus(), 50) }} />
     </section>
   )
 }

@@ -13,13 +13,23 @@ def test_template_roundtrip(authed):
     full = authed.get(f"/api/templates/{tid}").json()
     assert full["data"]["install"]["main"][0]["args"] == "/qn"
 
-    new = authed.post("/api/packages", json={"name": "Edge", "template_id": tid}).json()
+    # A template needs a new version: none, the template's own, or one that exists is refused.
+    data["app"]["version"] = "1.0"
+    authed.put(f"/api/packages/{pid}", json=data)
+    tid2 = authed.post("/api/templates", json={"name": "Chrome 1.0", "package_id": pid}).json()["id"]
+    assert authed.post("/api/packages", json={"template_id": tid2}).status_code == 422
+    assert authed.post("/api/packages", json={"template_id": tid2, "version": "1.0"}).status_code == 409
+    assert authed.post("/api/packages", json={"template_id": tid2, "version": "1.1"}).json()["data"]["app"]["version"] == "1.1"
+    assert authed.post("/api/packages", json={"template_id": tid2, "version": " 1.1 "}).status_code == 409
+    authed.delete(f"/api/templates/{tid2}")
+
+    new = authed.post("/api/packages", json={"name": "Edge", "template_id": tid, "version": "2.0"}).json()
     assert new["name"] == "Edge" and new["data"]["app"]["name"] == "Edge"
     assert new["data"]["app"]["vendor"] == "Google"
     assert new["data"]["install"]["main"][0]["file"] == "chrome.msi"
 
     # Without a name the package takes the template's app name.
-    same = authed.post("/api/packages", json={"template_id": tid}).json()
+    same = authed.post("/api/packages", json={"template_id": tid, "version": "9.9"}).json()
     assert same["name"] == "Chrome" and same["data"]["app"]["vendor"] == "Google"
     assert authed.post("/api/packages", json={"name": " "}).status_code == 422
 
@@ -32,7 +42,7 @@ def test_template_roundtrip(authed):
     assert r.json()["name"] == "Browsers"
     assert authed.delete(f"/api/templates/{tid}").status_code == 204
     assert authed.get("/api/templates").json() == []
-    assert authed.post("/api/packages", json={"name": "X", "template_id": tid}).status_code == 404
+    assert authed.post("/api/packages", json={"name": "X", "template_id": tid, "version": "1"}).status_code == 404
 
 
 def test_template_unknown_package(authed):

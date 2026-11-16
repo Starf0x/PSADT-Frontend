@@ -37,6 +37,7 @@ CHECK_PS1 = Path(__file__).resolve().parents[1] / "psadt" / "check.ps1"
 class NewPackage(BaseModel):
     name: str = Field(default="", max_length=100)  # may be empty with a template: then the template's app name
     template_id: int | None = None  # start from a saved template instead of the empty default
+    version: str = Field(default="", max_length=50)  # required with a template: a version that does not exist yet
 
 
 def _get(db: Session, pid: int) -> Package:
@@ -72,6 +73,12 @@ def create_package(data: NewPackage, db: Session = Depends(get_db), user: User =
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Template not found")
         content = PackageData.model_validate(tpl.data)
         content.app.name = name or content.app.name or tpl.name
+        version = data.version.strip()
+        if not version:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Enter a new version for the package")
+        if version.lower() == (content.app.version or "").strip().lower() or _version_taken(db, content.app.name, version):
+            raise HTTPException(status.HTTP_409_CONFLICT, "This version already exists. Choose a new version.")
+        content.app.version = version
     content.app.author = (user.display_name or user.username)[:100]  # the signed-in user, by full name
     pkg = Package(name=content.app.name, data=content.model_dump(), created_by=user.id)
     db.add(pkg)
@@ -79,6 +86,14 @@ def create_package(data: NewPackage, db: Session = Depends(get_db), user: User =
     # SQLite can hand out the id of a deleted package again; never let the new one see its old files.
     shutil.rmtree(filestore.package_dir(pkg.id), ignore_errors=True)
     return {"id": pkg.id, "name": pkg.name, "data": pkg.data}
+
+
+def _version_taken(db: Session, app_name: str, version: str) -> bool:
+    """True when a package for the same application (by name, ignoring case) already has this version."""
+    key = (app_name.strip().lower(), version.strip().lower())
+    return any((str(p.data.get("app", {}).get("name") or p.name).strip().lower(),
+                str(p.data.get("app", {}).get("version") or "").strip().lower()) == key
+               for p in db.scalars(select(Package)))
 
 
 @router.get("/{pid}")

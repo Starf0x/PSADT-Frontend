@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.4.0
+- Beginnen vanuit een template vraagt nu om een nieuwe versie. Dezelfde applicatie kan niet twee keer dezelfde versie krijgen: is de versie die van de template zelf, of bestaat er al een pakket met die versie, dan meldt de app dat en wordt het pakket niet gemaakt. **Gebruiken** in de templatelijst kiest de template en zet de cursor in het versieveld.
+
 ## 0.3.99
 - Uploads vragen niet meer of een bestand vervangen moet worden. Op de server krijgt elk geüpload bestand een willekeurige naam, en de app koppelt die aan de echte naam. Je ziet alleen de echte naam, en de download (ZIP of .intunewin) zet elk bestand weer met de echte naam in Files. Zo kan geen enkele upload een ander bestand overschrijven. Upload je een bestand met een naam die al in het pakket staat, dan gebruikt die naam voortaan het nieuwe bestand.
 - Eerder geüploade bestanden worden automatisch overgezet zodra het pakket wordt geopend.
