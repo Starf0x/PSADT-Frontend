@@ -18,7 +18,7 @@ To reuse a whole package instead of one step, click **Save as template** at the 
 |------|--------------|
 | Welcome dialog / close apps | Shows the PSADT welcome dialog, asks the user to close the *processes to close*, and can allow deferrals, check disk space and count down. |
 | Progress message | Shows a progress window with your own text, or the default text when empty. |
-| Run MSI | Installs, uninstalls, repairs or patches an uploaded `.msi`/`.msp`, or a ProductCode. Optional transform (`.mst`) and extra arguments. |
+| Run MSI | Installs, uninstalls, repairs or patches an uploaded `.msi`/`.msp`, or a ProductCode. Optional transform (`.mst`) and extra arguments. Choosing another `.msi` reads its ProductCode and fills it in for uninstall-by-ProductCode steps and MSI detection rules. |
 | Run EXE | Runs an uploaded `.exe` or a program that is already on every Windows PC, with arguments. Exit codes can be ignored (e.g. `1,2` or `*`). |
 | Uninstall application by name | Finds the app in *Programs and Features* (contains, exact, wildcard or regex) and uninstalls it. |
 | Set registry value | Writes a value of type String, ExpandString, DWord, QWord, MultiString or Binary. |

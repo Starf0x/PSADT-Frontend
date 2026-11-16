@@ -202,3 +202,6 @@ code { color: #c9c3ff; }
 @keyframes stripes { to { background-position: 28px 0, 0 0; } }
 td.nowrap { white-space: nowrap; }
 td.nowrap button + button { margin-left: .6rem; }
+.tpl-details { display: grid; gap: .5rem; }
+.tpl-details ul { margin: .25rem 0 0; padding-left: 1.2rem; }
+.tpl-details code { white-space: pre-wrap; word-break: break-all; }

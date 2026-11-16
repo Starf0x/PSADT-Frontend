@@ -10,6 +10,9 @@ def test_template_roundtrip(authed):
     tid = r.json()["id"]
     assert r.json()["vendor"] == "Google" and r.json()["steps"] >= 1
 
+    full = authed.get(f"/api/templates/{tid}").json()
+    assert full["data"]["install"]["main"][0]["args"] == "/qn"
+
     new = authed.post("/api/packages", json={"name": "Edge", "template_id": tid}).json()
     assert new["name"] == "Edge" and new["data"]["app"]["name"] == "Edge"
     assert new["data"]["app"]["vendor"] == "Google"
@@ -34,3 +37,16 @@ def test_template_roundtrip(authed):
 
 def test_template_unknown_package(authed):
     assert authed.post("/api/templates", json={"name": "T", "package_id": 999}).status_code == 404
+
+
+def test_upload_keep_both(authed):
+    pid = authed.post("/api/packages", json={"name": "A"}).json()["id"]
+    other = authed.post("/api/packages", json={"name": "B"}).json()["id"]
+    up = lambda p, body, keep: authed.put(f"/api/packages/{p}/files/setup.exe/chunk?total={len(body)}&offset=0&keep={keep}", content=body).json()
+    assert up(pid, b"one", "false")["name"] == "setup.exe"
+    assert up(other, b"other", "false")["name"] == "setup.exe"  # another package has its own folder
+    assert up(pid, b"two", "true")["name"] == "setup (2).exe"
+    assert up(pid, b"three", "false")["name"] == "setup.exe"  # replace on purpose
+    names = {f["name"]: f["size"] for f in authed.get(f"/api/packages/{pid}/files").json()}
+    assert names == {"setup.exe": 5, "setup (2).exe": 3}
+    assert [f["size"] for f in authed.get(f"/api/packages/{other}/files").json()] == [5]

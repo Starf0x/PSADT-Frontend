@@ -1,5 +1,11 @@
 # Wat is er nieuw
 
+## 0.3.88
+- Templates: klik op de naam van een template in de lijst om te zien wat hij doet: per Installatie, Deïnstallatie en Reparatie de stappen met hun bestand en volledige opdrachtregel (de install- en uninstall-string), en de detectieregels.
+- Kies je in een stap Run MSI een ander MSI-bestand, dan wordt de ProductCode meteen uitgelezen. De nieuwe GUID komt in de plaats van de oude in deïnstallatiestappen met een ProductCode en in de MSI-detectieregels, en de versie van de app wordt uit de MSI overgenomen. Handig als je vanuit een template begint met een nieuwere MSI.
+- Elk pakket heeft zijn eigen bestanden. Upload je een bestand waarvan de naam al in het pakket staat, dan wordt nu eerst gevraagd: vervangen, of allebei bewaren (het nieuwe bestand heet dan bijvoorbeeld "setup (2).exe"). Eerder werd het zonder te vragen vervangen.
+- Een nieuw pakket ziet nooit bestanden die achterbleven van een verwijderd pakket.
+
 ## 0.3.77
 - **Nu controleren** op de pagina Systeem laat nu meteen zien wat de nieuwste versie brengt. Eerst bleef hij tot een uur lang de notities van de geïnstalleerde versie tonen.
 

@@ -3,6 +3,12 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.3.88
+- Templates: click a template's name in the list to see what it does: per Install, Uninstall and Repair the steps with their file and full command line (the install and uninstall strings), and the detection rules.
+- Choosing another MSI in a Run MSI step reads its ProductCode straight away. The new GUID replaces the old one in uninstall steps that use a ProductCode and in the MSI detection rules, and the app version is taken from the MSI. Handy when you start from a template with a newer MSI.
+- Every package keeps its own files. Uploading a file whose name is already in the package now asks first: replace it, or keep both (the new file is saved as for example "setup (2).exe"). Before, it was replaced without asking.
+- A new package never sees files that were left behind by a deleted package.
+
 ## 0.3.77
 - **Check now** on the System page now shows straight away what the newest version brings. Before, it kept showing the notes of the installed version for up to an hour.
 

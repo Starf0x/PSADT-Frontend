@@ -36,6 +36,10 @@ function ArgsInput({ value, onChange, files }) {
   )
 }
 
+// A file with this name is already in the package: replace it, or keep both (the new one gets another name)?
+const keepBoth = (files, name) => files.some(f => f.name === name)
+  && !window.confirm(t('"{name}" is already in this package. Replace it? Cancel keeps both; the new file gets a number in its name.', { name }))
+
 // Choose an uploaded file, or browse the PC: the chosen file is uploaded and selected right away.
 function FilePicker({ value, onChange, files, accept, onUpload }) {
   const pick = useRef(null)
@@ -46,7 +50,7 @@ function FilePicker({ value, onChange, files, accept, onUpload }) {
     e.target.value = ''
     if (!f) return
     setError(''); setProgress(0)
-    try { await onUpload(f, setProgress); onChange(f.name) } catch (err) { setError(`${f.name}: ${err.message}`) }
+    try { const r = await onUpload(f, setProgress); onChange(r?.name || f.name) } catch (err) { setError(`${f.name}: ${err.message}`) }
     setProgress(null)
   }
   return (
@@ -237,7 +241,8 @@ function Files({ id, files, reload }) {
     for (const [i, f] of picked.entries()) {
       set(i, { state: 'up' })
       try {
-        await upload(`/api/packages/${id}/files`, f, p => set(i, { progress: p }))
+        const r = await upload(`/api/packages/${id}/files`, f, p => set(i, { progress: p }), keepBoth(files, f.name))
+        if (r?.name && r.name !== f.name) set(i, { name: `${f.name} → ${r.name}` })
         set(i, { state: 'done', progress: 1 })
       } catch (err) { set(i, { state: 'error' }); setError(`${f.name}: ${err.message}`) }
     }
@@ -421,15 +426,33 @@ function Preview({ id }) {
   )
 }
 
+// All MSI file names used by the MSI steps of one action (install, uninstall or repair).
+const msiFiles = phases => PHASES.flatMap(([k]) => phases[k] || []).filter(x => x.type === 'msi' && /\.msi$/i.test(x.file || '')).map(x => x.file)
+
+// A new MSI was chosen: put its ProductCode everywhere the old one was used (uninstall by ProductCode,
+// MSI detection rules) and take over its version, so a package made from a template fits the new MSI.
+function applyMsi(data, info) {
+  const code = info.ProductCode
+  const phases = Object.fromEntries(['install', 'uninstall', 'repair'].map(a => [a, Object.fromEntries(PHASES.map(([k]) =>
+    [k, (data[a][k] || []).map(x => x.type === 'msi' && x.product_code ? { ...x, product_code: code } : x)]))]))
+  return { ...data, ...phases,
+    app: { ...data.app, version: info.ProductVersion || data.app.version },
+    detection: (data.detection || []).map(r => r.type === 'msi' ? { ...r, product_code: code } : r) }
+}
+
 export default function Editor({ id, readOnly, onClose }) {
   const [pkg, setPkg] = useState(null)
   const [tab, setTab] = useState('app')
   const [files, setFiles] = useState([])
   const [dirty, setDirty] = useState(false)
   const [msg, setMsg] = useState(null)
+  const [note, setNote] = useState('') // what was read from a newly chosen MSI; stays until the editor closes
 
   const loadFiles = () => api(`/api/packages/${id}/files`).then(setFiles).catch(() => {})
-  const uploadFile = async (f, onProgress) => { await upload(`/api/packages/${id}/files`, f, onProgress); await loadFiles() }
+  const uploadFile = async (f, onProgress) => {
+    const r = await upload(`/api/packages/${id}/files`, f, onProgress, keepBoth(files, f.name))
+    await loadFiles(); return r
+  }
   useEffect(() => { api(`/api/packages/${id}`).then(setPkg); loadFiles() }, [id])
 
   // Every change is saved automatically a moment after the last edit, so nothing is lost when the
@@ -478,6 +501,22 @@ export default function Editor({ id, readOnly, onClose }) {
     } catch (e) { setMsg({ ok: false, text: e.message }) }
   }
 
+  // Changes in an Install/Uninstall/Repair tab; picking another MSI reads its ProductCode right away.
+  async function updatePhases(action, phases) {
+    const before = msiFiles(pkg.data[action])
+    let data = { ...pkg.data, [action]: phases }
+    update(data)
+    const picked = msiFiles(phases).find(f => !before.includes(f))
+    if (!picked) return
+    try {
+      const info = await api(`/api/packages/${id}/files/${encodeURIComponent(picked)}/msi`)
+      if (!info.ProductCode) return
+      data = applyMsi(latest.current, info)
+      update(data)
+      setNote(t('ProductCode {code} and version {v} read from {file}', { code: info.ProductCode, v: info.ProductVersion || '?', file: picked }))
+    } catch (e) { setMsg({ ok: false, text: `${picked}: ${e.message}` }) }
+  }
+
   if (!pkg) return null
   const d = pkg.data
   return (
@@ -485,6 +524,7 @@ export default function Editor({ id, readOnly, onClose }) {
       <div className="row between">
         <h2><button className="link" onClick={close}>{t('Packages')}</button> › {d.app.name}</h2>
         <span className="row">
+          {note && <span className="ok small">{note}</span>}
           {msg && <span className={msg.ok ? 'ok' : 'error pre'}>{msg.text}</span>}
           {readOnly ? <span className="muted">{t('Read only')}</span> : <>
             <button className="secondary" onClick={saveTemplate} title={t('Save app info, steps and detection to start new packages from. Files are not included.')}>{t('Save as template')}</button>
@@ -494,7 +534,7 @@ export default function Editor({ id, readOnly, onClose }) {
       <nav className="tabs">{TABS.map(([k, l]) => <button key={k} className={tab === k ? 'active' : ''} onClick={() => switchTab(k)}>{t(l)}</button>)}</nav>
       <fieldset disabled={readOnly} className="plain">
       {tab === 'app' && <AppInfo app={d.app} onChange={app => update({ ...d, app })} />}
-      {['install', 'uninstall', 'repair'].includes(tab) && <PhaseEditor key={tab} phases={d[tab]} files={files} onUpload={readOnly ? null : uploadFile} onChange={p => update({ ...d, [tab]: p })} />}
+      {['install', 'uninstall', 'repair'].includes(tab) && <PhaseEditor key={tab} phases={d[tab]} files={files} onUpload={readOnly ? null : uploadFile} onChange={p => updatePhases(tab, p)} />}
       {tab === 'files' && <Files id={id} files={files} reload={loadFiles} />}
       {tab === 'detection' && <DetectionEditor id={id} files={files} onUpload={readOnly ? null : uploadFile} rules={d.detection || []} onChange={detection => update({ ...d, detection })} />}
       </fieldset>

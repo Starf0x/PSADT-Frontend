@@ -1,5 +1,11 @@
 # Was ist neu
 
+## 0.3.88
+- Vorlagen: Klicke in der Liste auf den Namen einer Vorlage, um zu sehen, was sie tut: für Installation, Deinstallation und Reparatur die Schritte mit Datei und vollständiger Befehlszeile (Install- und Uninstall-String) sowie die Erkennungsregeln.
+- Wählst du in einem Schritt „Run MSI“ eine andere MSI-Datei, wird ihr ProductCode sofort ausgelesen. Die neue GUID ersetzt die alte in Deinstallationsschritten mit ProductCode und in den MSI-Erkennungsregeln, und die App-Version wird aus der MSI übernommen. Praktisch, wenn du mit einer neueren MSI aus einer Vorlage startest.
+- Jedes Paket hat seine eigenen Dateien. Lädst du eine Datei hoch, deren Name schon im Paket ist, wird jetzt zuerst gefragt: ersetzen oder beide behalten (die neue Datei heißt dann zum Beispiel "setup (2).exe"). Bisher wurde sie ohne Nachfrage ersetzt.
+- Ein neues Paket sieht nie Dateien, die von einem gelöschten Paket übrig geblieben sind.
+
 ## 0.3.77
 - **Jetzt prüfen** auf der Seite System zeigt jetzt sofort, was die neueste Version bringt. Vorher wurden bis zu eine Stunde lang die Notizen der installierten Version angezeigt.
 
