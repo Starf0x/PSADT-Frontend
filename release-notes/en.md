@@ -3,6 +3,10 @@
 Plain-language notes for each version, newest first. The app shows these on the System page.
 Every version gets a "## x.y.z" heading; keep the lines short and write for people, not programmers.
 
+## 0.3.99
+- Uploads no longer ask whether to replace a file. On the server every uploaded file is stored under a random name, and the app links it to the real name; you only ever see the real name, and the download (ZIP or .intunewin) puts every file in Files with its real name again. So no upload can overwrite another file. Uploading a file with a name that is already in the package makes that name use the new file.
+- Files you uploaded earlier are moved over automatically the first time the package is opened.
+
 ## 0.3.88
 - Templates: click a template's name in the list to see what it does: per Install, Uninstall and Repair the steps with their file and full command line (the install and uninstall strings), and the detection rules.
 - Choosing another MSI in a Run MSI step reads its ProductCode straight away. The new GUID replaces the old one in uninstall steps that use a ProductCode and in the MSI detection rules, and the app version is taken from the MSI. Handy when you start from a template with a newer MSI.

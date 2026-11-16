@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .. import filestore
 from ..config import settings
 from ..db import Export, Package, Template, User, get_db, get_setting
 from ..psadt.detection import generate_detection
@@ -45,8 +46,6 @@ def _get(db: Session, pid: int) -> Package:
     return pkg
 
 
-def files_dir(pid: int) -> Path:
-    return settings.data_dir / "packages" / str(int(pid)) / "Files"
 
 
 def _summary(p: Package) -> dict:
@@ -78,7 +77,7 @@ def create_package(data: NewPackage, db: Session = Depends(get_db), user: User =
     db.add(pkg)
     db.commit()
     # SQLite can hand out the id of a deleted package again; never let the new one see its old files.
-    shutil.rmtree(files_dir(pkg.id).parent, ignore_errors=True)
+    shutil.rmtree(filestore.package_dir(pkg.id), ignore_errors=True)
     return {"id": pkg.id, "name": pkg.name, "data": pkg.data}
 
 
@@ -102,7 +101,7 @@ def delete_package(pid: int, db: Session = Depends(get_db), _: User = Depends(re
     pkg = _get(db, pid)
     db.delete(pkg)
     db.commit()
-    shutil.rmtree(files_dir(pid).parent, ignore_errors=True)
+    shutil.rmtree(filestore.package_dir(pid), ignore_errors=True)
 
 
 def _data(pkg: Package) -> PackageData:
@@ -161,9 +160,9 @@ def export(pid: int, fmt: str, tasks: BackgroundTasks, db: Session = Depends(get
     os.close(fd)
     zip_path = Path(name)
     log_path = pkg.data.get("app", {}).get("log_path") or get_setting(db, "log_path", "")
-    build_zip(settings.toolkit_zip, script, files_dir(pid), zip_path, log_path)
+    build_zip(settings.toolkit_zip, script, filestore.entries(pid), zip_path, log_path)
     if after_export:
-        tasks.add_task(purge_package, files_dir(pid))
+        tasks.add_task(purge_package, pid)
     if fmt == "zip":
         _count(db, pkg, user, fmt)
         tasks.add_task(_cleanup, zip_path)
@@ -192,8 +191,7 @@ def get_script(pid: int, download: bool = False, db: Session = Depends(get_db)):
 
 
 def _uploaded(pid: int) -> set[str]:
-    d = files_dir(pid)
-    return {f.name for f in d.iterdir() if f.is_file()} if d.exists() else set()
+    return set(filestore.entries(pid))
 
 
 @router.get("/{pid}/validate")
@@ -244,10 +242,7 @@ def _syntax(text: str) -> dict:
 @router.get("/{pid}/files")
 def list_files(pid: int, db: Session = Depends(get_db)):
     _get(db, pid)
-    d = files_dir(pid)
-    if not d.exists():
-        return []
-    return [{"name": f.name, "size": f.stat().st_size} for f in sorted(d.iterdir()) if f.is_file()]
+    return [{"name": n, "size": f.stat().st_size} for n, f in filestore.entries(pid).items()]
 
 
 @router.post("/{pid}/files", status_code=201)
@@ -256,10 +251,8 @@ async def upload_file(pid: int, file: UploadFile, db: Session = Depends(get_db))
     name = Path(file.filename or "").name
     if not FILE_RE.match(name) or name in (".", "..") or Path(name).suffix.lower() not in ALLOWED_EXT:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "File name or type not allowed")
-    d = files_dir(pid)
-    d.mkdir(parents=True, exist_ok=True)
     limit = settings.max_upload_mb * 1024 * 1024
-    tmp = d / f".{name}.part"
+    tmp = filestore.part_path(pid, name)
     size = 0
     try:
         with tmp.open("wb") as out:
@@ -268,7 +261,7 @@ async def upload_file(pid: int, file: UploadFile, db: Session = Depends(get_db))
                 if size > limit:
                     raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File is too large")
                 out.write(chunk)
-        tmp.replace(d / name)
+        filestore.add(pid, name, tmp)
     finally:
         tmp.unlink(missing_ok=True)
     return {"name": name, "size": size}
@@ -278,21 +271,18 @@ CHUNK_MAX = 16 * 1024 * 1024
 
 
 @router.put("/{pid}/files/{name}/chunk")
-async def upload_chunk(pid: int, name: str, offset: int, total: int, request: Request, keep: bool = False,
-                       db: Session = Depends(get_db)):
+async def upload_chunk(pid: int, name: str, offset: int, total: int, request: Request, db: Session = Depends(get_db)):
     """Upload a file in pieces, so a reverse proxy with a body-size limit (Zoraxy, Cloudflare...) never sees a big request.
 
     Pieces must arrive in order: offset is where this piece starts. The file appears once offset + piece = total.
-    keep=true never replaces a file with the same name: the new one is stored as "name (2).ext" and the answer says so.
+    On disk the file gets a random name (see filestore), so an upload never overwrites another file.
     """
     _get(db, pid)
     if not FILE_RE.match(name) or name in (".", "..") or Path(name).suffix.lower() not in ALLOWED_EXT:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "File name or type not allowed")
     if total < 0 or total > settings.max_upload_mb * 1024 * 1024:
         raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File is too large")
-    d = files_dir(pid)
-    d.mkdir(parents=True, exist_ok=True)
-    tmp = d / f".{name}.part"
+    tmp = filestore.part_path(pid, name)
     have = tmp.stat().st_size if offset and tmp.exists() else 0
     if offset != have:
         raise HTTPException(status.HTTP_409_CONFLICT, f"Expected offset {have}")
@@ -306,20 +296,8 @@ async def upload_chunk(pid: int, name: str, offset: int, total: int, request: Re
             out.write(chunk)
     done = size == total
     if done:
-        if keep:
-            name = _free_name(d, name)
-        tmp.replace(d / name)
+        filestore.add(pid, name, tmp)
     return {"name": name, "size": size, "done": done}
-
-
-def _free_name(d: Path, name: str) -> str:
-    """First of name, "stem (2).ext", "stem (3).ext"... that is not taken yet."""
-    stem, ext = Path(name).stem[:110], Path(name).suffix
-    n = 1
-    while (d / name).exists():
-        n += 1
-        name = f"{stem} ({n}){ext}"
-    return name
 
 
 @router.get("/{pid}/files/{name}/msi")
@@ -328,8 +306,8 @@ def msi_properties(pid: int, name: str, db: Session = Depends(get_db)):
     _get(db, pid)
     if not FILE_RE.match(name) or name in (".", "..") or not name.lower().endswith(".msi"):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid file name")
-    path = files_dir(pid) / name
-    if not path.is_file():
+    path = filestore.path(pid, name)
+    if path is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "File not found")
     try:
         return read_properties(path)
@@ -342,7 +320,5 @@ def delete_file(pid: int, name: str, db: Session = Depends(get_db)):
     _get(db, pid)
     if not FILE_RE.match(name) or name in (".", ".."):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid file name")
-    path = files_dir(pid) / name
-    if not path.is_file():
+    if not filestore.remove(pid, name):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "File not found")
-    path.unlink()

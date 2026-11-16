@@ -29,7 +29,8 @@ def set_log_path(config: str, log_path: str) -> str:
     return LOG_PATH_RE.sub(lambda m: f"{m.group(1)}'{log_path}'", config, count=1)
 
 
-def build_zip(toolkit_zip: Path, script: str, files_dir: Path, out: Path, log_path: str = "") -> None:
+def build_zip(toolkit_zip: Path, script: str, files: dict[str, Path], out: Path, log_path: str = "") -> None:
+    """files: real file name -> file on disk; each goes into Files/ under its real name."""
     with zipfile.ZipFile(toolkit_zip) as src, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as dst:
         for info in src.infolist():
             name = info.filename
@@ -44,10 +45,8 @@ def build_zip(toolkit_zip: Path, script: str, files_dir: Path, out: Path, log_pa
                 while chunk := fsrc.read(CHUNK):
                     fdst.write(chunk)
         dst.writestr(SCRIPT_NAME, to_windows(script))
-        if files_dir.is_dir():
-            for f in sorted(files_dir.iterdir()):
-                if f.is_file() and not f.name.startswith("."):
-                    dst.write(f, f"Files/{f.name}")
+        for name, f in sorted(files.items()):
+            dst.write(f, f"Files/{name}")
 
 
 def build_intunewin(content_zip: Path, out: Path, setup_file: str = SETUP_FILE) -> None:

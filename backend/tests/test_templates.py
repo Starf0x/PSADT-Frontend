@@ -39,14 +39,29 @@ def test_template_unknown_package(authed):
     assert authed.post("/api/templates", json={"name": "T", "package_id": 999}).status_code == 404
 
 
-def test_upload_keep_both(authed):
+
+def test_uploads_get_random_names_on_disk(authed, tmp_path):
+    from app import filestore
     pid = authed.post("/api/packages", json={"name": "A"}).json()["id"]
     other = authed.post("/api/packages", json={"name": "B"}).json()["id"]
-    up = lambda p, body, keep: authed.put(f"/api/packages/{p}/files/setup.exe/chunk?total={len(body)}&offset=0&keep={keep}", content=body).json()
-    assert up(pid, b"one", "false")["name"] == "setup.exe"
-    assert up(other, b"other", "false")["name"] == "setup.exe"  # another package has its own folder
-    assert up(pid, b"two", "true")["name"] == "setup (2).exe"
-    assert up(pid, b"three", "false")["name"] == "setup.exe"  # replace on purpose
-    names = {f["name"]: f["size"] for f in authed.get(f"/api/packages/{pid}/files").json()}
-    assert names == {"setup.exe": 5, "setup (2).exe": 3}
-    assert [f["size"] for f in authed.get(f"/api/packages/{other}/files").json()] == [5]
+    up = lambda p, body: authed.put(f"/api/packages/{p}/files/setup.exe/chunk?total={len(body)}&offset=0", content=body).json()  # noqa: E731
+    assert up(pid, b"one")["name"] == "setup.exe"
+    assert up(other, b"other")["name"] == "setup.exe"
+    first = filestore.path(pid, "setup.exe")
+    assert first.name != "setup.exe" and first.read_bytes() == b"one"
+    assert filestore.path(other, "setup.exe").read_bytes() == b"other"  # other package untouched
+    up(pid, b"newer")  # same name again: the name now points at the new upload
+    assert filestore.path(pid, "setup.exe").read_bytes() == b"newer" and not first.exists()
+    assert authed.get(f"/api/packages/{pid}/files").json() == [{"name": "setup.exe", "size": 5}]
+    assert authed.delete(f"/api/packages/{pid}/files/setup.exe").status_code == 204
+    assert authed.get(f"/api/packages/{pid}/files").json() == []
+
+
+def test_old_files_folder_is_migrated(authed, tmp_path):
+    from app import filestore
+    pid = authed.post("/api/packages", json={"name": "Old"}).json()["id"]
+    old = tmp_path / "packages" / str(pid) / "Files"
+    old.mkdir(parents=True)
+    (old / "app.msi").write_bytes(b"abc")
+    assert authed.get(f"/api/packages/{pid}/files").json() == [{"name": "app.msi", "size": 3}]
+    assert not old.exists() and filestore.path(pid, "app.msi").name != "app.msi"

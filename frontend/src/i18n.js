@@ -4,7 +4,6 @@ export const LANGS = [['en', 'English'], ['nl', 'Nederlands'], ['de', 'Deutsch']
 // [English, Dutch, German]
 const ROWS = [
   ['Templates', 'Templates', 'Vorlagen'],
-  ['"{name}" is already in this package. Replace it? Cancel keeps both; the new file gets a number in its name.', '"{name}" staat al in dit pakket. Vervangen? Annuleren bewaart allebei; het nieuwe bestand krijgt een nummer in de naam.', '"{name}" ist bereits in diesem Paket. Ersetzen? Abbrechen behält beide; die neue Datei bekommt eine Nummer im Namen.'],
   ['ProductCode {code} and version {v} read from {file}', 'ProductCode {code} en versie {v} uitgelezen uit {file}', 'ProductCode {code} und Version {v} aus {file} gelesen'],
   ['Show the steps and command lines', 'Toon de stappen en opdrachtregels', 'Schritte und Befehlszeilen anzeigen'],
   ['Name (empty = {name})', 'Naam (leeg = {name})', 'Name (leer = {name})'],

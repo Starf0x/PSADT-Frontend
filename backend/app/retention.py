@@ -23,12 +23,13 @@ def purge_old_uploads(db) -> int:
         return 0
     cutoff = time.time() - int(v) * 86400
     removed = 0
-    for f in (settings.data_dir / "packages").glob("*/Files/*"):
-        if f.is_file() and f.stat().st_mtime < cutoff:
+    for f in (settings.data_dir / "packages").glob("*/blobs/*"):
+        if f.is_file() and not f.name.startswith(".") and f.stat().st_mtime < cutoff:
             f.unlink(missing_ok=True)
             removed += 1
     return removed
 
 
-def purge_package(files: Path) -> None:
-    shutil.rmtree(files, ignore_errors=True)
+def purge_package(pid: int) -> None:
+    from . import filestore
+    filestore.remove_all(pid)

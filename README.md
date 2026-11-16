@@ -112,6 +112,7 @@ backend/   FastAPI (Python 3.12+), SQLAlchemy + SQLite, argon2
   app/routers/templates.py /api/templates (saved package configurations to start new packages from)
   app/routers/users.py     /api/users (admins only)
   app/routers/system.py    /api/system/update and /settings (admins only): version check, in-app update, upload retention
+  app/filestore.py         uploads per package: random names on disk, files.json maps them to the real names
   app/retention.py         removes uploads after the chosen retention (hourly, and right after export if chosen)
   app/psadt/validate.py    the check before a download (/api/packages/{id}/validate); errors block the export
   app/psadt/schema.py      allowed step types + validation (whitelist)

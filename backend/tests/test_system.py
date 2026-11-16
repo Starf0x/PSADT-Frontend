@@ -35,7 +35,8 @@ def test_retention_setting_and_purge(authed, tmp_path):
     pid = authed.post("/api/packages", json={"name": "R"}).json()["id"]
     authed.post(f"/api/packages/{pid}/files", files={"file": ("old.msi", b"x")})
     authed.post(f"/api/packages/{pid}/files", files={"file": ("new.msi", b"x")})
-    old = tmp_path / "packages" / str(pid) / "Files" / "old.msi"
+    from app import filestore
+    old = filestore.path(pid, "old.msi")
     past = time.time() - 8 * 86400
     os.utime(old, (past, past))
     assert authed.put("/api/system/settings", json={"upload_retention": "bogus"}).status_code == 422
