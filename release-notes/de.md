@@ -1,5 +1,8 @@
 # Was ist neu
 
+## 0.4.22
+- Hinter den Kulissen: die Build-Werkzeuge wurden aktualisiert (Vite 8). An der Bedienung der App ändert sich nichts.
+
 ## 0.4.11
 - Bekommt ein Schritt „Run EXE“ eine setup.exe und sind die Argumente noch leer, werden sie für dich ausgefüllt. Wurde der Dateiname schon in einem anderen Paket oder einer Vorlage verwendet, werden dessen Argumente übernommen. Sonst schaut die App in die .exe, erkennt Inno Setup, NSIS, InstallShield, WiX Burn, Advanced Installer und Squirrel und trägt deren stille Installationsoptionen ein. Das funktioniert auch, wenn du die Datei später in einem Paket aus einer Vorlage hochlädst. Oben im Editor steht, was eingetragen wurde; du kannst es jederzeit ändern.
 

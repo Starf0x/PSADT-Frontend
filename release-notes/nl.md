@@ -1,5 +1,8 @@
 # Wat is er nieuw
 
+## 0.4.22
+- Achter de schermen: de bouwtools zijn bijgewerkt (Vite 8). Aan de werking van de app verandert niets.
+
 ## 0.4.11
 - Krijgt een stap Run EXE een setup.exe en zijn de argumenten nog leeg, dan worden ze voor je ingevuld. Is die bestandsnaam eerder gebruikt in een ander pakket of een template, dan worden die argumenten overgenomen. Anders kijkt de app in de .exe en herkent Inno Setup-, NSIS-, InstallShield-, WiX Burn-, Advanced Installer- en Squirrel-installers, en vult hun stille installatie-opties in. Dit werkt ook als je het bestand later uploadt in een pakket vanuit een template. Bovenaan de editor staat wat er is ingevuld; je kunt het altijd aanpassen.
 
